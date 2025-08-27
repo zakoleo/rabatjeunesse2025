@@ -11,8 +11,8 @@
             <div class="hero-text">
                 <h1>Tournoi de Volleyball</h1>
                 <p class="hero-subtitle">
-                    Formez votre équipe de 6 joueurs et participez au tournoi de volleyball. 
-                    Montrez votre esprit d'équipe et votre technique !
+                    Formez votre équipe de volleyball (6x6 ou 4x4) et participez au tournoi. 
+                    Montrez votre esprit d'équipe, votre technique et votre passion pour le volleyball !
                 </p>
                 <div class="hero-benefits">
                     <div class="benefit">
@@ -38,7 +38,7 @@
                 </div>
                 <div class="cta-buttons">
                     <?php if ($user): ?>
-                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary']) ?>
+                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addVolleyball'], ['class' => 'btn btn-primary']) ?>
                     <?php else: ?>
                         <?= $this->Html->link('S\'inscrire maintenant', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
                         <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-secondary']) ?>
@@ -56,17 +56,18 @@
         <div class="container">
             <h2>Informations du tournoi</h2>
             <div class="info-text">
-                <p>Le volleyball est un sport passionnant qui allie technique, tactique et esprit d'équipe.</p>
+                <p>Le volleyball est un sport passionnant qui allie technique, tactique et esprit d'équipe. Rejoignez-nous pour une compétition enrichissante !</p>
                 <ul>
-                    <li>Équipes de 6 joueurs</li>
-                    <li>Toutes catégories d'âge</li>
-                    <li>Tournois masculins et féminins</li>
-                    <li>Format de compétition par poules</li>
+                    <li>Format 6x6 (6-12 joueurs) ou 4x4 (4-8 joueurs)</li>
+                    <li>Toutes catégories d'âge acceptées</li>
+                    <li>Tournois masculins, féminins et mixtes</li>
+                    <li>Compétition par poules puis phases éliminatoires</li>
+                    <li>Équipement et matériel fournis</li>
                 </ul>
             </div>
             <div class="register-cta">
                 <?php if ($user): ?>
-                    <?= $this->Html->link('Inscrire mon équipe de volleyball', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Inscrire mon équipe de volleyball', ['controller' => 'Teams', 'action' => 'addVolleyball'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php else: ?>
                     <?= $this->Html->link('Créer un compte pour s\'inscrire', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php endif; ?>

@@ -51,6 +51,26 @@ class BeachvolleyTeamsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
+        
+        $this->belongsTo('FootballCategories', [
+            'foreignKey' => 'football_category_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->belongsTo('FootballDistricts', [
+            'foreignKey' => 'football_district_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->belongsTo('FootballOrganisations', [
+            'foreignKey' => 'football_organisation_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->hasMany('BeachvolleyTeamsJoueurs', [
+            'foreignKey' => 'beachvolley_team_id',
+            'dependent' => true,
+        ]);
     }
 
     /**

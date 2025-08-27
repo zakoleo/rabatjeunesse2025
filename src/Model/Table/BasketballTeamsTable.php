@@ -7,11 +7,18 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\EventInterface;
+use Cake\Datasource\EntityInterface;
+use ArrayObject;
 
 /**
  * BasketballTeams Model
  *
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
+ * @property \App\Model\Table\BasketballTeamsJoueursTable&\Cake\ORM\Association\HasMany $BasketballTeamsJoueurs
+ * @property \App\Model\Table\FootballCategoriesTable&\Cake\ORM\Association\BelongsTo $FootballCategories
+ * @property \App\Model\Table\FootballDistrictsTable&\Cake\ORM\Association\BelongsTo $FootballDistricts
+ * @property \App\Model\Table\FootballOrganisationsTable&\Cake\ORM\Association\BelongsTo $FootballOrganisations
  *
  * @method \App\Model\Entity\BasketballTeam newEmptyEntity()
  * @method \App\Model\Entity\BasketballTeam newEntity(array $data, array $options = [])
@@ -51,6 +58,20 @@ class BasketballTeamsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
+        $this->belongsTo('FootballCategories', [
+            'foreignKey' => 'basketball_category_id',
+        ]);
+        $this->belongsTo('FootballDistricts', [
+            'foreignKey' => 'basketball_district_id',
+        ]);
+        $this->belongsTo('FootballOrganisations', [
+            'foreignKey' => 'basketball_organisation_id',
+        ]);
+        $this->hasMany('BasketballTeamsJoueurs', [
+            'foreignKey' => 'basketball_team_id',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
+        ]);
     }
 
     /**
@@ -69,7 +90,7 @@ class BasketballTeamsTable extends Table
 
         $validator
             ->scalar('categorie')
-            ->maxLength('categorie', 10)
+            ->maxLength('categorie', 50)
             ->requirePresence('categorie', 'create')
             ->notEmptyString('categorie');
 
@@ -77,23 +98,25 @@ class BasketballTeamsTable extends Table
             ->scalar('genre')
             ->maxLength('genre', 10)
             ->requirePresence('genre', 'create')
-            ->notEmptyString('genre');
+            ->notEmptyString('genre')
+            ->inList('genre', ['Homme', 'Femme']);
 
         $validator
             ->scalar('type_basketball')
             ->maxLength('type_basketball', 10)
             ->requirePresence('type_basketball', 'create')
-            ->notEmptyString('type_basketball');
+            ->notEmptyString('type_basketball')
+            ->inList('type_basketball', ['3x3', '5x5']);
 
         $validator
             ->scalar('district')
-            ->maxLength('district', 50)
+            ->maxLength('district', 100)
             ->requirePresence('district', 'create')
             ->notEmptyString('district');
 
         $validator
             ->scalar('organisation')
-            ->maxLength('organisation', 20)
+            ->maxLength('organisation', 100)
             ->requirePresence('organisation', 'create')
             ->notEmptyString('organisation');
 
@@ -105,6 +128,86 @@ class BasketballTeamsTable extends Table
         $validator
             ->integer('user_id')
             ->notEmptyString('user_id');
+
+        // Validations pour les champs de relation
+        $validator
+            ->integer('football_category_id')
+            ->allowEmptyString('football_category_id');
+
+        $validator
+            ->integer('football_district_id')
+            ->allowEmptyString('football_district_id');
+
+        $validator
+            ->integer('football_organisation_id')
+            ->allowEmptyString('football_organisation_id');
+
+        // Champs responsable
+        $validator
+            ->scalar('responsable_nom_complet')
+            ->maxLength('responsable_nom_complet', 255)
+            ->requirePresence('responsable_nom_complet', 'create')
+            ->notEmptyString('responsable_nom_complet');
+
+        $validator
+            ->date('responsable_date_naissance')
+            ->requirePresence('responsable_date_naissance', 'create')
+            ->notEmptyDate('responsable_date_naissance');
+
+        $validator
+            ->scalar('responsable_tel')
+            ->maxLength('responsable_tel', 20)
+            ->requirePresence('responsable_tel', 'create')
+            ->notEmptyString('responsable_tel');
+
+        $validator
+            ->scalar('responsable_whatsapp')
+            ->maxLength('responsable_whatsapp', 20)
+            ->allowEmptyString('responsable_whatsapp');
+
+        $validator
+            ->scalar('responsable_cin_recto')
+            ->maxLength('responsable_cin_recto', 255)
+            ->allowEmptyString('responsable_cin_recto');
+
+        $validator
+            ->scalar('responsable_cin_verso')
+            ->maxLength('responsable_cin_verso', 255)
+            ->allowEmptyString('responsable_cin_verso');
+
+        // Champs entraineur
+        $validator
+            ->scalar('entraineur_nom_complet')
+            ->maxLength('entraineur_nom_complet', 255)
+            ->allowEmptyString('entraineur_nom_complet');
+
+        $validator
+            ->date('entraineur_date_naissance')
+            ->allowEmptyDate('entraineur_date_naissance');
+
+        $validator
+            ->scalar('entraineur_tel')
+            ->maxLength('entraineur_tel', 20)
+            ->allowEmptyString('entraineur_tel');
+
+        $validator
+            ->scalar('entraineur_whatsapp')
+            ->maxLength('entraineur_whatsapp', 20)
+            ->allowEmptyString('entraineur_whatsapp');
+
+        $validator
+            ->scalar('entraineur_cin_recto')
+            ->maxLength('entraineur_cin_recto', 255)
+            ->allowEmptyString('entraineur_cin_recto');
+
+        $validator
+            ->scalar('entraineur_cin_verso')
+            ->maxLength('entraineur_cin_verso', 255)
+            ->allowEmptyString('entraineur_cin_verso');
+
+        $validator
+            ->boolean('entraineur_same_as_responsable')
+            ->allowEmptyString('entraineur_same_as_responsable');
 
         return $validator;
     }
@@ -121,5 +224,113 @@ class BasketballTeamsTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
 
         return $rules;
+    }
+
+    /**
+     * Get minimum and maximum players for basketball type
+     */
+    public function getPlayerLimits($type)
+    {
+        $limits = [
+            '3x3' => ['min' => 3, 'max' => 4],
+            '5x5' => ['min' => 5, 'max' => 8]
+        ];
+        
+        return $limits[$type] ?? null;
+    }
+    
+    /**
+     * Before save callback
+     *
+     * @param \Cake\Event\EventInterface $event The event instance
+     * @param \Cake\Datasource\EntityInterface $entity The entity being saved
+     * @param \ArrayObject $options The options passed to the save method
+     * @return void
+     */
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        if ($entity->isNew() && empty($entity->reference_inscription)) {
+            $entity->reference_inscription = $this->generateReference();
+        } elseif (!$entity->isNew() && $entity->isDirty() && !$entity->isDirty('reference_inscription')) {
+            // Si l'entité est modifiée (mais pas la référence elle-même), ajouter ou incrémenter le suffixe de version
+            // On exclut les modifications importantes qui justifient un versionning
+            $significantFields = [
+                'nom_equipe', 'categorie', 'genre', 'type_football', 'district', 'organisation',
+                'responsable_nom_complet', 'entraineur_nom_complet'
+            ];
+            
+            $hasSignificantChanges = false;
+            foreach ($significantFields as $field) {
+                if ($entity->isDirty($field)) {
+                    $hasSignificantChanges = true;
+                    break;
+                }
+            }
+            
+            if ($hasSignificantChanges) {
+                $this->updateReferenceVersion($entity);
+            }
+        }
+    }
+    
+    /**
+     * Génère une référence unique pour l'inscription
+     *
+     * @return string
+     */
+    private function generateReference(): string
+    {
+        $year = date('Y');
+        $month = date('m');
+        
+        // Récupérer le dernier numéro de séquence pour ce mois
+        $lastTeam = $this->find()
+            ->where([
+                'reference_inscription LIKE' => "BB{$year}{$month}%"
+            ])
+            ->order(['id' => 'DESC'])
+            ->first();
+        
+        $sequence = 1;
+        if ($lastTeam && !empty($lastTeam->reference_inscription)) {
+            // Extraire le numéro de séquence de la dernière référence
+            $lastSequence = (int) substr($lastTeam->reference_inscription, -4);
+            $sequence = $lastSequence + 1;
+        }
+        
+        // Format: BB + année(4) + mois(2) + séquence(4) (BB for Basketball)
+        return sprintf("BB%s%s%04d", $year, $month, $sequence);
+    }
+    
+    /**
+     * Met à jour la version de la référence lors d'une modification
+     *
+     * @param \Cake\Datasource\EntityInterface $entity The entity being saved
+     * @return void
+     */
+    private function updateReferenceVersion(EntityInterface $entity): void
+    {
+        $currentReference = $entity->reference_inscription;
+        
+        if (empty($currentReference)) {
+            // Si pas de référence, en générer une nouvelle
+            $entity->reference_inscription = $this->generateReference();
+            return;
+        }
+        
+        // Vérifier si la référence contient déjà un suffixe de version
+        if (preg_match('/^(BB\d{10})_v(\d+)$/', $currentReference, $matches)) {
+            // Extraire la référence de base et le numéro de version
+            $baseReference = $matches[1];
+            $versionNumber = (int) $matches[2];
+            $newVersion = $versionNumber + 1;
+        } else {
+            // Première modification, ajouter _v2
+            $baseReference = $currentReference;
+            $newVersion = 2;
+        }
+        
+        // Mettre à jour la référence avec la nouvelle version
+        $entity->reference_inscription = $baseReference . '_v' . $newVersion;
     }
 }

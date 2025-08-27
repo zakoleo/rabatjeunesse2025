@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv:*)",
+      "Bash(php:*)",
+      "Bash(whereis:*)",
+      "Bash(grep:*)",
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "Bash(mysql:*)",
+      "Bash(bin/cake bake:*)",
+      "Bash(/c/xampp/php/php.exe bin/cake.php bake migration CreateHandballTables)",
+      "Bash(ls:*)",
+      "Bash(./bin/cake.bat migrations:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(/c/xampp/php/php.exe bin/cake.php migrations status)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php migrations status)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php migrations migrate)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php schema describe volleyball_teams_joueurs)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php schema describe beachvolley_teams)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php schema_cache describe beachvolley_teams)",
+      "Bash(/mnt/c/xampp/php/php.exe bin/cake.php console --help)",
+      "Bash(/mnt/c/xampp/php/php.exe create_admin.php:*)",
+      "Bash(/mnt/c/xampp/php/php.exe:*)",
+      "Bash(echo:*)",
+      "Bash(/mnt/c/xampp/mysql/bin/mysql:*)"
+    ],
+    "deny": []
+  }
+}

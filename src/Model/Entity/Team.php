@@ -17,6 +17,11 @@ use Cake\ORM\Entity;
  * @property string $organisation
  * @property string $adresse
  * @property int $user_id
+ * @property string|null $reference_inscription
+ * @property string $status
+ * @property \Cake\I18n\DateTime|null $verified_at
+ * @property int|null $verified_by
+ * @property string|null $verification_notes
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  *
@@ -57,6 +62,11 @@ class Team extends Entity
         'organisation' => true,
         'adresse' => true,
         'user_id' => true,
+        'reference_inscription' => true,
+        'status' => true,
+        'verified_at' => true,
+        'verified_by' => true,
+        'verification_notes' => true,
         'created' => true,
         'modified' => true,
         'user' => true,

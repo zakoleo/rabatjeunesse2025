@@ -51,6 +51,26 @@ class VolleyballTeamsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
+        
+        $this->belongsTo('FootballCategories', [
+            'foreignKey' => 'volleyball_category_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->belongsTo('FootballDistricts', [
+            'foreignKey' => 'volleyball_district_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->belongsTo('FootballOrganisations', [
+            'foreignKey' => 'volleyball_organisation_id',
+            'joinType' => 'LEFT',
+        ]);
+        
+        $this->hasMany('VolleyballTeamsJoueurs', [
+            'foreignKey' => 'volleyball_team_id',
+            'dependent' => true,
+        ]);
     }
 
     /**

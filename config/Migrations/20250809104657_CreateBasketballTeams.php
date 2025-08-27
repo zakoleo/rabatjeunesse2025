@@ -22,7 +22,7 @@ class CreateBasketballTeams extends BaseMigration
         ]);
         $table->addColumn('categorie', 'string', [
             'default' => null,
-            'limit' => 10,
+            'limit' => 50,
             'null' => false,
         ]);
         $table->addColumn('genre', 'string', [
@@ -37,12 +37,12 @@ class CreateBasketballTeams extends BaseMigration
         ]);
         $table->addColumn('district', 'string', [
             'default' => null,
-            'limit' => 50,
+            'limit' => 100,
             'null' => false,
         ]);
         $table->addColumn('organisation', 'string', [
             'default' => null,
-            'limit' => 20,
+            'limit' => 100,
             'null' => false,
         ]);
         $table->addColumn('adresse', 'text', [
@@ -53,6 +53,92 @@ class CreateBasketballTeams extends BaseMigration
             'default' => null,
             'limit' => 11,
             'null' => false,
+        ]);
+        $table->addColumn('reference_inscription', 'string', [
+            'default' => null,
+            'limit' => 50,
+            'null' => true,
+        ]);
+        $table->addColumn('basketball_category_id', 'integer', [
+            'default' => null,
+            'limit' => 11,
+            'null' => true,
+        ]);
+        $table->addColumn('basketball_district_id', 'integer', [
+            'default' => null,
+            'limit' => 11,
+            'null' => true,
+        ]);
+        $table->addColumn('basketball_organisation_id', 'integer', [
+            'default' => null,
+            'limit' => 11,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_nom_complet', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_date_naissance', 'date', [
+            'default' => null,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_tel', 'string', [
+            'default' => null,
+            'limit' => 20,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_whatsapp', 'string', [
+            'default' => null,
+            'limit' => 20,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_cin_recto', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('responsable_cin_verso', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_nom_complet', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_date_naissance', 'date', [
+            'default' => null,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_tel', 'string', [
+            'default' => null,
+            'limit' => 20,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_whatsapp', 'string', [
+            'default' => null,
+            'limit' => 20,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_cin_recto', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_cin_verso', 'string', [
+            'default' => null,
+            'limit' => 255,
+            'null' => true,
+        ]);
+        $table->addColumn('entraineur_same_as_responsable', 'boolean', [
+            'default' => false,
+            'null' => true,
+        ]);
+        $table->addColumn('accepter_reglement', 'boolean', [
+            'default' => false,
+            'null' => true,
         ]);
         $table->addColumn('created', 'datetime', [
             'default' => null,

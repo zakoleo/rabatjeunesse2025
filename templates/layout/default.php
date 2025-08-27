@@ -28,6 +28,9 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
     <?= $this->Html->meta('icon') ?>
 
     <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'app']) ?>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
@@ -98,6 +101,22 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
             min-height: auto;
         }
         
+        .admin-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            font-weight: 600 !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-link:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
         /* Adjust main content for fixed nav */
         body {
             padding-top: 70px;
@@ -149,6 +168,38 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
                 <?php if ($this->request->getAttribute('identity')): ?>
                     <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'dashboard']) ?>">Tableau de bord</a>
                     <a href="<?= $this->Url->build(['controller' => 'Teams', 'action' => 'index']) ?>">Mes équipes</a>
+                    <?php 
+                    $identity = $this->request->getAttribute('identity');
+                    $isAdmin = false;
+                    
+                    if ($identity) {
+                        // Simple admin check
+                        try {
+                            if ($identity->is_admin == 1 || $identity->is_admin === true) {
+                                $isAdmin = true;
+                            }
+                        } catch (\Exception $e) {
+                            // Field might not exist
+                        }
+                        
+                        // Fallback checks
+                        if (!$isAdmin) {
+                            $adminEmails = ['admin@lifemoz.com', 'zouhair@gmail.com', 'admin@rabatjeunesse.ma'];
+                            $adminUsernames = ['admin', 'administrator', 'admin1', 'Zouhair'];
+                            
+                            if (in_array($identity->email, $adminEmails) || 
+                                in_array($identity->username, $adminUsernames) || 
+                                $identity->id == 1) {
+                                $isAdmin = true;
+                            }
+                        }
+                    }
+                    
+                    if ($isAdmin): ?>
+                        <a href="<?= $this->Url->build(['controller' => 'Admin', 'action' => 'index']) ?>" class="admin-link">
+                            <i class="fas fa-shield-alt"></i> Administration
+                        </a>
+                    <?php endif; ?>
                     <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']) ?>" class="btn btn-danger">Déconnexion</a>
                 <?php else: ?>
                     <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'login']) ?>">Connexion</a>

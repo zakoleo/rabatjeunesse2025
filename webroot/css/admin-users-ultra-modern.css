@@ -1,0 +1,651 @@
+/* 🚀 ULTRA MODERN ADMIN USERS 2025 - NEXT GENERATION DESIGN */
+
+/* CSS Variables pour thème dynamique */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-primary: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.3);
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b7280;
+}
+
+/* Reset global avec optimisations */
+.admin-users * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container principal avec néomorphisme avancé */
+.admin-users {
+    background: 
+        conic-gradient(from 0deg at 20% 30%, rgba(102, 126, 234, 0.1) 0deg, transparent 60deg),
+        conic-gradient(from 180deg at 80% 70%, rgba(240, 147, 251, 0.08) 0deg, transparent 60deg),
+        radial-gradient(ellipse at top left, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(118, 75, 162, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%) !important;
+    min-height: 100vh !important;
+    padding: 2rem !important;
+    position: relative !important;
+    overflow-x: hidden !important;
+}
+
+/* Particules flottantes d'arrière-plan */
+.admin-users::before {
+    content: '' !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: 
+        radial-gradient(2px 2px at 20px 30px, rgba(102, 126, 234, 0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(240, 147, 251, 0.2), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(118, 75, 162, 0.4), transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(102, 126, 234, 0.2), transparent) !important;
+    background-size: 200px 200px !important;
+    animation: particleFloat 20s linear infinite !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Section principale avec glassmorphisme avancé */
+.admin-users .users-section {
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.25) 0%, 
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%) !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    border-radius: 32px !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+        0 32px 80px rgba(0, 0, 0, 0.08),
+        0 16px 40px rgba(102, 126, 234, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05) !important;
+    margin: 2rem 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Bordure holographique animée */
+.admin-users .users-section::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    background: conic-gradient(
+        from 0deg,
+        #667eea 0deg,
+        #764ba2 60deg,
+        #f093fb 120deg,
+        #f5576c 180deg,
+        #4facfe 240deg,
+        #00f2fe 300deg,
+        #667eea 360deg
+    ) !important;
+    border-radius: 34px !important;
+    z-index: -1 !important;
+    animation: holographicRotate 8s linear infinite !important;
+    filter: blur(6px) !important;
+}
+
+/* Header avec effet neural */
+.admin-users .section-header {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.9) 0%, 
+        rgba(118, 75, 162, 0.9) 50%, 
+        rgba(240, 147, 251, 0.9) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: white !important;
+    padding: 3rem 2.5rem !important;
+    border: none !important;
+    margin: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Réseau neural animé dans le header */
+.admin-users .section-header::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+        radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+        radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+    background-size: 100px 100px, 80px 80px, 120px 120px !important;
+    animation: neuralNetwork 15s ease-in-out infinite !important;
+}
+
+/* Titre avec effet holographique */
+.admin-users .section-header h2 {
+    margin: 0 !important;
+    font-size: 1.75rem !important;
+    font-weight: 800 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(102, 126, 234, 0.4) !important;
+    letter-spacing: 0.5px !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.admin-users .section-header h2 i {
+    font-size: 1.5rem !important;
+    animation: iconPulse 3s ease-in-out infinite !important;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)) !important;
+}
+
+/* Container de table avec effet de profondeur */
+.admin-users .users-table-container {
+    background: transparent !important;
+    overflow: visible !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 2rem !important;
+}
+
+/* Table avec espacement de cartes */
+.admin-users .admin-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 16px !important;
+    background: transparent !important;
+    margin: 0 !important;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Headers flottants */
+.admin-users .admin-table thead th {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.8) 0%, 
+        rgba(248, 250, 252, 0.6) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 16px !important;
+    padding: 1.5rem 2rem !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    color: var(--text-primary) !important;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+/* Rangées de table comme cartes flottantes */
+.admin-users .admin-table tbody tr {
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(255, 255, 255, 0.7) 100%) !important;
+    backdrop-filter: blur(30px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 20px !important;
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(102, 126, 234, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+}
+
+/* Effet de lueur sur hover */
+.admin-users .admin-table tbody tr:hover {
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(248, 250, 252, 0.9) 100%) !important;
+    transform: translateY(-12px) scale(1.02) !important;
+    box-shadow: 
+        0 24px 80px rgba(0, 0, 0, 0.12),
+        0 12px 40px rgba(102, 126, 234, 0.15),
+        0 0 0 1px rgba(102, 126, 234, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+/* Effet de bordure néon sur hover */
+.admin-users .admin-table tbody tr::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    background: var(--primary-gradient) !important;
+    border-radius: 20px 20px 0 0 !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.admin-users .admin-table tbody tr:hover::before {
+    opacity: 1 !important;
+    animation: pulseGlow 2s ease-in-out infinite !important;
+}
+
+/* Cellules avec espacement parfait */
+.admin-users .admin-table td {
+    padding: 2rem 2.5rem !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+}
+
+/* ID avec effet néon */
+.admin-users .admin-table td:first-child {
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    color: #667eea !important;
+    text-align: center !important;
+    width: 80px !important;
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.6) !important;
+}
+
+.admin-users .admin-table tbody tr:hover td:first-child {
+    transform: scale(1.2) !important;
+    text-shadow: 
+        0 0 20px rgba(102, 126, 234, 0.8),
+        0 0 40px rgba(102, 126, 234, 0.4) !important;
+    animation: numberPulse 0.6s ease-out !important;
+}
+
+/* Username avec style moderne */
+.admin-users .admin-table .username {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    min-width: 200px !important;
+}
+
+/* Badge admin révolutionnaire */
+.admin-users .admin-table .admin-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 1.25rem !important;
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #ff9ff3 100%) !important;
+    color: #ffffff !important;
+    border-radius: 50px !important;
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    border: 2px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 
+        0 12px 40px rgba(255, 107, 107, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 0 30px rgba(255, 107, 107, 0.6) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    animation: adminGlow 3s ease-in-out infinite !important;
+}
+
+.admin-users .admin-table .admin-badge i {
+    font-size: 0.9rem !important;
+    animation: crownSpin 4s linear infinite !important;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1)) !important;
+}
+
+/* Email avec style monospace moderne */
+.admin-users .admin-table td:nth-child(3) {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace !important;
+    font-size: 0.9rem !important;
+    color: #4c51bf !important;
+    background: linear-gradient(135deg, rgba(76, 81, 191, 0.1) 0%, rgba(76, 81, 191, 0.05) 100%) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    margin: 0.5rem 0 !important;
+    border: 1px solid rgba(76, 81, 191, 0.2) !important;
+    font-weight: 600 !important;
+}
+
+/* Status badge ultra moderne */
+.admin-users .admin-table .status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 50px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    text-transform: capitalize !important;
+}
+
+.admin-users .admin-table .status-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    box-shadow: 
+        0 12px 40px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 20px rgba(16, 185, 129, 0.6) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    animation: statusPulse 3s ease-in-out infinite !important;
+}
+
+/* Pagination ultra futuriste */
+.admin-users .pagination-wrapper {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 3rem 2rem 2rem 2rem !important;
+    background: transparent !important;
+}
+
+.admin-users .pagination-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem 2rem !important;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(248, 250, 252, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
+    border-radius: 50px !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    min-width: 140px !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.admin-users .pagination-btn:hover {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 
+        0 20px 60px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.admin-users .pagination-numbers {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    margin: 0 1.5rem !important;
+}
+
+.admin-users .pagination-numbers a,
+.admin-users .pagination-numbers span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(248, 250, 252, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
+    border-radius: 50% !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.admin-users .pagination-numbers a:hover {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+    transform: scale(1.15) !important;
+    box-shadow: 
+        0 16px 40px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.admin-users .pagination-numbers .current {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+    box-shadow: 
+        0 12px 40px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.1) !important;
+    animation: currentPagePulse 3s ease-in-out infinite !important;
+}
+
+/* Compteur de pagination avec style futuriste */
+.admin-users .pagination-info {
+    padding: 0 2rem 3rem 2rem !important;
+    background: transparent !important;
+    text-align: center !important;
+}
+
+.admin-users .pagination-counter {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 1rem 2rem !important;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(248, 250, 252, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: var(--text-primary) !important;
+    border-radius: 50px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Animations avancées */
+@keyframes particleFloat {
+    0% { transform: translateY(0px) translateX(0px); }
+    33% { transform: translateY(-30px) translateX(20px); }
+    66% { transform: translateY(-60px) translateX(-20px); }
+    100% { transform: translateY(0px) translateX(0px); }
+}
+
+@keyframes holographicRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes neuralNetwork {
+    0%, 100% { transform: translate(0, 0); opacity: 0.7; }
+    50% { transform: translate(30px, -20px); opacity: 1; }
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes numberPulse {
+    0% { transform: scale(1.2); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.2); }
+}
+
+@keyframes adminGlow {
+    0%, 100% { box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 107, 107, 0.6); }
+    50% { box-shadow: 0 16px 50px rgba(255, 107, 107, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 107, 107, 0.8); }
+}
+
+@keyframes crownSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(90deg) scale(1.1); }
+    50% { transform: rotate(180deg) scale(1); }
+    75% { transform: rotate(270deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes statusPulse {
+    0%, 100% { box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.6); }
+    50% { box-shadow: 0 16px 50px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 30px rgba(16, 185, 129, 0.8); }
+}
+
+@keyframes currentPagePulse {
+    0%, 100% { transform: scale(1.1); box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+    50% { transform: scale(1.15); box-shadow: 0 16px 50px rgba(102, 126, 234, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Effet d'entrée en cascade pour les rangées */
+.admin-users .admin-table tbody tr {
+    animation: cardEntrance 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+    opacity: 0 !important;
+    transform: translateY(40px) !important;
+}
+
+@keyframes cardEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Délais en cascade */
+.admin-users .admin-table tbody tr:nth-child(1) { animation-delay: 0.1s !important; }
+.admin-users .admin-table tbody tr:nth-child(2) { animation-delay: 0.2s !important; }
+.admin-users .admin-table tbody tr:nth-child(3) { animation-delay: 0.3s !important; }
+.admin-users .admin-table tbody tr:nth-child(4) { animation-delay: 0.4s !important; }
+.admin-users .admin-table tbody tr:nth-child(5) { animation-delay: 0.5s !important; }
+.admin-users .admin-table tbody tr:nth-child(6) { animation-delay: 0.6s !important; }
+.admin-users .admin-table tbody tr:nth-child(7) { animation-delay: 0.7s !important; }
+.admin-users .admin-table tbody tr:nth-child(8) { animation-delay: 0.8s !important; }
+.admin-users .admin-table tbody tr:nth-child(9) { animation-delay: 0.9s !important; }
+.admin-users .admin-table tbody tr:nth-child(10) { animation-delay: 1.0s !important; }
+
+/* États vides avec style moderne */
+.admin-users .empty-state {
+    text-align: center !important;
+    padding: 6rem 2rem !important;
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.6) 0%, 
+        rgba(248, 250, 252, 0.4) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    margin: 2rem !important;
+}
+
+.admin-users .empty-state i {
+    font-size: 4rem !important;
+    color: #cbd5e0 !important;
+    margin-bottom: 2rem !important;
+    animation: emptyStateFloat 3s ease-in-out infinite !important;
+}
+
+@keyframes emptyStateFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Responsive design ultra optimisé */
+@media (max-width: 768px) {
+    .admin-users .admin-table tbody tr {
+        border-spacing: 0 12px !important;
+    }
+    
+    .admin-users .admin-table td {
+        padding: 1.5rem 1.25rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .admin-users .section-header {
+        padding: 2rem 1.5rem !important;
+    }
+    
+    .admin-users .section-header h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .admin-users .pagination-wrapper {
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        padding: 2rem 1rem !important;
+    }
+    
+    .admin-users .pagination-btn {
+        min-width: 120px !important;
+        padding: 0.875rem 1.5rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-users {
+        padding: 1rem !important;
+    }
+    
+    .admin-users .admin-table tbody tr {
+        border-radius: 16px !important;
+    }
+    
+    .admin-users .admin-table td {
+        padding: 1.25rem 1rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .admin-users .admin-badge {
+        font-size: 0.7rem !important;
+        padding: 0.5rem 0.875rem !important;
+    }
+    
+    .admin-users .pagination-numbers a,
+    .admin-users .pagination-numbers span {
+        width: 3rem !important;
+        height: 3rem !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Indicateur de debug */
+.admin-users::after {
+    content: "🚀 Ultra Modern 2025 Admin Interface v3.0 - Next Generation Design Loaded ✨";
+    position: fixed;
+    top: -200px;
+    left: -200px;
+    opacity: 0;
+    font-size: 1px;
+}

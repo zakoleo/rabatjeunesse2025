@@ -20,11 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Règles de validation des dates de naissance par catégorie
     const categoriesDateRanges = {
-        'U12': { min: '2014-01-01', max: '2015-12-31' },
-        'U15': { min: '2012-01-01', max: '2013-12-31' },
-        'U18': { min: '2008-01-01', max: '2010-12-31' },
-        '18+': { min: '1970-01-01', max: '2007-12-31' },
-        'U21': { min: '2005-01-01', max: '2007-12-31' }
+        '-12 ans': { min: '2013-01-01', max: '2025-12-31' },
+        '-15 ans': { min: '2010-01-01', max: '2025-12-31' },
+        '-18 ans': { min: '2007-01-01', max: '2025-12-31' },
+        '+18 ans': { min: '1970-01-01', max: '2006-12-31' }
     };
     
     // Wizard functionality

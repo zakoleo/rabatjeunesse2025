@@ -22,71 +22,110 @@
 /* Progress Bar */
 .progress-bar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
     margin-bottom: 3rem;
-    max-width: 600px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     position: relative;
+    padding: 0 2rem;
 }
 
 .progress-step {
     text-align: center;
     position: relative;
     flex: 1;
-    z-index: 1;
+    z-index: 2;
+    min-width: 120px;
 }
 
 .step-circle {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: var(--background-light);
-    color: var(--text-light);
+    background: #f8f9fa;
+    color: #6c757d;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 0.75rem;
     font-weight: bold;
     font-size: 1.25rem;
-    transition: all 0.3s;
-    border: 3px solid var(--border-color);
+    transition: all 0.3s ease;
+    border: 3px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-step.active .step-circle {
-    background: var(--primary-color);
+    background: #007bff;
     color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(89, 86, 233, 0.2);
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    transform: scale(1.05);
 }
 
 .progress-step.completed .step-circle {
-    background: var(--success-color);
+    background: #28a745;
     color: white;
-    border-color: var(--success-color);
+    border-color: #28a745;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
 }
 
 .progress-step span {
     display: block;
-    /*font-size: 0.875rem;*/
-    color: var(--text-light);
+    font-size: 0.9rem;
+    color: #6c757d;
     font-weight: 500;
+    line-height: 1.3;
+    margin-top: 0.5rem;
+    max-width: 100px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.progress-step.active span,
+.progress-step.active span {
+    color: #007bff;
+    font-weight: 600;
+}
+
 .progress-step.completed span {
-    color: var(--text-dark);
+    color: #28a745;
+    font-weight: 600;
 }
 
 .progress-line {
     position: absolute;
     top: 25px;
-    left: 50%;
-    width: calc(100% - 100px);
+    left: 0;
+    right: 0;
     height: 3px;
-    background: var(--border-color);
-    z-index: 0;
+    background: #dee2e6;
+    z-index: 1;
+    margin: 0 6rem;
+}
+
+.progress-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #007bff;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+
+.progress-bar[data-progress="1"] .progress-line::before {
+    width: 0%;
+}
+
+.progress-bar[data-progress="2"] .progress-line::before {
+    width: 50%;
+}
+
+.progress-bar[data-progress="3"] .progress-line::before {
+    width: 100%;
 }
 
 /* Wizard Steps */
@@ -274,11 +313,67 @@
 
 .wizard-navigation .btn {
     min-width: 150px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.wizard-navigation .btn-primary {
+    background: #007bff;
+    color: white;
+    border: 2px solid #007bff;
+}
+
+.wizard-navigation .btn-primary:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.wizard-navigation .btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: 2px solid #6c757d;
+}
+
+.wizard-navigation .btn-secondary:hover {
+    background: #545b62;
+    border-color: #545b62;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.wizard-navigation .btn-success {
+    background: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+}
+
+.wizard-navigation .btn-success:hover {
+    background: #1e7e34;
+    border-color: #1e7e34;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
 .wizard-navigation .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.wizard-navigation .btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 /* Add Button */
@@ -320,6 +415,399 @@ input[type="file"] {
     border-color: var(--success-color);
 }
 
+/* Basketball-specific styles */
+.basketball-inscription .inscription-header {
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+.basketball-inscription .inscription-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.basketball-inscription .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    color: white;
+}
+
+.basketball-inscription .progress-step.active .step-circle,
+.basketball-inscription .progress-step.completed .step-circle {
+    background: #FF6B35;
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.2);
+}
+
+.basketball-inscription .btn-primary {
+    background: #FF6B35;
+    border-color: #FF6B35;
+}
+
+.basketball-inscription .btn-primary:hover {
+    background: #E55A2B;
+    border-color: #E55A2B;
+}
+
+.basketball-inscription .teams.form .form-group input:focus,
+.basketball-inscription .teams.form .form-group select:focus,
+.basketball-inscription .teams.form .form-group textarea:focus {
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.basketball-inscription .wizard-navigation .btn-primary {
+    background: #FF6B35;
+    border-color: #FF6B35;
+}
+
+.basketball-inscription .wizard-navigation .btn-primary:hover {
+    background: #E55A2B;
+    border-color: #E55A2B;
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.basketball-inscription .wizard-navigation .btn-success {
+    background: #FF6B35;
+    border-color: #FF6B35;
+}
+
+.basketball-inscription .wizard-navigation .btn-success:hover {
+    background: #E55A2B;
+    border-color: #E55A2B;
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.basketball-info {
+    background: #FFF5F0;
+    border-left: 4px solid #FF6B35;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.basketball-info h4 {
+    color: #FF6B35;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.basketball-info .info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.basketball-info .info-item {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.alert-warning h3 {
+    margin-bottom: 1rem;
+    color: #856404;
+}
+
+.auth-buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Player form styling */
+.joueur-form {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.joueur-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.joueur-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1.125rem;
+}
+
+.btn-remove-joueur {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.btn-remove-joueur:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-remove-joueur svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Info alert styling */
+.info-alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.info-alert.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.info-alert.warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.requirement-info {
+    display: block;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border-left: 4px solid;
+}
+
+.requirement-info h4 {
+    margin: 0 0 0.75rem 0;
+    color: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.requirement-info p {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.requirement-info .note {
+    font-style: italic;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Fix for nombreJoueursRequis container */
+#nombreJoueursRequis {
+    display: block;
+    margin: 1rem 0;
+}
+
+#nombreJoueursRequis .requirement-info {
+    margin: 0;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #007bff;
+}
+
+/* Make sure the parent p tag doesn't interfere */
+.info-text {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Basketball specific styling */
+.basketball-inscription #nombreJoueursRequis .requirement-info {
+    background: #fff5f0;
+    border-color: #ffeaa7;
+    border-left-color: #FF6B35;
+}
+
+/* Handball specific styling */
+.handball-inscription #nombreJoueursRequis .requirement-info {
+    background: #f8fff8;
+    border-color: #c3e6cb;
+    border-left-color: #28a745;
+}
+
+/* Form actions */
+.form-actions {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #FF6B35;
+    border: 2px solid #FF6B35;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-outline:hover {
+    background: #FF6B35;
+    color: white;
+}
+
+/* Handball-specific styles */
+.handball-inscription .inscription-header {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.handball-inscription .inscription-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.handball-inscription .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    color: white;
+}
+
+.handball-inscription .progress-step.active .step-circle,
+.handball-inscription .progress-step.completed .step-circle {
+    background: #28a745;
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2);
+}
+
+.handball-inscription .btn-primary {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.handball-inscription .btn-primary:hover {
+    background: #218838;
+    border-color: #218838;
+}
+
+.handball-inscription .teams.form .form-group input:focus,
+.handball-inscription .teams.form .form-group select:focus,
+.handball-inscription .teams.form .form-group textarea:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.handball-inscription .wizard-navigation .btn-primary {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.handball-inscription .wizard-navigation .btn-primary:hover {
+    background: #218838;
+    border-color: #218838;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.handball-inscription .wizard-navigation .btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.handball-inscription .wizard-navigation .btn-success:hover {
+    background: #218838;
+    border-color: #218838;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.handball-info {
+    background: #f8fff8;
+    border-left: 4px solid #28a745;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.handball-info h4 {
+    color: #28a745;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.handball-info .info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.handball-info .info-item {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.handball-inscription .progress-line::before {
+    background: #28a745;
+}
+
+.handball-inscription .progress-bar[data-progress="2"] .progress-line::before {
+    width: 50%;
+}
+
+.handball-inscription .progress-bar[data-progress="3"] .progress-line::before {
+    width: 100%;
+}
+
+.handball-inscription .requirement-info {
+    background: #f8fff8;
+    border-left-color: #28a745;
+}
+
+.handball-inscription #nombreJoueursRequis.info-alert.success {
+    background: #f8fff8;
+    border: 1px solid #c3e6cb;
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .wizard-container {
@@ -347,5 +835,18 @@ input[type="file"] {
     
     .wizard-navigation .btn {
         width: 100%;
+    }
+    
+    .basketball-inscription .inscription-header h1 {
+        font-size: 2rem;
+    }
+    
+    .auth-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .basketball-info .info-content {
+        text-align: left;
     }
 }

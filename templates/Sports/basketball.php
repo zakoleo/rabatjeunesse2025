@@ -64,7 +64,7 @@ $sportConfig = [
                 </div>
                 <div class="cta-buttons">
                     <?php if ($user): ?>
-                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary']) ?>
+                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary']) ?>
                     <?php else: ?>
                         <?= $this->Html->link('S\'inscrire maintenant', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
                         <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-secondary']) ?>
@@ -137,7 +137,7 @@ $sportConfig = [
             <div class="register-cta">
                 <p class="cta-text">Prêt à montrer vos talents sur le terrain ?</p>
                 <?php if ($user): ?>
-                    <?= $this->Html->link('Inscrire mon équipe de basketball', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Inscrire mon équipe de basketball', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php else: ?>
                     <?= $this->Html->link('Créer un compte pour s\'inscrire', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php endif; ?>

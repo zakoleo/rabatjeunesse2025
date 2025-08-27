@@ -403,3 +403,24 @@ table tr:hover {
 .pb-3 { padding-bottom: 1.5rem; }
 .pb-4 { padding-bottom: 2rem; }
 .pb-5 { padding-bottom: 3rem; }
+
+/* Sports Gradient Classes */
+.football-gradient {
+    background: linear-gradient(135deg, var(--success-color), #2ECC71);
+}
+
+.basketball-gradient {
+    background: linear-gradient(135deg, var(--warning-color), var(--secondary-color));
+}
+
+.handball-gradient {
+    background: linear-gradient(135deg, var(--danger-color), var(--accent-color));
+}
+
+.volleyball-gradient {
+    background: linear-gradient(135deg, var(--info-color), var(--primary-color));
+}
+
+.beachvolley-gradient {
+    background: linear-gradient(135deg, var(--secondary-color), var(--warning-color));
+}

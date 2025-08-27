@@ -11,6 +11,19 @@ namespace App\Controller;
 class TeamsController extends AppController
 {
     /**
+     * beforeFilter callback
+     *
+     * @param \Cake\Event\EventInterface $event Event
+     * @return void
+     */
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        // Allow non-authenticated users to access basketball, handball, volleyball and beach volleyball registration pages
+        $this->Authentication->addUnauthenticatedActions(['addBasketball', 'addHandball', 'addVolleyball', 'addBeachvolley']);
+    }
+    
+    /**
      * Index method
      *
      * @return \Cake\Http\Response|null|void Renders view
@@ -18,12 +31,42 @@ class TeamsController extends AppController
     public function index()
     {
         $user = $this->Authentication->getIdentity();
-        $query = $this->Teams->find()
+        
+        // Get football teams
+        $footballTeams = $this->Teams->find()
             ->where(['Teams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']);
-        $teams = $this->paginate($query);
+            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations'])
+            ->all();
+        
+        // Get basketball teams
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $basketballTeams = $basketballTeamsTable->find()
+            ->where(['BasketballTeams.user_id' => $user->id])
+            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'BasketballTeamsJoueurs'])
+            ->all();
+        
+        // Get handball teams
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $handballTeams = $handballTeamsTable->find()
+            ->where(['HandballTeams.user_id' => $user->id])
+            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'HandballTeamsJoueurs'])
+            ->all();
+        
+        // Get volleyball teams
+        $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
+        $volleyballTeams = $volleyballTeamsTable->find()
+            ->where(['VolleyballTeams.user_id' => $user->id])
+            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'VolleyballTeamsJoueurs'])
+            ->all();
+        
+        // Get beach volleyball teams
+        $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
+        $beachvolleyTeams = $beachvolleyTeamsTable->find()
+            ->where(['BeachvolleyTeams.user_id' => $user->id])
+            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'BeachvolleyTeamsJoueurs'])
+            ->all();
 
-        $this->set(compact('teams'));
+        $this->set(compact('footballTeams', 'basketballTeams', 'handballTeams', 'volleyballTeams', 'beachvolleyTeams'));
     }
 
     /**
@@ -188,10 +231,12 @@ class TeamsController extends AppController
         }
         
         // Charger les listes pour les dropdowns
-        $footballCategories = $this->Teams->FootballCategories->find('list', [
-            'keyField' => 'id',
-            'valueField' => 'name'
-        ])->where(['active' => true]);
+        $footballCategories = [
+            '-12' => '-12 ans',
+            '-15' => '-15 ans', 
+            '-18' => '-18 ans',
+            '+18' => '+18 ans'
+        ];
         
         $footballDistricts = $this->Teams->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -314,10 +359,12 @@ class TeamsController extends AppController
         }
         
         // Charger les listes pour les dropdowns
-        $footballCategories = $this->Teams->FootballCategories->find('list', [
-            'keyField' => 'id',
-            'valueField' => 'name'
-        ])->where(['active' => true]);
+        $footballCategories = [
+            '-12' => '-12 ans',
+            '-15' => '-15 ans', 
+            '-18' => '-18 ans',
+            '+18' => '+18 ans'
+        ];
         
         $footballDistricts = $this->Teams->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -335,7 +382,7 @@ class TeamsController extends AppController
                 ->where(['name' => $team->categorie])
                 ->first();
             if ($category) {
-                $team->football_category_id = $category->id;
+                $team->basketball_category_id = $category->id;
             }
         }
         
@@ -344,7 +391,7 @@ class TeamsController extends AppController
                 ->where(['name' => $team->district])
                 ->first();
             if ($district) {
-                $team->football_district_id = $district->id;
+                $team->basketball_district_id = $district->id;
             }
         }
         
@@ -353,7 +400,7 @@ class TeamsController extends AppController
                 ->where(['name' => $team->organisation])
                 ->first();
             if ($organisation) {
-                $team->football_organisation_id = $organisation->id;
+                $team->basketball_organisation_id = $organisation->id;
             }
         }
         
@@ -463,11 +510,8 @@ class TeamsController extends AppController
      */
     private function generatePdfHtml($team): string
     {
-        $logoPath = WWW_ROOT . 'img' . DS . 'logo.webp';
+        // Skip logo processing to avoid GD extension requirement
         $logoData = '';
-        if (file_exists($logoPath)) {
-            $logoData = 'data:image/webp;base64,' . base64_encode(file_get_contents($logoPath));
-        }
         
         $html = '
 <!DOCTYPE html>
@@ -718,5 +762,1871 @@ class TeamsController extends AppController
 </html>';
         
         return $html;
+    }
+    
+    /**
+     * Add Basketball team page
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function addBasketball()
+    {
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $team = $basketballTeamsTable->newEmptyEntity();
+        
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            
+            // Set basketball-specific defaults
+            $data['sport'] = 'Basketball';
+            $data['user_id'] = $this->Authentication->getIdentity() ? $this->Authentication->getIdentity()->get('id') : null;
+            
+            if (!$data['user_id']) {
+                $this->Flash->error(__('Vous devez être connecté pour inscrire une équipe.'));
+                return $this->redirect(['controller' => 'Sports', 'action' => 'basketball']);
+            }
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['basketball_category_id'])) {
+                $category = $basketballTeamsTable->FootballCategories->get($data['basketball_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['basketball_district_id'])) {
+                $district = $basketballTeamsTable->FootballDistricts->get($data['basketball_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['basketball_organisation_id'])) {
+                $organisation = $basketballTeamsTable->FootballOrganisations->get($data['basketball_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Handle file uploads
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Process file uploads for responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur same as responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                // Process file uploads for entraineur
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Ensure joueurs are properly indexed and map to basketball_teams_joueurs
+            if (!empty($data['joueurs'])) {
+                $data['basketball_teams_joueurs'] = array_values($data['joueurs']);
+                unset($data['joueurs']); // Remove the original to avoid confusion
+            }
+            
+            $team = $basketballTeamsTable->patchEntity($team, $data, [
+                'associated' => ['BasketballTeamsJoueurs']
+            ]);
+            
+            if ($basketballTeamsTable->save($team, ['associated' => ['BasketballTeamsJoueurs']])) {
+                $this->Flash->success(__('Votre équipe de basketball a été inscrite avec succès.'));
+                return $this->redirect(['action' => 'basketballTeamView', $team->id]);
+            } else {
+                $this->Flash->error(__('L\'inscription n\'a pas pu être enregistrée. Veuillez réessayer.'));
+            }
+        }
+        
+        // Load basketball categories, districts and organizations
+        $basketballCategories = [
+            '-15' => '-15 ans',
+            '-17' => '-17 ans',
+            '-21' => '-21 ans', 
+            '+21' => '+21 ans'
+        ];
+        
+        $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $basketballTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('team', 'user', 'basketballCategories', 'footballDistricts', 'footballOrganisations'));
+    }
+    
+    /**
+     * Basketball Team View method
+     *
+     * @param string|null $id Basketball Team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function basketballTeamView($id = null)
+    {
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $team = $basketballTeamsTable->get($id, [
+            'contain' => ['Users', 'BasketballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to view this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de voir cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        $this->set(compact('team'));
+    }
+    
+    /**
+     * Delete Basketball team method
+     *
+     * @param string|null $id Basketball Team id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function deleteBasketball($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $team = $basketballTeamsTable->get($id, [
+            'contain' => ['BasketballTeamsJoueurs']
+        ]);
+        
+        // Check if user has permission to delete this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de supprimer cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        try {
+            if ($basketballTeamsTable->delete($team)) {
+                $this->Flash->success(__('L\'équipe de basketball "{0}" a été supprimée avec succès.', $team->nom_equipe));
+            } else {
+                $this->Flash->error(__('L\'équipe n\'a pas pu être supprimée. Veuillez réessayer.'));
+            }
+        } catch (\Exception $e) {
+            $this->Flash->error(__('Une erreur est survenue lors de la suppression : {0}', $e->getMessage()));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+    
+    /**
+     * Download Basketball PDF method
+     *
+     * @param string|null $id Basketball Team id.
+     * @return \Cake\Http\Response|null
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function downloadBasketballPdf($id = null)
+    {
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $team = $basketballTeamsTable->get($id, [
+            'contain' => ['Users', 'BasketballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to download this PDF
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de télécharger ce PDF.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        // Generate PDF with DomPDF
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        // Create HTML for PDF
+        $html = $this->generateBasketballPdfHtml($team);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Filename
+        $filename = sprintf('inscription_basketball_%s_%s.pdf', 
+            $team->reference_inscription ?? 'BBTEMP',
+            \Cake\Utility\Text::slug($team->nom_equipe)
+        );
+        
+        // Send PDF to browser
+        $this->response = $this->response->withType('pdf');
+        $this->response = $this->response->withDownload($filename);
+        $this->response = $this->response->withStringBody($dompdf->output());
+        
+        return $this->response;
+    }
+    
+    /**
+     * Generate HTML for Basketball PDF
+     *
+     * @param \App\Model\Entity\BasketballTeam $team
+     * @return string
+     */
+    private function generateBasketballPdfHtml($team): string
+    {
+        // Skip logo processing to avoid GD extension requirement
+        $logoData = '';
+        
+        $html = '
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 20mm; }
+        body { 
+            font-family: DejaVu Sans, sans-serif; 
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #FF6B35;
+        }
+        .logo {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #FF6B35;
+            margin: 10px 0;
+            font-size: 24pt;
+        }
+        .reference {
+            background: #FFF5F0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+        h2 {
+            color: #FF6B35;
+            border-bottom: 1px solid #E0E0E0;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 16pt;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            margin-bottom: 8px;
+            display: table;
+            width: 100%;
+        }
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            font-weight: bold;
+            color: #555;
+            vertical-align: top;
+        }
+        .info-value {
+            display: table-cell;
+            width: 65%;
+            color: #333;
+        }
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .players-table th {
+            background: #FF6B35;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 9pt;
+        }
+        .players-table td {
+            border-bottom: 1px solid #E0E0E0;
+            padding: 8px;
+            font-size: 9pt;
+        }
+        .players-table tr:nth-child(even) {
+            background: #FFF5F0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        .badge-basketball {
+            background: #FF6B35;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">';
+        
+        if ($logoData) {
+            $html .= '<img src="' . $logoData . '" class="logo" alt="Logo">';
+        }
+        
+        $html .= '
+        <h1>Tournoi de Basketball</h1>
+        <p>Fiche d\'inscription</p>
+    </div>
+    
+    <div class="reference">
+        Référence : ' . h($team->reference_inscription ?? 'En cours de génération') . '
+    </div>
+    
+    <h2>Informations de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom de l\'équipe :</div>
+            <div class="info-value">' . h($team->nom_equipe) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Catégorie :</div>
+            <div class="info-value">' . h($team->categorie) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Genre :</div>
+            <div class="info-value">' . h($team->genre) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Type de basketball :</div>
+            <div class="info-value"><span class="badge badge-basketball">' . h($team->type_basketball) . '</span></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">District :</div>
+            <div class="info-value">' . h($team->district) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Organisation :</div>
+            <div class="info-value">' . h($team->organisation) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Adresse :</div>
+            <div class="info-value">' . nl2br(h($team->adresse)) . '</div>
+        </div>
+    </div>
+    
+    <h2>Responsable de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->responsable_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->responsable_date_naissance ? h($team->responsable_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->responsable_tel) . '</div>
+        </div>';
+        
+        if (!empty($team->responsable_whatsapp)) {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->responsable_whatsapp) . '</div>
+        </div>';
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Entraîneur</h2>
+    <div class="info-section">';
+        
+        if ($team->entraineur_same_as_responsable) {
+            $html .= '<p><em>L\'entraîneur est le même que le responsable</em></p>';
+        } else {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->entraineur_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->entraineur_date_naissance ? h($team->entraineur_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->entraineur_tel) . '</div>
+        </div>';
+            
+            if (!empty($team->entraineur_whatsapp)) {
+                $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->entraineur_whatsapp) . '</div>
+        </div>';
+            }
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Liste des joueurs (' . count($team->basketball_teams_joueurs) . ')</h2>
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 35%">Nom complet</th>
+                <th style="width: 20%">Date de naissance</th>
+                <th style="width: 25%">Identifiant</th>
+                <th style="width: 15%">Taille</th>
+            </tr>
+        </thead>
+        <tbody>';
+        
+        foreach ($team->basketball_teams_joueurs as $index => $joueur) {
+            $html .= '
+            <tr>
+                <td>' . ($index + 1) . '</td>
+                <td>' . h($joueur->nom_complet) . '</td>
+                <td>' . ($joueur->date_naissance ? h($joueur->date_naissance->format('d/m/Y')) : '') . '</td>
+                <td>' . h($joueur->identifiant) . '</td>
+                <td>' . h($joueur->taille_vestimentaire) . '</td>
+            </tr>';
+        }
+        
+        $html .= '
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Document généré le ' . date('d/m/Y à H:i') . '</p>
+        <p>Ce document constitue votre preuve d\'inscription au tournoi de basketball</p>
+    </div>
+</body>
+</html>';
+        
+        return $html;
+    }
+
+    /**
+     * Edit Basketball team method
+     *
+     * @param string|null $id Basketball team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editBasketball($id = null)
+    {
+        $basketballTeamsTable = $this->fetchTable('BasketballTeams');
+        $team = $basketballTeamsTable->get($id, [
+            'contain' => ['BasketballTeamsJoueurs']
+        ]);
+        
+        // Vérifier que l'utilisateur a le droit de modifier cette équipe
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de modifier cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['basketball_category_id'])) {
+                $category = $basketballTeamsTable->FootballCategories->get($data['basketball_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['basketball_district_id'])) {
+                $district = $basketballTeamsTable->FootballDistricts->get($data['basketball_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['basketball_organisation_id'])) {
+                $organisation = $basketballTeamsTable->FootballOrganisations->get($data['basketball_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer le cas où l'entraîneur est le même que le responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur file uploads
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Gérer les joueurs de basketball
+            if (!empty($data['joueurs'])) {
+                // Filtrer les joueurs supprimés
+                $data['basketball_teams_joueurs'] = array_values(array_filter($data['joueurs'], function($joueur) {
+                    return !empty($joueur['nom_complet']);
+                }));
+                unset($data['joueurs']); // Remove the original to avoid confusion
+                
+                // Valider le nombre de joueurs selon le type de basketball
+                $typeBasketball = $data['type_basketball'] ?? $team->type_basketball ?? '';
+                $playerCount = count($data['basketball_teams_joueurs']);
+                $limits = ['3x3' => ['min' => 3, 'max' => 4], '5x5' => ['min' => 5, 'max' => 8]];
+                
+                if (isset($limits[$typeBasketball])) {
+                    $min = $limits[$typeBasketball]['min'];
+                    $max = $limits[$typeBasketball]['max'];
+                    
+                    if ($playerCount < $min || $playerCount > $max) {
+                        $this->Flash->error(sprintf(
+                            'Le nombre de joueurs doit être entre %d et %d pour le type %s (actuellement %d joueurs)',
+                            $min, $max, $typeBasketball, $playerCount
+                        ));
+                        return $this->redirect(['action' => 'editBasketball', $id]);
+                    }
+                }
+            }
+            
+            $team = $basketballTeamsTable->patchEntity($team, $data, [
+                'associated' => ['BasketballTeamsJoueurs']
+            ]);
+            
+            if ($basketballTeamsTable->save($team, ['associated' => ['BasketballTeamsJoueurs']])) {
+                $this->Flash->success(__('L\'équipe de basketball a été mise à jour avec succès.'));
+                return $this->redirect(['action' => 'basketballTeamView', $id]);
+            }
+            
+            // Afficher les erreurs
+            $errors = $team->getErrors();
+            $errorMessages = [];
+            
+            foreach ($errors as $field => $fieldErrors) {
+                foreach ($fieldErrors as $error) {
+                    $errorMessages[] = $field . ': ' . $error;
+                }
+            }
+            
+            if (!empty($errorMessages)) {
+                $this->Flash->error(__('Erreurs de validation: ') . implode(', ', $errorMessages));
+            } else {
+                $this->Flash->error(__('L\'équipe n\'a pas pu être mise à jour. Veuillez réessayer.'));
+            }
+        }
+        
+        // Charger les listes pour les dropdowns
+        $basketballCategories = [
+            '-15' => '-15 ans',
+            '-17' => '-17 ans',
+            '-21' => '-21 ans', 
+            '+21' => '+21 ans'
+        ];
+        
+        $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $basketballTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        // Trouver les IDs correspondants aux valeurs texte stockées
+        if (!empty($team->categorie)) {
+            $category = $basketballTeamsTable->FootballCategories->find()
+                ->where(['name' => $team->categorie])
+                ->first();
+            if ($category) {
+                $team->basketball_category_id = $category->id;
+            }
+        }
+        
+        if (!empty($team->district)) {
+            $district = $basketballTeamsTable->FootballDistricts->find()
+                ->where(['name' => $team->district])
+                ->first();
+            if ($district) {
+                $team->basketball_district_id = $district->id;
+            }
+        }
+        
+        if (!empty($team->organisation)) {
+            $organisation = $basketballTeamsTable->FootballOrganisations->find()
+                ->where(['name' => $team->organisation])
+                ->first();
+            if ($organisation) {
+                $team->basketball_organisation_id = $organisation->id;
+            }
+        }
+        
+        // Map basketball_teams_joueurs to joueurs for form compatibility
+        if (!empty($team->basketball_teams_joueurs)) {
+            $team->joueurs = $team->basketball_teams_joueurs;
+        }
+        
+        $this->set(compact('team', 'basketballCategories', 'footballDistricts', 'footballOrganisations'));
+    }
+
+    /**
+     * Add Handball team page
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function addHandball()
+    {
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $team = $handballTeamsTable->newEmptyEntity();
+        
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            
+            // Debug: Log the incoming data
+            \Cake\Log\Log::debug('Handball form data: ' . json_encode($data));
+            
+            // Set handball-specific defaults
+            $data['user_id'] = $this->Authentication->getIdentity() ? $this->Authentication->getIdentity()->get('id') : null;
+            
+            if (!$data['user_id']) {
+                $this->Flash->error(__('Vous devez être connecté pour inscrire une équipe.'));
+                return $this->redirect(['controller' => 'Sports', 'action' => 'handball']);
+            }
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['handball_category_id'])) {
+                $category = $handballTeamsTable->FootballCategories->get($data['handball_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['handball_district_id'])) {
+                $district = $handballTeamsTable->FootballDistricts->get($data['handball_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['handball_organisation_id'])) {
+                $organisation = $handballTeamsTable->FootballOrganisations->get($data['handball_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur same as responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                // Process file uploads for entraineur
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Ensure joueurs are properly indexed and map to handball_teams_joueurs
+            if (!empty($data['joueurs'])) {
+                $playersData = [];
+                foreach ($data['joueurs'] as $joueurData) {
+                    // Clean up player data and ensure it's properly structured
+                    $playerData = [
+                        'nom_complet' => $joueurData['nom_complet'] ?? '',
+                        'date_naissance' => $joueurData['date_naissance'] ?? '',
+                        'identifiant' => $joueurData['identifiant'] ?? '',
+                        'taille_vestimentaire' => $joueurData['taille_vestimentaire'] ?? ''
+                    ];
+                    $playersData[] = $playerData;
+                }
+                $data['handball_teams_joueurs'] = $playersData;
+                unset($data['joueurs']); // Remove the original to avoid confusion
+            }
+            
+            $team = $handballTeamsTable->patchEntity($team, $data, [
+                'associated' => ['HandballTeamsJoueurs']
+            ]);
+            
+            if ($handballTeamsTable->save($team, ['associated' => ['HandballTeamsJoueurs']])) {
+                $this->Flash->success(__('Votre équipe de handball a été inscrite avec succès.'));
+                return $this->redirect(['action' => 'handballTeamView', $team->id]);
+            } else {
+                // Collect and display validation errors
+                $errors = $team->getErrors();
+                $errorMessages = [];
+                
+                foreach ($errors as $field => $fieldErrors) {
+                    if (is_array($fieldErrors)) {
+                        foreach ($fieldErrors as $rule => $message) {
+                            if (is_string($message)) {
+                                $errorMessages[] = "• $field: $message";
+                            }
+                        }
+                    } else {
+                        $errorMessages[] = "• $field: $fieldErrors";
+                    }
+                }
+                
+                // Also check for player validation errors
+                if (!empty($team->handball_teams_joueurs)) {
+                    foreach ($team->handball_teams_joueurs as $index => $joueur) {
+                        if ($joueur->hasErrors()) {
+                            $joueurErrors = $joueur->getErrors();
+                            foreach ($joueurErrors as $field => $fieldErrors) {
+                                if (is_array($fieldErrors)) {
+                                    foreach ($fieldErrors as $rule => $message) {
+                                        $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $message";
+                                    }
+                                } else {
+                                    $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $fieldErrors";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (!empty($errorMessages)) {
+                    $fullErrorMessage = "Erreurs de validation :\n" . implode("\n", $errorMessages);
+                    $this->Flash->error(__($fullErrorMessage));
+                } else {
+                    $this->Flash->error(__('L\'inscription n\'a pas pu être enregistrée. Veuillez vérifier que tous les champs requis sont remplis.'));
+                }
+            }
+        }
+        
+        // Load dropdown options
+        $handballCategories = [
+            '-15' => '-15 ans',
+            '-17' => '-17 ans',
+            '-19' => '-19 ans'
+        ];
+        
+        $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $handballTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('team', 'handballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+    }
+
+    /**
+     * View Handball team method
+     *
+     * @param string|null $id Handball team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function handballTeamView($id = null)
+    {
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $team = $handballTeamsTable->get($id, [
+            'contain' => ['Users', 'HandballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to view this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de voir cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->set(compact('team'));
+    }
+
+    /**
+     * Edit Handball team method
+     *
+     * @param string|null $id Handball team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editHandball($id = null)
+    {
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $team = $handballTeamsTable->get($id, [
+            'contain' => ['HandballTeamsJoueurs']
+        ]);
+        
+        // Vérifier que l'utilisateur a le droit de modifier cette équipe
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de modifier cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['handball_category_id'])) {
+                $category = $handballTeamsTable->FootballCategories->get($data['handball_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['handball_district_id'])) {
+                $district = $handballTeamsTable->FootballDistricts->get($data['handball_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['handball_organisation_id'])) {
+                $organisation = $handballTeamsTable->FootballOrganisations->get($data['handball_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer le cas où l'entraîneur est le même que le responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur file uploads
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Gérer les joueurs de handball
+            if (!empty($data['joueurs'])) {
+                // Filtrer les joueurs supprimés
+                $data['handball_teams_joueurs'] = array_values(array_filter($data['joueurs'], function($joueur) {
+                    return !empty($joueur['nom_complet']);
+                }));
+                unset($data['joueurs']); // Remove the original to avoid confusion
+                
+                // Valider le nombre de joueurs selon le type de handball
+                $typeHandball = $data['type_handball'] ?? $team->type_handball ?? '';
+                $playerCount = count($data['handball_teams_joueurs']);
+                $limits = ['7x7' => ['min' => 7, 'max' => 12], '5x5' => ['min' => 5, 'max' => 8]];
+                
+                if (isset($limits[$typeHandball])) {
+                    $min = $limits[$typeHandball]['min'];
+                    $max = $limits[$typeHandball]['max'];
+                    
+                    if ($playerCount < $min || $playerCount > $max) {
+                        $this->Flash->error(sprintf(
+                            'Le nombre de joueurs doit être entre %d et %d pour le type %s (actuellement %d joueurs)',
+                            $min, $max, $typeHandball, $playerCount
+                        ));
+                        return $this->redirect(['action' => 'editHandball', $id]);
+                    }
+                }
+            }
+            
+            $team = $handballTeamsTable->patchEntity($team, $data, [
+                'associated' => ['HandballTeamsJoueurs']
+            ]);
+            
+            if ($handballTeamsTable->save($team, ['associated' => ['HandballTeamsJoueurs']])) {
+                $this->Flash->success(__('L\'équipe de handball a été mise à jour avec succès.'));
+                return $this->redirect(['action' => 'handballTeamView', $id]);
+            }
+            
+            // Afficher les erreurs
+            $errors = $team->getErrors();
+            $errorMessages = [];
+            
+            foreach ($errors as $field => $fieldErrors) {
+                foreach ($fieldErrors as $error) {
+                    $errorMessages[] = $field . ': ' . $error;
+                }
+            }
+            
+            if (!empty($errorMessages)) {
+                $this->Flash->error(__('Erreurs de validation: ') . implode(', ', $errorMessages));
+            } else {
+                $this->Flash->error(__('L\'équipe n\'a pas pu être mise à jour. Veuillez réessayer.'));
+            }
+        }
+        
+        // Charger les listes pour les dropdowns
+        $handballCategories = [
+            '-15' => '-15 ans',
+            '-17' => '-17 ans',
+            '-19' => '-19 ans'
+        ];
+        
+        $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $handballTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        // Trouver les IDs correspondants aux valeurs texte stockées
+        if (!empty($team->categorie)) {
+            $category = $handballTeamsTable->FootballCategories->find()
+                ->where(['name' => $team->categorie])
+                ->first();
+            if ($category) {
+                $team->handball_category_id = $category->id;
+            }
+        }
+        
+        if (!empty($team->district)) {
+            $district = $handballTeamsTable->FootballDistricts->find()
+                ->where(['name' => $team->district])
+                ->first();
+            if ($district) {
+                $team->handball_district_id = $district->id;
+            }
+        }
+        
+        if (!empty($team->organisation)) {
+            $organisation = $handballTeamsTable->FootballOrganisations->find()
+                ->where(['name' => $team->organisation])
+                ->first();
+            if ($organisation) {
+                $team->handball_organisation_id = $organisation->id;
+            }
+        }
+        
+        // Map handball_teams_joueurs to joueurs for form compatibility
+        if (!empty($team->handball_teams_joueurs)) {
+            $team->joueurs = $team->handball_teams_joueurs;
+        }
+        
+        $this->set(compact('team', 'handballCategories', 'footballDistricts', 'footballOrganisations'));
+    }
+
+    /**
+     * Delete Handball team method
+     *
+     * @param string|null $id Handball team id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function deleteHandball($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $team = $handballTeamsTable->get($id, [
+            'contain' => ['HandballTeamsJoueurs']
+        ]);
+        
+        // Vérifier que l'utilisateur a le droit de supprimer cette équipe
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de supprimer cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        try {
+            if ($handballTeamsTable->delete($team)) {
+                $this->Flash->success(__('L\'équipe de handball "{0}" a été supprimée avec succès.', $team->nom_equipe));
+            } else {
+                // Récupérer les erreurs de validation
+                $errors = $team->getErrors();
+                if (!empty($errors)) {
+                    $errorMessages = [];
+                    foreach ($errors as $field => $fieldErrors) {
+                        foreach ($fieldErrors as $error) {
+                            $errorMessages[] = $error;
+                        }
+                    }
+                    $this->Flash->error(__('Impossible de supprimer l\'équipe : {0}', implode(', ', $errorMessages)));
+                } else {
+                    $this->Flash->error(__('L\'équipe n\'a pas pu être supprimée. Veuillez réessayer.'));
+                }
+            }
+        } catch (\Exception $e) {
+            $this->Flash->error(__('Une erreur est survenue lors de la suppression : {0}', $e->getMessage()));
+        }
+        
+        return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Download Handball PDF method
+     *
+     * @param string|null $id Handball team id.
+     * @return \Cake\Http\Response|null
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function downloadHandballPdf($id = null)
+    {
+        $handballTeamsTable = $this->fetchTable('HandballTeams');
+        $team = $handballTeamsTable->get($id, [
+            'contain' => ['Users', 'HandballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Vérifier que l'utilisateur a le droit de télécharger ce PDF
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de télécharger ce PDF.'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
+        // Générer le PDF avec DomPDF
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        // Créer le HTML pour le PDF
+        $html = $this->generateHandballPdfHtml($team);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Nom du fichier
+        $filename = sprintf('inscription_%s_%s.pdf', 
+            $team->reference_inscription ?? 'HBTEMP',
+            \Cake\Utility\Text::slug($team->nom_equipe)
+        );
+        
+        // Envoyer le PDF au navigateur
+        $this->response = $this->response->withType('pdf');
+        $this->response = $this->response->withDownload($filename);
+        $this->response = $this->response->withStringBody($dompdf->output());
+        
+        return $this->response;
+    }
+
+    /**
+     * Generate HTML for Handball PDF
+     *
+     * @param \App\Model\Entity\HandballTeam $team
+     * @return string
+     */
+    private function generateHandballPdfHtml($team): string
+    {
+        // Skip logo processing to avoid GD extension requirement
+        $logoData = '';
+        
+        $html = '
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 20mm; }
+        body { 
+            font-family: DejaVu Sans, sans-serif; 
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2C3E50;
+        }
+        .logo {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #2C3E50;
+            margin: 10px 0;
+            font-size: 24pt;
+        }
+        .reference {
+            background: #FFE8DC;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            color: #D2691E;
+        }
+        h2 {
+            color: #34495E;
+            border-bottom: 1px solid #E0E0E0;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 16pt;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            margin-bottom: 8px;
+            display: table;
+            width: 100%;
+        }
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            font-weight: bold;
+            color: #555;
+            vertical-align: top;
+        }
+        .info-value {
+            display: table-cell;
+            width: 65%;
+            color: #333;
+        }
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .players-table th {
+            background: #D2691E;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 9pt;
+        }
+        .players-table td {
+            border-bottom: 1px solid #E0E0E0;
+            padding: 8px;
+            font-size: 9pt;
+        }
+        .players-table tr:nth-child(even) {
+            background: #F8F9FA;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        .badge-handball {
+            background: #D2691E;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">';
+        
+        if ($logoData) {
+            $html .= '<img src="' . $logoData . '" class="logo" alt="Logo">';
+        }
+        
+        $html .= '
+        <h1>Tournoi de Handball</h1>
+        <p>Fiche d\'inscription</p>
+    </div>
+    
+    <div class="reference">
+        Référence : ' . h($team->reference_inscription ?? 'En cours de génération') . '
+    </div>
+    
+    <h2>Informations de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom de l\'équipe :</div>
+            <div class="info-value">' . h($team->nom_equipe) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Catégorie :</div>
+            <div class="info-value">' . h($team->categorie) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Genre :</div>
+            <div class="info-value">' . h($team->genre) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Type de handball :</div>
+            <div class="info-value"><span class="badge badge-handball">' . h($team->type_handball) . '</span></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">District :</div>
+            <div class="info-value">' . h($team->district) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Organisation :</div>
+            <div class="info-value">' . h($team->organisation) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Adresse :</div>
+            <div class="info-value">' . nl2br(h($team->adresse)) . '</div>
+        </div>
+    </div>
+    
+    <h2>Responsable de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->responsable_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->responsable_date_naissance ? h($team->responsable_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->responsable_tel) . '</div>
+        </div>';
+        
+        if (!empty($team->responsable_whatsapp)) {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->responsable_whatsapp) . '</div>
+        </div>';
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Entraîneur</h2>
+    <div class="info-section">';
+        
+        if ($team->entraineur_same_as_responsable) {
+            $html .= '<p><em>L\'entraîneur est le même que le responsable</em></p>';
+        } else {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->entraineur_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->entraineur_date_naissance ? h($team->entraineur_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->entraineur_tel) . '</div>
+        </div>';
+            
+            if (!empty($team->entraineur_whatsapp)) {
+                $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->entraineur_whatsapp) . '</div>
+        </div>';
+            }
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Liste des joueurs (' . count($team->handball_teams_joueurs) . ')</h2>
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 35%">Nom complet</th>
+                <th style="width: 20%">Date de naissance</th>
+                <th style="width: 25%">Identifiant</th>
+                <th style="width: 15%">Taille</th>
+            </tr>
+        </thead>
+        <tbody>';
+        
+        foreach ($team->handball_teams_joueurs as $index => $joueur) {
+            $html .= '
+            <tr>
+                <td>' . ($index + 1) . '</td>
+                <td>' . h($joueur->nom_complet) . '</td>
+                <td>' . ($joueur->date_naissance ? h($joueur->date_naissance->format('d/m/Y')) : '') . '</td>
+                <td>' . h($joueur->identifiant) . '</td>
+                <td>' . h($joueur->taille_vestimentaire) . '</td>
+            </tr>';
+        }
+        
+        $html .= '
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Document généré le ' . date('d/m/Y à H:i') . '</p>
+        <p>Ce document constitue votre preuve d\'inscription au tournoi de handball</p>
+    </div>
+</body>
+</html>';
+        
+        return $html;
+    }
+    
+    /**
+     * Volleyball team registration method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     */
+    public function addVolleyball()
+    {
+        $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
+        $team = $volleyballTeamsTable->newEmptyEntity();
+        
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            
+            // Debug: Log the incoming data
+            \Cake\Log\Log::debug('Volleyball form data: ' . json_encode($data));
+            
+            // Set volleyball-specific defaults
+            $data['user_id'] = $this->Authentication->getIdentity() ? $this->Authentication->getIdentity()->get('id') : null;
+            
+            if (!$data['user_id']) {
+                $this->Flash->error(__('Vous devez être connecté pour inscrire une équipe.'));
+                return $this->redirect(['controller' => 'Sports', 'action' => 'volleyball']);
+            }
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['volleyball_category_id'])) {
+                $category = $volleyballTeamsTable->FootballCategories->get($data['volleyball_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['volleyball_district_id'])) {
+                $district = $volleyballTeamsTable->FootballDistricts->get($data['volleyball_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['volleyball_organisation_id'])) {
+                $organisation = $volleyballTeamsTable->FootballOrganisations->get($data['volleyball_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur same as responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                // Process file uploads for entraineur
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Ensure joueurs are properly indexed and map to volleyball_teams_joueurs
+            if (!empty($data['joueurs'])) {
+                $playersData = [];
+                foreach ($data['joueurs'] as $joueurData) {
+                    // Clean up player data and ensure it's properly structured
+                    $playerData = [
+                        'nom_complet' => $joueurData['nom_complet'] ?? '',
+                        'date_naissance' => $joueurData['date_naissance'] ?? '',
+                        'identifiant' => $joueurData['identifiant'] ?? '',
+                        'taille_vestimentaire' => $joueurData['taille_vestimentaire'] ?? ''
+                    ];
+                    $playersData[] = $playerData;
+                }
+                $data['volleyball_teams_joueurs'] = $playersData;
+                unset($data['joueurs']); // Remove the original to avoid confusion
+            }
+            
+            $team = $volleyballTeamsTable->patchEntity($team, $data, [
+                'associated' => ['VolleyballTeamsJoueurs']
+            ]);
+            
+            if ($volleyballTeamsTable->save($team, ['associated' => ['VolleyballTeamsJoueurs']])) {
+                $this->Flash->success(__('Votre équipe de volleyball a été inscrite avec succès.'));
+                return $this->redirect(['action' => 'volleyballTeamView', $team->id]);
+            } else {
+                // Collect and display validation errors
+                $errors = $team->getErrors();
+                $errorMessages = [];
+                
+                foreach ($errors as $field => $fieldErrors) {
+                    if (is_array($fieldErrors)) {
+                        foreach ($fieldErrors as $rule => $message) {
+                            if (is_string($message)) {
+                                $errorMessages[] = "• $field: $message";
+                            }
+                        }
+                    } else {
+                        $errorMessages[] = "• $field: $fieldErrors";
+                    }
+                }
+                
+                // Also check for player validation errors
+                if (!empty($team->volleyball_teams_joueurs)) {
+                    foreach ($team->volleyball_teams_joueurs as $index => $joueur) {
+                        if ($joueur->hasErrors()) {
+                            $joueurErrors = $joueur->getErrors();
+                            foreach ($joueurErrors as $field => $fieldErrors) {
+                                if (is_array($fieldErrors)) {
+                                    foreach ($fieldErrors as $rule => $message) {
+                                        $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $message";
+                                    }
+                                } else {
+                                    $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $fieldErrors";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (!empty($errorMessages)) {
+                    $fullErrorMessage = "Erreurs de validation :\n" . implode("\n", $errorMessages);
+                    $this->Flash->error(__($fullErrorMessage));
+                } else {
+                    $this->Flash->error(__('L\'inscription n\'a pas pu être enregistrée. Veuillez vérifier que tous les champs requis sont remplis.'));
+                }
+            }
+        }
+        
+        // Load dropdown options
+        $volleyballCategories = [
+            '-15' => '-15 ans',
+            '-17' => '-17 ans',
+            '-19' => '-19 ans'
+        ];
+        
+        $footballDistricts = $volleyballTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $volleyballTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('team', 'volleyballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+    }
+
+    /**
+     * View Volleyball team method
+     *
+     * @param string|null $id Volleyball team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function volleyballTeamView($id = null)
+    {
+        $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
+        $team = $volleyballTeamsTable->get($id, [
+            'contain' => ['Users', 'VolleyballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to view this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de voir cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->set(compact('team'));
+    }
+    
+    /**
+     * Beach volleyball team registration method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     */
+    public function addBeachvolley()
+    {
+        $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
+        $team = $beachvolleyTeamsTable->newEmptyEntity();
+        
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            
+            // Debug: Log the incoming data
+            \Cake\Log\Log::debug('Beach volleyball form data: ' . json_encode($data));
+            
+            // Set beach volleyball-specific defaults
+            $data['user_id'] = $this->Authentication->getIdentity() ? $this->Authentication->getIdentity()->get('id') : null;
+            
+            if (!$data['user_id']) {
+                $this->Flash->error(__('Vous devez être connecté pour inscrire une équipe.'));
+                return $this->redirect(['controller' => 'Sports', 'action' => 'beachvolley']);
+            }
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['football_category_id'])) {
+                $category = $beachvolleyTeamsTable->FootballCategories->get($data['football_category_id']);
+                $data['categorie'] = $category->name;
+            }
+            
+            if (!empty($data['football_district_id'])) {
+                $district = $beachvolleyTeamsTable->FootballDistricts->get($data['football_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['football_organisation_id'])) {
+                $organisation = $beachvolleyTeamsTable->FootballOrganisations->get($data['football_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Handle entraineur same as responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                // Process file uploads for entraineur
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Ensure joueurs are properly indexed and map to beachvolley_teams_joueurs
+            if (!empty($data['joueurs'])) {
+                $playersData = [];
+                foreach ($data['joueurs'] as $joueurData) {
+                    // Clean up player data and ensure it's properly structured
+                    $playerData = [
+                        'nom_complet' => $joueurData['nom_complet'] ?? '',
+                        'date_naissance' => $joueurData['date_naissance'] ?? '',
+                        'identifiant' => $joueurData['identifiant'] ?? '',
+                        'taille_vestimentaire' => $joueurData['taille_vestimentaire'] ?? ''
+                    ];
+                    $playersData[] = $playerData;
+                }
+                $data['beachvolley_teams_joueurs'] = $playersData;
+                unset($data['joueurs']); // Remove the original to avoid confusion
+            }
+            
+            $team = $beachvolleyTeamsTable->patchEntity($team, $data, [
+                'associated' => ['BeachvolleyTeamsJoueurs']
+            ]);
+            
+            if ($beachvolleyTeamsTable->save($team, ['associated' => ['BeachvolleyTeamsJoueurs']])) {
+                $this->Flash->success(__('Votre équipe de beach volleyball a été inscrite avec succès.'));
+                return $this->redirect(['action' => 'beachvolleyTeamView', $team->id]);
+            } else {
+                // Collect and display validation errors
+                $errors = $team->getErrors();
+                $errorMessages = [];
+                
+                foreach ($errors as $field => $fieldErrors) {
+                    if (is_array($fieldErrors)) {
+                        foreach ($fieldErrors as $rule => $message) {
+                            if (is_string($message)) {
+                                $errorMessages[] = "• $field: $message";
+                            }
+                        }
+                    } else {
+                        $errorMessages[] = "• $field: $fieldErrors";
+                    }
+                }
+                
+                // Also check for player validation errors
+                if (!empty($team->beachvolley_teams_joueurs)) {
+                    foreach ($team->beachvolley_teams_joueurs as $index => $joueur) {
+                        if ($joueur->hasErrors()) {
+                            $joueurErrors = $joueur->getErrors();
+                            foreach ($joueurErrors as $field => $fieldErrors) {
+                                if (is_array($fieldErrors)) {
+                                    foreach ($fieldErrors as $rule => $message) {
+                                        $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $message";
+                                    }
+                                } else {
+                                    $errorMessages[] = "• Joueur " . ($index + 1) . " - $field: $fieldErrors";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (!empty($errorMessages)) {
+                    $fullErrorMessage = "Erreurs de validation :\n" . implode("\n", $errorMessages);
+                    $this->Flash->error(__($fullErrorMessage));
+                } else {
+                    $this->Flash->error(__('L\'inscription n\'a pas pu être enregistrée. Veuillez vérifier que tous les champs requis sont remplis.'));
+                }
+            }
+        }
+        
+        // Load dropdown options
+        $beachvolleyCategories = [
+            '-17' => '-17 ans',
+            '-21' => '-21 ans',
+            '+21' => '+21 ans'
+        ];
+        
+        $footballDistricts = $beachvolleyTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $beachvolleyTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('team', 'beachvolleyCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+    }
+
+    /**
+     * View Beach volleyball team method
+     *
+     * @param string|null $id Beach volleyball team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function beachvolleyTeamView($id = null)
+    {
+        $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
+        $team = $beachvolleyTeamsTable->get($id, [
+            'contain' => ['Users', 'BeachvolleyTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to view this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de voir cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->set(compact('team'));
     }
 }

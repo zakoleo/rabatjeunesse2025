@@ -1,0 +1,314 @@
+/* Enhanced Admin Users Table Styling - Maximum Specificity */
+
+/* Reset any conflicting styles from other frameworks */
+body .admin-users table,
+body .admin-users .admin-table {
+    all: unset;
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background: white !important;
+    font-size: 14px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    border: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+body .admin-users .admin-table thead {
+    display: table-header-group !important;
+}
+
+body .admin-users .admin-table tbody {
+    display: table-row-group !important;
+}
+
+body .admin-users .admin-table tr {
+    display: table-row !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+body .admin-users .admin-table th,
+body .admin-users .admin-table td {
+    all: unset;
+    display: table-cell !important;
+    padding: 18px 16px !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #e9ecef !important;
+    border-right: 1px solid rgba(0,0,0,0.05) !important;
+    vertical-align: middle !important;
+    line-height: 1.5 !important;
+    font-weight: normal !important;
+    font-size: 14px !important;
+    color: #495057 !important;
+    background: white !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    position: relative !important;
+}
+
+body .admin-users .admin-table td:last-child,
+body .admin-users .admin-table th:last-child {
+    border-right: none !important;
+}
+
+body .admin-users .admin-table th {
+    background: #f8f9fa !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    border-top: 1px solid #e9ecef !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Add top border to table */
+body .admin-users .admin-table thead tr:first-child th:first-child {
+    border-top-left-radius: 0 !important;
+}
+
+body .admin-users .admin-table thead tr:first-child th:last-child {
+    border-top-right-radius: 0 !important;
+}
+
+/* Alternating row colors */
+body .admin-users .admin-table tbody tr:nth-child(even) {
+    background-color: #fafbfc !important;
+}
+
+body .admin-users .admin-table tbody tr:nth-child(even) td {
+    background-color: #fafbfc !important;
+}
+
+body .admin-users .admin-table tbody tr:nth-child(odd) td {
+    background-color: white !important;
+}
+
+/* Enhanced hover effect */
+body .admin-users .admin-table tbody tr:hover {
+    background-color: #e3f2fd !important;
+    cursor: pointer;
+    transform: scale(1.001);
+    transition: all 0.2s ease;
+}
+
+body .admin-users .admin-table tbody tr:hover td {
+    background-color: #e3f2fd !important;
+    color: #1565c0 !important;
+}
+
+/* First and last row special styling */
+body .admin-users .admin-table tbody tr:first-child td {
+    border-top: 1px solid #e9ecef !important;
+}
+
+body .admin-users .admin-table tbody tr:last-child td {
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+/* Table cell specific styling */
+body .admin-users .admin-table td:first-child {
+    font-weight: 600 !important;
+    color: #6c757d !important;
+    width: 60px !important;
+    text-align: center !important;
+}
+
+body .admin-users .admin-table .username {
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    min-width: 150px !important;
+}
+
+body .admin-users .admin-table td:nth-child(3) {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+    font-size: 13px !important;
+    color: #495057 !important;
+    min-width: 200px !important;
+}
+
+body .admin-users .admin-table .actions {
+    text-align: center !important;
+    width: 100px !important;
+}
+
+/* Badge styling */
+body .admin-users .admin-table .admin-badge {
+    all: unset;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 4px 8px !important;
+    background: #ffc107 !important;
+    color: #856404 !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    border: 1px solid #ffeb3b !important;
+    white-space: nowrap !important;
+}
+
+body .admin-users .admin-table .status-badge {
+    all: unset;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 4px 12px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+body .admin-users .admin-table .status-active {
+    background: #d4edda !important;
+    color: #155724 !important;
+    border: 1px solid #c3e6cb !important;
+}
+
+body .admin-users .admin-table .text-muted {
+    color: #6c757d !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+}
+
+/* Container styling */
+body .admin-users .users-table-container {
+    overflow-x: auto !important;
+    background: white !important;
+    border-radius: 0 0 12px 12px !important;
+    box-shadow: none !important;
+    border: 1px solid #e9ecef !important;
+    border-top: none !important;
+}
+
+/* Table wrapper with nice borders */
+body .admin-users table,
+body .admin-users .admin-table {
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* Remove border radius from first/last cells to match container */
+body .admin-users .admin-table thead tr:first-child th:first-child {
+    border-top-left-radius: 8px !important;
+}
+
+body .admin-users .admin-table thead tr:first-child th:last-child {
+    border-top-right-radius: 8px !important;
+}
+
+body .admin-users .admin-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px !important;
+}
+
+body .admin-users .admin-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px !important;
+}
+
+body .admin-users .users-section {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    margin-bottom: 2rem !important;
+    border: 1px solid #e9ecef !important;
+}
+
+body .admin-users .section-header {
+    padding: 1.5rem 2rem !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    position: relative !important;
+}
+
+body .admin-users .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #007bff 50%, transparent 100%);
+}
+
+body .admin-users .section-header h2 {
+    margin: 0 !important;
+    color: #2c3e50 !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+/* Icon styling */
+body .admin-users .fas,
+body .admin-users .far,
+body .admin-users .fa {
+    font-family: "Font Awesome 6 Free" !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body .admin-users .admin-table th,
+    body .admin-users .admin-table td {
+        padding: 8px !important;
+        font-size: 12px !important;
+    }
+    
+    body .admin-users .admin-table .username {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+    
+    body .admin-users .admin-table td:nth-child(3) {
+        font-size: 11px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    body .admin-users .admin-table th,
+    body .admin-users .admin-table td {
+        padding: 6px !important;
+        font-size: 11px !important;
+    }
+    
+    body .admin-users .admin-table .admin-badge {
+        font-size: 9px !important;
+        padding: 2px 6px !important;
+    }
+    
+    body .admin-users .admin-table .status-badge {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+    }
+    
+    body .admin-users .section-header {
+        padding: 1rem !important;
+    }
+}
+
+/* Debug styles to ensure CSS is loading */
+body .admin-users::before {
+    content: "Enhanced Admin Users CSS Loaded";
+    display: none;
+}
