@@ -61,11 +61,15 @@ class BasketballTeamsTable extends Table
         $this->belongsTo('BasketballCategories', [
             'foreignKey' => 'basketball_category_id',
         ]);
+        // Note: Using shared Football districts/organisations tables for now
+        // TODO: Create dedicated Basketball districts/organisations tables
         $this->belongsTo('FootballDistricts', [
             'foreignKey' => 'basketball_district_id',
+            'className' => 'FootballDistricts'
         ]);
         $this->belongsTo('FootballOrganisations', [
-            'foreignKey' => 'basketball_organisation_id',
+            'foreignKey' => 'basketball_organisation_id', 
+            'className' => 'FootballOrganisations'
         ]);
         $this->hasMany('BasketballTeamsJoueurs', [
             'foreignKey' => 'basketball_team_id',
@@ -255,7 +259,7 @@ class BasketballTeamsTable extends Table
             // Si l'entité est modifiée (mais pas la référence elle-même), ajouter ou incrémenter le suffixe de version
             // On exclut les modifications importantes qui justifient un versionning
             $significantFields = [
-                'nom_equipe', 'categorie', 'genre', 'type_football', 'district', 'organisation',
+                'nom_equipe', 'categorie', 'genre', 'type_basketball', 'district', 'organisation',
                 'responsable_nom_complet', 'entraineur_nom_complet'
             ];
             

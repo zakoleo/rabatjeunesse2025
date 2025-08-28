@@ -61,11 +61,15 @@ class HandballTeamsTable extends Table
         $this->belongsTo('HandballCategories', [
             'foreignKey' => 'handball_category_id',
         ]);
+        // Note: Using shared Football districts/organisations tables for now  
+        // TODO: Create dedicated Handball districts/organisations tables
         $this->belongsTo('FootballDistricts', [
             'foreignKey' => 'handball_district_id',
+            'className' => 'FootballDistricts'
         ]);
         $this->belongsTo('FootballOrganisations', [
             'foreignKey' => 'handball_organisation_id',
+            'className' => 'FootballOrganisations' 
         ]);
         $this->hasMany('HandballTeamsJoueurs', [
             'foreignKey' => 'handball_team_id',

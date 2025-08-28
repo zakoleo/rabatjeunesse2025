@@ -950,7 +950,7 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['basketball_category_id'])) {
-                $category = $basketballTeamsTable->FootballCategories->get($data['basketball_category_id']);
+                $category = $basketballTeamsTable->BasketballCategories->get($data['basketball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -1097,7 +1097,7 @@ class TeamsController extends AppController
     {
         $basketballTeamsTable = $this->fetchTable('BasketballTeams');
         $team = $basketballTeamsTable->get($id, [
-            'contain' => ['Users', 'BasketballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'BasketballTeamsJoueurs', 'BasketballCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Check if user has permission to view this team
@@ -1156,7 +1156,7 @@ class TeamsController extends AppController
     {
         $basketballTeamsTable = $this->fetchTable('BasketballTeams');
         $team = $basketballTeamsTable->get($id, [
-            'contain' => ['Users', 'BasketballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'BasketballTeamsJoueurs', 'BasketballCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Check if user has permission to download this PDF
@@ -1483,7 +1483,7 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['basketball_category_id'])) {
-                $category = $basketballTeamsTable->FootballCategories->get($data['basketball_category_id']);
+                $category = $basketballTeamsTable->BasketballCategories->get($data['basketball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -1622,7 +1622,7 @@ class TeamsController extends AppController
         
         // Trouver les IDs correspondants aux valeurs texte stockées
         if (!empty($team->categorie)) {
-            $category = $basketballTeamsTable->FootballCategories->find()
+            $category = $basketballTeamsTable->BasketballCategories->find()
                 ->where(['name' => $team->categorie])
                 ->first();
             if ($category) {
@@ -1682,7 +1682,7 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['handball_category_id'])) {
-                $category = $handballTeamsTable->FootballCategories->get($data['handball_category_id']);
+                $category = $handballTeamsTable->HandballCategories->get($data['handball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -1879,7 +1879,7 @@ class TeamsController extends AppController
     {
         $handballTeamsTable = $this->fetchTable('HandballTeams');
         $team = $handballTeamsTable->get($id, [
-            'contain' => ['Users', 'HandballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'HandballTeamsJoueurs', 'HandballCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Check if user has permission to view this team
@@ -1918,7 +1918,7 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['handball_category_id'])) {
-                $category = $handballTeamsTable->FootballCategories->get($data['handball_category_id']);
+                $category = $handballTeamsTable->HandballCategories->get($data['handball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -2057,7 +2057,7 @@ class TeamsController extends AppController
         
         // Trouver les IDs correspondants aux valeurs texte stockées
         if (!empty($team->categorie)) {
-            $category = $handballTeamsTable->FootballCategories->find()
+            $category = $handballTeamsTable->HandballCategories->find()
                 ->where(['name' => $team->categorie])
                 ->first();
             if ($category) {
@@ -2149,7 +2149,7 @@ class TeamsController extends AppController
     {
         $handballTeamsTable = $this->fetchTable('HandballTeams');
         $team = $handballTeamsTable->get($id, [
-            'contain' => ['Users', 'HandballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'HandballTeamsJoueurs', 'HandballCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Vérifier que l'utilisateur a le droit de télécharger ce PDF
@@ -2476,7 +2476,7 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['volleyball_category_id'])) {
-                $category = $volleyballTeamsTable->FootballCategories->get($data['volleyball_category_id']);
+                $category = $volleyballTeamsTable->VolleyballCategories->get($data['volleyball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -2673,7 +2673,7 @@ class TeamsController extends AppController
     {
         $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
         $team = $volleyballTeamsTable->get($id, [
-            'contain' => ['Users', 'VolleyballTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'VolleyballTeamsJoueurs', 'VolleyballCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Check if user has permission to view this team
@@ -2909,7 +2909,7 @@ class TeamsController extends AppController
     {
         $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
         $team = $beachvolleyTeamsTable->get($id, [
-            'contain' => ['Users', 'BeachvolleyTeamsJoueurs', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations']
+            'contain' => ['Users', 'BeachvolleyTeamsJoueurs', 'BeachvolleyCategories', 'FootballDistricts', 'FootballOrganisations']
         ]);
         
         // Check if user has permission to view this team
