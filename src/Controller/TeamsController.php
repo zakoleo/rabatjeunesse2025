@@ -35,35 +35,35 @@ class TeamsController extends AppController
         // Get football teams
         $footballTeams = $this->Teams->find()
             ->where(['Teams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations'])
+            ->contain(['Users'])
             ->all();
         
         // Get basketball teams
         $basketballTeamsTable = $this->fetchTable('BasketballTeams');
         $basketballTeams = $basketballTeamsTable->find()
             ->where(['BasketballTeams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'BasketballTeamsJoueurs'])
+            ->contain(['Users', 'BasketballTeamsJoueurs'])
             ->all();
         
         // Get handball teams
         $handballTeamsTable = $this->fetchTable('HandballTeams');
         $handballTeams = $handballTeamsTable->find()
             ->where(['HandballTeams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'HandballTeamsJoueurs'])
+            ->contain(['Users', 'HandballTeamsJoueurs'])
             ->all();
         
         // Get volleyball teams
         $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
         $volleyballTeams = $volleyballTeamsTable->find()
             ->where(['VolleyballTeams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'VolleyballTeamsJoueurs'])
+            ->contain(['Users', 'VolleyballTeamsJoueurs'])
             ->all();
         
         // Get beach volleyball teams
         $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
         $beachvolleyTeams = $beachvolleyTeamsTable->find()
             ->where(['BeachvolleyTeams.user_id' => $user->id])
-            ->contain(['Users', 'FootballCategories', 'FootballDistricts', 'FootballOrganisations', 'BeachvolleyTeamsJoueurs'])
+            ->contain(['Users', 'BeachvolleyTeamsJoueurs'])
             ->all();
 
         $this->set(compact('footballTeams', 'basketballTeams', 'handballTeams', 'volleyballTeams', 'beachvolleyTeams'));
@@ -98,21 +98,20 @@ class TeamsController extends AppController
             // Définir l'utilisateur connecté
             $data['user_id'] = $this->Authentication->getIdentity()->get('id');
             
-            // Mapper les champs des relations vers les champs texte attendus
-            if (!empty($data['football_category_id'])) {
-                $category = $this->Teams->FootballCategories->get($data['football_category_id']);
-                $data['categorie'] = $category->name;
+            // Mapper les champs des select vers les champs texte
+            $footballCategories = [
+                '-12' => '-12 ans',
+                '-15' => '-15 ans', 
+                '-18' => '-18 ans',
+                '+18' => '+18 ans'
+            ];
+            
+            if (!empty($data['categorie']) && isset($footballCategories[$data['categorie']])) {
+                $data['categorie'] = $footballCategories[$data['categorie']];
             }
             
-            if (!empty($data['football_district_id'])) {
-                $district = $this->Teams->FootballDistricts->get($data['football_district_id']);
-                $data['district'] = $district->name;
-            }
-            
-            if (!empty($data['football_organisation_id'])) {
-                $organisation = $this->Teams->FootballOrganisations->get($data['football_organisation_id']);
-                $data['organisation'] = $organisation->name;
-            }
+            // Les districts et organisations peuvent être stockés directement
+            // car ils sont des champs texte dans le formulaire
             
             // Gérer les uploads de fichiers
             $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
