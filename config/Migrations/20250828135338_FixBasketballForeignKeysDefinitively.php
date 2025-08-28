@@ -19,7 +19,7 @@ class FixBasketballForeignKeysDefinitively extends BaseMigration
         $result = $this->query("
             SELECT CONSTRAINT_NAME 
             FROM information_schema.KEY_COLUMN_USAGE 
-            WHERE TABLE_SCHEMA = 'rabatjeunesse' 
+            WHERE TABLE_SCHEMA = 'rabatjprojectsde_db' 
             AND TABLE_NAME = 'basketball_teams' 
             AND COLUMN_NAME = 'basketball_category_id'
             AND REFERENCED_TABLE_NAME IS NOT NULL
