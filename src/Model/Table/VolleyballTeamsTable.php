@@ -7,6 +7,9 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\EventInterface;
+use Cake\Datasource\EntityInterface;
+use ArrayObject;
 
 /**
  * VolleyballTeams Model
@@ -133,6 +136,85 @@ class VolleyballTeamsTable extends Table
             ->allowEmptyString('volleyball_organisation_id')
             ->integer('volleyball_organisation_id');
 
+        $validator
+            ->scalar('type_volleyball')
+            ->maxLength('type_volleyball', 10)
+            ->requirePresence('type_volleyball', 'create')
+            ->notEmptyString('type_volleyball')
+            ->inList('type_volleyball', ['6x6']);
+
+        // Champs responsable
+        $validator
+            ->scalar('responsable_nom_complet')
+            ->maxLength('responsable_nom_complet', 255)
+            ->requirePresence('responsable_nom_complet', 'create')
+            ->notEmptyString('responsable_nom_complet');
+
+        $validator
+            ->date('responsable_date_naissance')
+            ->requirePresence('responsable_date_naissance', 'create')
+            ->notEmptyDate('responsable_date_naissance');
+
+        $validator
+            ->scalar('responsable_tel')
+            ->maxLength('responsable_tel', 20)
+            ->requirePresence('responsable_tel', 'create')
+            ->notEmptyString('responsable_tel');
+
+        $validator
+            ->scalar('responsable_whatsapp')
+            ->maxLength('responsable_whatsapp', 20)
+            ->allowEmptyString('responsable_whatsapp');
+
+        $validator
+            ->scalar('responsable_cin_recto')
+            ->maxLength('responsable_cin_recto', 255)
+            ->allowEmptyString('responsable_cin_recto');
+
+        $validator
+            ->scalar('responsable_cin_verso')
+            ->maxLength('responsable_cin_verso', 255)
+            ->allowEmptyString('responsable_cin_verso');
+
+        // Champs entraineur
+        $validator
+            ->scalar('entraineur_nom_complet')
+            ->maxLength('entraineur_nom_complet', 255)
+            ->allowEmptyString('entraineur_nom_complet');
+
+        $validator
+            ->date('entraineur_date_naissance')
+            ->allowEmptyDate('entraineur_date_naissance');
+
+        $validator
+            ->scalar('entraineur_tel')
+            ->maxLength('entraineur_tel', 20)
+            ->allowEmptyString('entraineur_tel');
+
+        $validator
+            ->scalar('entraineur_whatsapp')
+            ->maxLength('entraineur_whatsapp', 20)
+            ->allowEmptyString('entraineur_whatsapp');
+
+        $validator
+            ->scalar('entraineur_cin_recto')
+            ->maxLength('entraineur_cin_recto', 255)
+            ->allowEmptyString('entraineur_cin_recto');
+
+        $validator
+            ->scalar('entraineur_cin_verso')
+            ->maxLength('entraineur_cin_verso', 255)
+            ->allowEmptyString('entraineur_cin_verso');
+
+        $validator
+            ->boolean('entraineur_same_as_responsable')
+            ->allowEmptyString('entraineur_same_as_responsable');
+
+        $validator
+            ->scalar('reference_inscription')
+            ->maxLength('reference_inscription', 50)
+            ->allowEmptyString('reference_inscription');
+
         return $validator;
     }
 
@@ -148,5 +230,53 @@ class VolleyballTeamsTable extends Table
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
 
         return $rules;
+    }
+
+    /**
+     * Get minimum and maximum players for volleyball type
+     */
+    public function getPlayerLimits($type)
+    {
+        $limits = [
+            '6x6' => ['min' => 6, 'max' => 12]
+        ];
+        
+        return $limits[$type] ?? null;
+    }
+    
+    /**
+     * Before save callback
+     */
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        if ($entity->isNew() && empty($entity->reference_inscription)) {
+            $entity->reference_inscription = $this->generateReference();
+        }
+    }
+    
+    /**
+     * Generate reference number for volleyball team
+     */
+    private function generateReference(): string
+    {
+        $year = date('Y');
+        $month = date('m');
+        
+        // Get the last sequence number for this month
+        $lastTeam = $this->find()
+            ->where([
+                'reference_inscription LIKE' => "VB{$year}{$month}%"
+            ])
+            ->order(['id' => 'DESC'])
+            ->first();
+        
+        $sequence = 1;
+        if ($lastTeam && !empty($lastTeam->reference_inscription)) {
+            $lastSequence = (int) substr($lastTeam->reference_inscription, -4);
+            $sequence = $lastSequence + 1;
+        }
+        
+        // Format: VB + year(4) + month(2) + sequence(4) (VB for Volleyball)
+        return sprintf("VB%s%s%04d", $year, $month, $sequence);
     }
 }

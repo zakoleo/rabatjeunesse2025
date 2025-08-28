@@ -2,15 +2,97 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Team $team
+ * @var string $sport Sport type (football, basketball, handball, volleyball, beachvolley)
  */
+
+// Define sport configurations
+$sportConfigs = [
+    'football' => [
+        'title' => 'Football',
+        'categoryField' => 'football_category_id',
+        'categoryOptions' => $footballCategories ?? [],
+        'districtField' => 'football_district_id',
+        'districtOptions' => $footballDistricts ?? [],
+        'organisationField' => 'football_organisation_id',
+        'organisationOptions' => $footballOrganisations ?? [],
+        'typeField' => 'type_football',
+        'typeOptions' => [
+            '' => 'Sélectionner le type',
+            '5x5' => 'Football à 5 (5x5)',
+            '6x6' => 'Football à 6 (6x6)',
+            '11x11' => 'Football à 11 (11x11)'
+        ]
+    ],
+    'basketball' => [
+        'title' => 'Basketball',
+        'categoryField' => 'basketball_category_id',
+        'categoryOptions' => $basketballCategories ?? [],
+        'districtField' => 'basketball_district_id',
+        'districtOptions' => $footballDistricts ?? [],
+        'organisationField' => 'basketball_organisation_id',
+        'organisationOptions' => $footballOrganisations ?? [],
+        'typeField' => 'type_basketball',
+        'typeOptions' => [
+            '' => 'Sélectionner le type',
+            '5x5' => 'Basketball classique (5x5)'
+        ]
+    ],
+    'handball' => [
+        'title' => 'Handball',
+        'categoryField' => 'handball_category_id',
+        'categoryOptions' => $handballCategories ?? [],
+        'districtField' => 'handball_district_id',
+        'districtOptions' => $footballDistricts ?? [],
+        'organisationField' => 'handball_organisation_id',
+        'organisationOptions' => $footballOrganisations ?? [],
+        'typeField' => 'type_handball',
+        'typeOptions' => [
+            '' => 'Sélectionner le type',
+            '7x7' => 'Handball classique (7x7)'
+        ]
+    ],
+    'volleyball' => [
+        'title' => 'Volleyball',
+        'categoryField' => 'volleyball_category_id',
+        'categoryOptions' => $volleyballCategories ?? [],
+        'districtField' => 'volleyball_district_id',
+        'districtOptions' => $footballDistricts ?? [],
+        'organisationField' => 'volleyball_organisation_id',
+        'organisationOptions' => $footballOrganisations ?? [],
+        'typeField' => 'type_volleyball',
+        'typeOptions' => [
+            '' => 'Sélectionner le type',
+            '6x6' => 'Volleyball classique (6x6)'
+        ]
+    ],
+    'beachvolley' => [
+        'title' => 'Beach Volleyball',
+        'categoryField' => 'beachvolley_category_id',
+        'categoryOptions' => $beachvolleyCategories ?? [],
+        'districtField' => 'beachvolley_district_id',
+        'districtOptions' => $footballDistricts ?? [],
+        'organisationField' => 'beachvolley_organisation_id',
+        'organisationOptions' => $footballOrganisations ?? [],
+        'typeField' => 'type_beachvolley',
+        'typeOptions' => [
+            '' => 'Sélectionner le type',
+            '2x2' => 'Beach Volleyball (2x2)'
+        ]
+    ]
+];
+
+$config = $sportConfigs[$sport] ?? $sportConfigs['football'];
 ?>
-<div class="teams form container">
+<div class="teams form container" data-sport="<?= $sport ?>">
     <div class="inscription-header">
-        <h1>Inscription au Tournoi de Football</h1>
+        <h1>Inscription au Tournoi de <?= $config['title'] ?></h1>
         <p class="subtitle">Complétez le formulaire ci-dessous pour inscrire votre équipe</p>
     </div>
 
     <?= $this->Form->create($team, ['type' => 'file', 'id' => 'inscriptionForm']) ?>
+    
+    <!-- Hidden field to identify sport type -->
+    <input type="hidden" id="sport-type" value="<?= $sport ?>">
     
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -48,11 +130,12 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <?= $this->Form->control('football_category_id', [
+                        <?= $this->Form->control($config['categoryField'], [
                             'label' => 'Catégorie d\'âge *',
-                            'options' => $footballCategories,
+                            'options' => $config['categoryOptions'],
                             'required' => true,
-                            'empty' => 'Sélectionner une catégorie'
+                            'empty' => 'Sélectionner une catégorie',
+                            'id' => $sport . '-category-id'
                         ]) ?>
                     </div>
                     
@@ -70,36 +153,31 @@
                     </div>
                     
                     <div class="form-group">
-                        <?= $this->Form->control('type_football', [
-                            'label' => 'Type de football *',
-                            'options' => [
-                                '' => 'Sélectionner le type',
-                                '5x5' => 'Football à 5 (5x5)',
-                                '6x6' => 'Football à 6 (6x6)',
-                                '11x11' => 'Football à 11 (11x11)'
-                            ],
+                        <?= $this->Form->control($config['typeField'], [
+                            'label' => 'Type de ' . strtolower($config['title']) . ' *',
+                            'options' => $config['typeOptions'],
                             'required' => true,
                             'empty' => false,
-                            'id' => 'type-football'
+                            'id' => 'type-' . $sport
                         ]) ?>
-                        <small class="form-text text-muted" id="type-football-help"></small>
+                        <small class="form-text text-muted" id="type-<?= $sport ?>-help"></small>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <?= $this->Form->control('football_district_id', [
+                        <?= $this->Form->control($config['districtField'], [
                             'label' => 'District (Quartier) *',
-                            'options' => $footballDistricts,
+                            'options' => $config['districtOptions'],
                             'required' => true,
                             'empty' => 'Sélectionner un district'
                         ]) ?>
                     </div>
                     
                     <div class="form-group">
-                        <?= $this->Form->control('football_organisation_id', [
+                        <?= $this->Form->control($config['organisationField'], [
                             'label' => 'Type d\'organisation *',
-                            'options' => $footballOrganisations,
+                            'options' => $config['organisationOptions'],
                             'required' => true,
                             'empty' => 'Sélectionner le type'
                         ]) ?>
@@ -315,9 +393,10 @@
     <?= $this->Form->end() ?>
 </div>
 
-<?= $this->Html->css('inscription-form') ?>
+<?= $this->Html->css('unified-form') ?>
 <script>
-    // Pass the base URL to JavaScript
+    // Pass the base URL and sport type to JavaScript
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
+    window.SPORT_TYPE = <?= json_encode($sport) ?>;
 </script>
-<?= $this->Html->script('inscription-form') ?>
+<?= $this->Html->script('unified-form') ?>

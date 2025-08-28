@@ -20,7 +20,11 @@ class TeamsController extends AppController
     {
         parent::beforeFilter($event);
         // Allow non-authenticated users to access basketball, handball, volleyball and beach volleyball registration pages
-        $this->Authentication->addUnauthenticatedActions(['addBasketball', 'addHandball', 'addVolleyball', 'addBeachvolley']);
+        $this->Authentication->addUnauthenticatedActions([
+            'addBasketball', 'addHandball', 'addVolleyball', 'addBeachvolley',
+            'getFootballDateRanges', 'getBasketballDateRanges', 'getHandballDateRanges', 
+            'getVolleyballDateRanges', 'getBeachvolleyDateRanges'
+        ]);
     }
     
     /**
@@ -265,6 +269,8 @@ class TeamsController extends AppController
         ])->where(['active' => true])->toArray();
         
         $this->set(compact('team', 'footballCategories', 'footballDistricts', 'footballOrganisations'));
+        $this->set('sport', 'football');
+        $this->render('add_unified');
     }
 
     /**
@@ -276,29 +282,41 @@ class TeamsController extends AppController
     public function getFootballDateRanges()
     {
         $this->request->allowMethod(['get']);
-        $this->viewBuilder()->setClassName('Json');
+        $this->autoRender = false;
 
-        $FootballCategories = $this->fetchTable('FootballCategories');
-        $categories = $FootballCategories->find()
-            ->where(['active' => true])
-            ->select(['name', 'age_range', 'min_date', 'max_date'])
-            ->all();
+        try {
+            $FootballCategories = $this->fetchTable('FootballCategories');
+            $categories = $FootballCategories->find()
+                ->where(['active' => true])
+                ->select(['name', 'age_range', 'min_date', 'max_date'])
+                ->all();
 
-        $dateRanges = [];
-        foreach ($categories as $category) {
-            $dateRanges[$category->age_range] = [
-                'min' => $category->min_date,
-                'max' => $category->max_date,
-                'name' => $category->name
+            $dateRanges = [];
+            foreach ($categories as $category) {
+                $dateRanges[$category->age_range] = [
+                    'min' => $category->min_date ? $category->min_date->format('Y-m-d') : null,
+                    'max' => $category->max_date ? $category->max_date->format('Y-m-d') : null,
+                    'name' => $category->name
+                ];
+            }
+
+            $result = ['dateRanges' => $dateRanges];
+            
+            return $this->response
+                ->withType('application/json')
+                ->withStringBody(json_encode($result, JSON_PRETTY_PRINT));
+
+        } catch (\Exception $e) {
+            \Cake\Log\Log::error('Error in getFootballDateRanges: ' . $e->getMessage());
+            $errorResult = [
+                'dateRanges' => [],
+                'error' => $e->getMessage()
             ];
+
+            return $this->response
+                ->withType('application/json')
+                ->withStringBody(json_encode($errorResult, JSON_PRETTY_PRINT));
         }
-
-        $this->set([
-            'dateRanges' => $dateRanges,
-            '_serialize' => ['dateRanges']
-        ]);
-
-        return $this->response->withType('application/json');
     }
 
     /**
@@ -371,30 +389,71 @@ class TeamsController extends AppController
     public function getVolleyballDateRanges()
     {
         $this->request->allowMethod(['get']);
-        $this->viewBuilder()->setClassName('Json');
+        $this->autoRender = false; // Disable view rendering
 
-        // Load volleyball categories from database
-        $VolleyballCategories = $this->fetchTable('VolleyballCategories');
-        $categories = $VolleyballCategories->find()
-            ->where(['active' => true])
-            ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
-            ->all();
+        try {
+            // Load volleyball categories from database
+            $VolleyballCategories = $this->fetchTable('VolleyballCategories');
+            
+            // First check if table exists and has any data at all
+            $allCategories = $VolleyballCategories->find()->all();
+            \Cake\Log\Log::debug('Total volleyball categories in table: ' . $allCategories->count());
+            
+            // Then check active ones
+            $categories = $VolleyballCategories->find()
+                ->where(['active' => true])
+                ->select(['name', 'age_range', 'min_date', 'max_date'])
+                ->all();
 
-        $dateRanges = [];
-        foreach ($categories as $category) {
-            $dateRanges[$category->age_range] = [
-                'minYear' => $category->min_birth_year,
-                'maxYear' => $category->max_birth_year,
-                'name' => $category->name
+            \Cake\Log\Log::debug('Active volleyball categories found: ' . $categories->count());
+
+            $dateRanges = [];
+            foreach ($categories as $category) {
+                \Cake\Log\Log::debug('Processing category: ' . $category->name . ' with dates: ' . $category->min_date . ' to ' . $category->max_date);
+                $dateRanges[$category->age_range] = [
+                    'min' => $category->min_date ? $category->min_date->format('Y-m-d') : null,
+                    'max' => $category->max_date ? $category->max_date->format('Y-m-d') : null,
+                    'name' => $category->name
+                ];
+            }
+
+            // If no categories found, provide default volleyball categories
+            if (empty($dateRanges)) {
+                \Cake\Log\Log::warning('No volleyball categories found in database, using defaults');
+                $dateRanges = [
+                    '-15 ans' => ['min' => '2010-01-01', 'max' => '2025-12-31', 'name' => '-15'],
+                    '-17 ans' => ['min' => '2008-01-01', 'max' => '2025-12-31', 'name' => '-17'],
+                    '-19 ans' => ['min' => '2006-01-01', 'max' => '2025-12-31', 'name' => '-19']
+                ];
+            } else {
+                \Cake\Log\Log::debug('Using volleyball categories from database');
+            }
+
+            $result = ['dateRanges' => $dateRanges];
+            \Cake\Log\Log::debug('Final result: ' . json_encode($result));
+
+            return $this->response
+                ->withType('application/json')
+                ->withStringBody(json_encode($result, JSON_PRETTY_PRINT));
+
+        } catch (\Exception $e) {
+            \Cake\Log\Log::error('Error in getVolleyballDateRanges: ' . $e->getMessage());
+            // Provide fallback data even on error
+            $fallbackRanges = [
+                '-15 ans' => ['min' => '2010-01-01', 'max' => '2025-12-31', 'name' => '-15'],
+                '-17 ans' => ['min' => '2008-01-01', 'max' => '2025-12-31', 'name' => '-17'],
+                '-19 ans' => ['min' => '2006-01-01', 'max' => '2025-12-31', 'name' => '-19']
             ];
+            
+            $errorResult = [
+                'dateRanges' => $fallbackRanges,
+                'error' => $e->getMessage()
+            ];
+
+            return $this->response
+                ->withType('application/json')
+                ->withStringBody(json_encode($errorResult, JSON_PRETTY_PRINT));
         }
-
-        $this->set([
-            'ageCategories' => $dateRanges,
-            '_serialize' => ['ageCategories']
-        ]);
-
-        return $this->response->withType('application/json');
     }
 
     /**
@@ -1084,6 +1143,8 @@ class TeamsController extends AppController
         
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'user', 'basketballCategories', 'footballDistricts', 'footballOrganisations'));
+        $this->set('sport', 'basketball');
+        $this->render('add_unified');
     }
     
     /**
@@ -1107,7 +1168,13 @@ class TeamsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
         
+        // Map basketball players to joueurs for view compatibility
+        if (!empty($team->basketball_teams_joueurs)) {
+            $team->joueurs = $team->basketball_teams_joueurs;
+        }
+        
         $this->set(compact('team'));
+        $this->render('view');
     }
     
     /**
@@ -1866,6 +1933,8 @@ class TeamsController extends AppController
         
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'handballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+        $this->set('sport', 'handball');
+        $this->render('add_unified');
     }
 
     /**
@@ -1889,7 +1958,13 @@ class TeamsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
+        // Map handball players to joueurs for view compatibility
+        if (!empty($team->handball_teams_joueurs)) {
+            $team->joueurs = $team->handball_teams_joueurs;
+        }
+
         $this->set(compact('team'));
+        $this->render('view');
     }
 
     /**
@@ -2660,6 +2735,8 @@ class TeamsController extends AppController
         
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'volleyballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+        $this->set('sport', 'volleyball');
+        $this->render('add_unified');
     }
 
     /**
@@ -2683,7 +2760,13 @@ class TeamsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
+        // Map volleyball players to joueurs for view compatibility
+        if (!empty($team->volleyball_teams_joueurs)) {
+            $team->joueurs = $team->volleyball_teams_joueurs;
+        }
+
         $this->set(compact('team'));
+        $this->render('view');
     }
     
     /**
@@ -2896,6 +2979,8 @@ class TeamsController extends AppController
         
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'beachvolleyCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+        $this->set('sport', 'beachvolley');
+        $this->render('add_unified');
     }
 
     /**
@@ -2919,6 +3004,12 @@ class TeamsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
+        // Map beach volleyball players to joueurs for view compatibility
+        if (!empty($team->beachvolley_teams_joueurs)) {
+            $team->joueurs = $team->beachvolley_teams_joueurs;
+        }
+
         $this->set(compact('team'));
+        $this->render('view');
     }
 }

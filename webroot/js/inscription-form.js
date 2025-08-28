@@ -1,45 +1,91 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Auto-detect sport type based on form elements
     const typeFootball = document.getElementById('type-football');
+    const typeVolleyball = document.getElementById('type-volleyball');
     const nombreJoueursRequis = document.getElementById('nombreJoueursRequis');
     const joueursContainer = document.getElementById('joueursContainer');
     const ajouterJoueurBtn = document.getElementById('ajouterJoueur');
     const inscriptionForm = document.getElementById('inscriptionForm');
     
+    // Determine sport type and set appropriate type element
+    let sportType = 'football';
+    let typeElement = typeFootball;
+    
+    if (typeVolleyball) {
+        sportType = 'volleyball';
+        typeElement = typeVolleyball;
+    }
+    
     let joueurCount = 0;
+    
+    // Player limits for different sports and types
     const joueursMin = {
+        // Football
         '5x5': 5,
         '6x6': 6,
-        '11x11': 11
+        '11x11': 11,
+        // Volleyball
+        '6x6': 6  // Volleyball 6x6
     };
     
     const joueursMax = {
+        // Football
         '5x5': 8,
         '6x6': 10,
-        '11x11': 18
+        '11x11': 18,
+        // Volleyball  
+        '6x6': 12  // Volleyball 6x6
     };
     
     // Règles de validation des dates de naissance par catégorie (will be loaded dynamically)
     let categoriesDateRanges = {};
     
-    // Load date ranges from database
+    // Load date ranges from database based on sport type
     async function loadDateRanges() {
         try {
-            const response = await fetch('/api/football-date-ranges');
+            // Construct API endpoint using the base URL from the backend
+            const baseUrl = window.APP_BASE_URL || '/';
+            const apiPath = sportType === 'volleyball' ? 
+                'api/volleyball-date-ranges' : 
+                'api/football-date-ranges';
+            const apiEndpoint = baseUrl + apiPath;
+            const response = await fetch(apiEndpoint);
+            console.log('API Response status:', response.status, response.statusText);
+            console.log('API URL:', apiEndpoint);
+            
             if (!response.ok) {
-                throw new Error('Failed to load date ranges');
+                const errorText = await response.text();
+                console.error('API Error Response:', errorText);
+                throw new Error(`Failed to load date ranges: ${response.status} ${response.statusText}`);
             }
-            const data = await response.json();
+            
+            const responseText = await response.text();
+            console.log('Raw API Response:', responseText);
+            
+            if (!responseText.trim()) {
+                throw new Error('Empty response from API');
+            }
+            
+            const data = JSON.parse(responseText);
             categoriesDateRanges = data.dateRanges || {};
-            console.log('Loaded date ranges:', categoriesDateRanges);
+            console.log('Loaded date ranges for', sportType + ':', categoriesDateRanges);
         } catch (error) {
             console.error('Error loading date ranges:', error);
             // Fallback to default ranges if API fails
-            categoriesDateRanges = {
-                '-12 ans': { min: '2014-01-01', max: '2015-12-31' },
-                '-15 ans': { min: '2012-01-01', max: '2013-12-31' },
-                '-18 ans': { min: '2008-01-01', max: '2010-12-31' },
-                '+18 ans': { min: '1970-01-01', max: '2007-12-31' }
-            };
+            if (sportType === 'volleyball') {
+                categoriesDateRanges = {
+                    '-15 ans': { min: '2010-01-01', max: '2025-12-31' },
+                    '-17 ans': { min: '2008-01-01', max: '2025-12-31' },
+                    '-19 ans': { min: '2006-01-01', max: '2025-12-31' }
+                };
+            } else {
+                categoriesDateRanges = {
+                    '-12 ans': { min: '2014-01-01', max: '2015-12-31' },
+                    '-15 ans': { min: '2012-01-01', max: '2013-12-31' },
+                    '-18 ans': { min: '2008-01-01', max: '2010-12-31' },
+                    '+18 ans': { min: '1970-01-01', max: '2007-12-31' }
+                };
+            }
         }
     }
     
@@ -54,6 +100,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.querySelector('button[type="submit"]');
+    
+    // Debug DOM elements
+    console.log('DOM elements found:');
+    console.log('Progress steps:', progressSteps.length);
+    console.log('Wizard steps:', wizardSteps.length);
+    console.log('Prev button:', prevBtn);
+    console.log('Next button:', nextBtn);
+    console.log('Submit button:', submitBtn);
     
     function showStep(step) {
         // Hide all steps
@@ -90,8 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function validateStep(step) {
+        console.log('Validating step:', step);
         const currentWizardStep = document.querySelector(`.wizard-step[data-step="${step}"]`);
+        console.log('Current wizard step element:', currentWizardStep);
         const requiredFields = currentWizardStep.querySelectorAll('[required]:not(:disabled)');
+        console.log('Required fields found:', requiredFields.length);
         let isValid = true;
         let firstErrorField = null;
         
@@ -151,8 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Special validation for step 1
         if (step === 1) {
-            const categorieField = document.getElementById('football-category-id');
-            const typeField = document.getElementById('type-football');
+            const categorieField = sportType === 'volleyball' ? 
+                document.getElementById('volleyball-category-id') : 
+                document.getElementById('football-category-id');
+            const typeField = sportType === 'volleyball' ? 
+                document.getElementById('type-volleyball') : 
+                document.getElementById('type-football');
+            
+            console.log('Step 1 validation - Category field:', categorieField, 'value:', categorieField?.value);
+            console.log('Step 1 validation - Type field:', typeField, 'value:', typeField?.value);
             
             if (!categorieField || !categorieField.value) {
                 showNotification('Veuillez sélectionner une catégorie d\'âge', 'error');
@@ -160,21 +224,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!typeField || !typeField.value) {
-                showNotification('Veuillez sélectionner un type de football', 'error');
+                const sportName = sportType === 'volleyball' ? 'volleyball' : 'football';
+                showNotification(`Veuillez sélectionner un type de ${sportName}`, 'error');
                 return false;
             }
         }
         
         // Special validation for step 3
         if (step === 3) {
-            const type = typeFootball.value;
+            const type = typeElement?.value;
             if (type && joueurCount < joueursMin[type]) {
                 showNotification(`Vous devez ajouter au minimum ${joueursMin[type]} joueurs`, 'error');
                 return false;
             }
             
             // Valider les dates de naissance des joueurs
-            const categorieField = document.getElementById('football-category-id');
+            const categorieField = sportType === 'volleyball' ? 
+                document.getElementById('volleyball-category-id') : 
+                document.getElementById('football-category-id');
             const categorieName = categorieField?.options[categorieField.selectedIndex]?.text || '';
             const joueurItems = currentWizardStep.querySelectorAll('.joueur-item');
             let datesValid = true;
@@ -272,13 +339,30 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${day}/${month}/${year}`;
     }
     
-    nextBtn.addEventListener('click', () => {
-        if (validateStep(currentStep)) {
-            currentStep++;
-            showStep(currentStep);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
+    // Add debug logging for button elements
+    console.log('nextBtn element:', nextBtn);
+    console.log('prevBtn element:', prevBtn);
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Next button clicked! Current step:', currentStep);
+            try {
+                if (validateStep(currentStep)) {
+                    console.log('Step validation passed, moving to next step');
+                    currentStep++;
+                    showStep(currentStep);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    console.log('Step validation failed');
+                }
+            } catch (error) {
+                console.error('Error in next button handler:', error);
+            }
+        });
+    } else {
+        console.error('Next button not found! Check button ID.');
+    }
     
     prevBtn.addEventListener('click', () => {
         currentStep--;
@@ -327,59 +411,78 @@ document.addEventListener('DOMContentLoaded', function() {
         whatsappField.dataset.originalPattern = whatsappField.getAttribute('pattern');
     }
     
-    // Gestion des types de football selon la catégorie
-    const categorieSelect = document.getElementById('football-category-id');
-    const typeFootballSelect = document.getElementById('type-football');
-    const typeFootballHelp = document.getElementById('type-football-help');
+    // Gestion des types selon la catégorie et le sport
+    const categorieSelect = sportType === 'volleyball' ? 
+        document.getElementById('volleyball-category-id') : 
+        document.getElementById('football-category-id');
+    const typeSelect = typeElement;
+    const typeHelp = sportType === 'volleyball' ? 
+        document.getElementById('type-volleyball-help') : 
+        document.getElementById('type-football-help');
     
     categorieSelect?.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const categorieName = selectedOption?.text || '';
-        typeFootballSelect.value = ''; // Reset selection
+        typeSelect.value = ''; // Reset selection
         nombreJoueursRequis.textContent = ''; // Reset player count display
         
         // Clear existing players
         joueursContainer.innerHTML = '';
         joueurCount = 0;
         
-        // Update football type options based on category
-        const options = typeFootballSelect.querySelectorAll('option');
-        options.forEach(option => {
-            if (option.value === '') return; // Skip the default option
-            
-            if (categorieName === 'U12' || categorieName === 'U15') {
-                // U12 and U15 can only choose 6x6
-                if (option.value === '6x6') {
-                    option.style.display = 'block';
-                    option.disabled = false;
-                } else {
-                    option.style.display = 'none';
-                    option.disabled = true;
-                }
-            } else if (categorieName === 'U18' || categorieName === '18+') {
-                // U18 and 18+ can choose 5x5 or 11x11
-                if (option.value === '5x5' || option.value === '11x11') {
-                    option.style.display = 'block';
-                    option.disabled = false;
-                } else {
-                    option.style.display = 'none';
-                    option.disabled = true;
-                }
-            } else {
-                // No category selected, show all options
+        // Update sport type options based on category
+        const options = typeSelect.querySelectorAll('option');
+        // For volleyball, all categories can only use 6x6
+        if (sportType === 'volleyball') {
+            options.forEach(option => {
+                if (option.value === '') return; // Skip the default option
                 option.style.display = 'block';
                 option.disabled = false;
+            });
+            
+            // Update help text for volleyball
+            if (typeHelp) {
+                typeHelp.textContent = 'Volleyball classique 6x6: équipes de 6 à 12 joueurs';
             }
-        });
-        
-        // Update help text based on category
-        if (typeFootballHelp) {
-            if (categorieName === 'U12' || categorieName === 'U15') {
-                typeFootballHelp.textContent = 'Les catégories U12 et U15 participent uniquement au football à 6';
-            } else if (categorieName === 'U18' || categorieName === '18+') {
-                typeFootballHelp.textContent = 'Les catégories U18 et 18+ peuvent choisir entre football à 5 et football à 11';
-            } else {
-                typeFootballHelp.textContent = '';
+        } else {
+            // Football logic
+            options.forEach(option => {
+                if (option.value === '') return; // Skip the default option
+                
+                if (categorieName === 'U12' || categorieName === 'U15') {
+                    // U12 and U15 can only choose 6x6
+                    if (option.value === '6x6') {
+                        option.style.display = 'block';
+                        option.disabled = false;
+                    } else {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                    }
+                } else if (categorieName === 'U18' || categorieName === '18+') {
+                    // U18 and 18+ can choose 5x5 or 11x11
+                    if (option.value === '5x5' || option.value === '11x11') {
+                        option.style.display = 'block';
+                        option.disabled = false;
+                    } else {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                    }
+                } else {
+                    // No category selected, show all options
+                    option.style.display = 'block';
+                    option.disabled = false;
+                }
+            });
+            
+            // Update help text based on category for football
+            if (typeHelp) {
+                if (categorieName === 'U12' || categorieName === 'U15') {
+                    typeHelp.textContent = 'Les catégories U12 et U15 participent uniquement au football à 6';
+                } else if (categorieName === 'U18' || categorieName === '18+') {
+                    typeHelp.textContent = 'Les catégories U18 et 18+ peuvent choisir entre football à 5 et football à 11';
+                } else {
+                    typeHelp.textContent = '';
+                }
             }
         }
         
@@ -388,13 +491,13 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.value !== '' && opt.style.display !== 'none' && !opt.disabled
         );
         if (visibleOptions.length === 1) {
-            typeFootballSelect.value = visibleOptions[0].value;
-            typeFootballSelect.dispatchEvent(new Event('change'));
+            typeSelect.value = visibleOptions[0].value;
+            typeSelect.dispatchEvent(new Event('change'));
         }
     });
     
     // Mettre à jour le nombre de joueurs requis
-    typeFootballSelect?.addEventListener('change', function() {
+    typeSelect?.addEventListener('change', function() {
         const type = this.value;
         if (type && joueursMin[type]) {
             nombreJoueursRequis.innerHTML = `<strong>Minimum ${joueursMin[type]}</strong> joueurs, <strong>Maximum ${joueursMax[type]}</strong> joueurs`;
@@ -438,9 +541,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const type = typeFootballSelect?.value;
+        const type = typeSelect?.value;
         if (!type) {
-            showNotification('Veuillez d\'abord sélectionner le type de football', 'error');
+            const sportName = sportType === 'volleyball' ? 'volleyball' : 'football';
+            showNotification(`Veuillez d'abord sélectionner le type de ${sportName}`, 'error');
             return;
         }
         
@@ -541,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Supprimer un joueur
     window.supprimerJoueur = function(button, index) {
-        const type = typeFootballSelect?.value;
+        const type = typeSelect?.value;
         if (type && joueurCount <= joueursMin[type]) {
             showNotification(`Nombre minimum de joueurs requis pour le ${type}: ${joueursMin[type]}`, 'error');
             return;
