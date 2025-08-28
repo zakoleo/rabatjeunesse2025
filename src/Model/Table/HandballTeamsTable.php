@@ -58,7 +58,7 @@ class HandballTeamsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
-        $this->belongsTo('FootballCategories', [
+        $this->belongsTo('HandballCategories', [
             'foreignKey' => 'handball_category_id',
         ]);
         $this->belongsTo('FootballDistricts', [
@@ -134,6 +134,19 @@ class HandballTeamsTable extends Table
             ->scalar('reference_inscription')
             ->maxLength('reference_inscription', 50)
             ->allowEmptyString('reference_inscription');
+
+        // Validations pour les champs de relation
+        $validator
+            ->allowEmpty('handball_category_id')
+            ->integer('handball_category_id');
+
+        $validator
+            ->allowEmpty('handball_district_id')
+            ->integer('handball_district_id');
+
+        $validator
+            ->allowEmpty('handball_organisation_id')
+            ->integer('handball_organisation_id');
 
         // Responsable validation
         $validator

@@ -98,51 +98,28 @@ class TeamsController extends AppController
             // Définir l'utilisateur connecté
             $data['user_id'] = $this->Authentication->getIdentity()->get('id');
             
-            // Mapper les catégories vers les foreign keys
-            if (!empty($data['categorie'])) {
+            // Fill text fields from foreign keys for display purposes
+            if (!empty($data['football_category_id'])) {
                 $FootballCategories = $this->fetchTable('FootballCategories');
-                $category = $FootballCategories->find()
-                    ->where(['name' => $data['categorie']])
-                    ->first();
-                
+                $category = $FootballCategories->get($data['football_category_id']);
                 if ($category) {
-                    $data['football_category_id'] = $category->id;
-                    $data['categorie'] = $category->age_range; // Set the text field to display value
-                } else {
-                    // Fallback: load from database for dynamic mapping
-                    $FootballCategories = $this->fetchTable('FootballCategories');
-                    $footballCategories = $FootballCategories->find('list', [
-                        'keyField' => 'name',
-                        'valueField' => 'age_range'
-                    ])->where(['active' => true])->toArray();
-                    
-                    if (isset($footballCategories[$data['categorie']])) {
-                        $data['categorie'] = $footballCategories[$data['categorie']];
-                    }
+                    $data['categorie'] = $category->age_range;
                 }
             }
             
-            // Mapper les districts vers les foreign keys
-            if (!empty($data['district'])) {
+            if (!empty($data['football_district_id'])) {
                 $FootballDistricts = $this->fetchTable('FootballDistricts');
-                $district = $FootballDistricts->find()
-                    ->where(['name' => $data['district']])
-                    ->first();
-                
+                $district = $FootballDistricts->get($data['football_district_id']);
                 if ($district) {
-                    $data['football_district_id'] = $district->id;
+                    $data['district'] = $district->name;
                 }
             }
             
-            // Mapper les organisations vers les foreign keys
-            if (!empty($data['organisation'])) {
+            if (!empty($data['football_organisation_id'])) {
                 $FootballOrganisations = $this->fetchTable('FootballOrganisations');
-                $organisation = $FootballOrganisations->find()
-                    ->where(['name' => $data['organisation']])
-                    ->first();
-                
+                $organisation = $FootballOrganisations->get($data['football_organisation_id']);
                 if ($organisation) {
-                    $data['football_organisation_id'] = $organisation->id;
+                    $data['organisation'] = $organisation->name;
                 }
             }
             
@@ -271,19 +248,19 @@ class TeamsController extends AppController
         // Charger les listes pour les dropdowns depuis la base de données
         $FootballCategories = $this->fetchTable('FootballCategories');
         $footballCategories = $FootballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
         $FootballDistricts = $this->fetchTable('FootballDistricts');
         $footballDistricts = $FootballDistricts->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $FootballOrganisations = $this->fetchTable('FootballOrganisations');
         $footballOrganisations = $FootballOrganisations->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
@@ -560,19 +537,19 @@ class TeamsController extends AppController
         // Charger les listes pour les dropdowns depuis la base de données
         $FootballCategories = $this->fetchTable('FootballCategories');
         $footballCategories = $FootballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
         $FootballDistricts = $this->fetchTable('FootballDistricts');
         $footballDistricts = $FootballDistricts->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $FootballOrganisations = $this->fetchTable('FootballOrganisations');
         $footballOrganisations = $FootballOrganisations->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
@@ -1037,15 +1014,29 @@ class TeamsController extends AppController
                 }
             }
             
-            // Mapper les champs des select vers les champs texte pour basketball
-            $BasketballCategories = $this->fetchTable('BasketballCategories');
-            $basketballCategories = $BasketballCategories->find('list', [
-                'keyField' => 'name',
-                'valueField' => 'age_range'
-            ])->where(['active' => true])->toArray();
+            // Fill text fields from foreign keys for display purposes
+            if (!empty($data['basketball_category_id'])) {
+                $BasketballCategories = $this->fetchTable('BasketballCategories');
+                $category = $BasketballCategories->get($data['basketball_category_id']);
+                if ($category) {
+                    $data['categorie'] = $category->age_range;
+                }
+            }
             
-            if (!empty($data['categorie']) && isset($basketballCategories[$data['categorie']])) {
-                $data['categorie'] = $basketballCategories[$data['categorie']];
+            if (!empty($data['basketball_district_id'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->get($data['basketball_district_id']);
+                if ($district) {
+                    $data['district'] = $district->name;
+                }
+            }
+            
+            if (!empty($data['basketball_organisation_id'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->get($data['basketball_organisation_id']);
+                if ($organisation) {
+                    $data['organisation'] = $organisation->name;
+                }
             }
             
             // Générer une référence d'inscription unique pour basketball
@@ -1077,7 +1068,7 @@ class TeamsController extends AppController
         // Load basketball categories, districts and organizations
         $BasketballCategories = $this->fetchTable('BasketballCategories');
         $basketballCategories = $BasketballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
@@ -1615,7 +1606,7 @@ class TeamsController extends AppController
         // Charger les listes pour les dropdowns
         $BasketballCategories = $this->fetchTable('BasketballCategories');
         $basketballCategories = $BasketballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
@@ -1755,15 +1746,29 @@ class TeamsController extends AppController
                 }
             }
             
-            // Mapper les champs des select vers les champs texte pour handball
-            $HandballCategories = $this->fetchTable('HandballCategories');
-            $handballCategories = $HandballCategories->find('list', [
-                'keyField' => 'name',
-                'valueField' => 'age_range'
-            ])->where(['active' => true])->toArray();
+            // Fill text fields from foreign keys for display purposes
+            if (!empty($data['handball_category_id'])) {
+                $HandballCategories = $this->fetchTable('HandballCategories');
+                $category = $HandballCategories->get($data['handball_category_id']);
+                if ($category) {
+                    $data['categorie'] = $category->age_range;
+                }
+            }
             
-            if (!empty($data['categorie']) && isset($handballCategories[$data['categorie']])) {
-                $data['categorie'] = $handballCategories[$data['categorie']];
+            if (!empty($data['handball_district_id'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->get($data['handball_district_id']);
+                if ($district) {
+                    $data['district'] = $district->name;
+                }
+            }
+            
+            if (!empty($data['handball_organisation_id'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->get($data['handball_organisation_id']);
+                if ($organisation) {
+                    $data['organisation'] = $organisation->name;
+                }
             }
             
             // Générer une référence d'inscription unique pour handball
@@ -1845,7 +1850,7 @@ class TeamsController extends AppController
         // Load dropdown options
         $HandballCategories = $this->fetchTable('HandballCategories');
         $handballCategories = $HandballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
@@ -2036,7 +2041,7 @@ class TeamsController extends AppController
         // Charger les listes pour les dropdowns
         $HandballCategories = $this->fetchTable('HandballCategories');
         $handballCategories = $HandballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
@@ -2535,15 +2540,29 @@ class TeamsController extends AppController
                 }
             }
             
-            // Mapper les champs des select vers les champs texte pour volleyball
-            $VolleyballCategories = $this->fetchTable('VolleyballCategories');
-            $volleyballCategories = $VolleyballCategories->find('list', [
-                'keyField' => 'name',
-                'valueField' => 'age_range'
-            ])->where(['active' => true])->toArray();
+            // Fill text fields from foreign keys for display purposes
+            if (!empty($data['volleyball_category_id'])) {
+                $VolleyballCategories = $this->fetchTable('VolleyballCategories');
+                $category = $VolleyballCategories->get($data['volleyball_category_id']);
+                if ($category) {
+                    $data['categorie'] = $category->age_range;
+                }
+            }
             
-            if (!empty($data['categorie']) && isset($volleyballCategories[$data['categorie']])) {
-                $data['categorie'] = $volleyballCategories[$data['categorie']];
+            if (!empty($data['volleyball_district_id'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->get($data['volleyball_district_id']);
+                if ($district) {
+                    $data['district'] = $district->name;
+                }
+            }
+            
+            if (!empty($data['volleyball_organisation_id'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->get($data['volleyball_organisation_id']);
+                if ($organisation) {
+                    $data['organisation'] = $organisation->name;
+                }
             }
             
             // Générer une référence d'inscription unique pour volleyball
@@ -2625,7 +2644,7 @@ class TeamsController extends AppController
         // Load dropdown options
         $VolleyballCategories = $this->fetchTable('VolleyballCategories');
         $volleyballCategories = $VolleyballCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         
@@ -2757,15 +2776,29 @@ class TeamsController extends AppController
                 }
             }
             
-            // Mapper les champs des select vers les champs texte pour beachvolley
-            $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
-            $beachvolleyCategories = $BeachvolleyCategories->find('list', [
-                'keyField' => 'name',
-                'valueField' => 'age_range'
-            ])->where(['active' => true])->toArray();
+            // Fill text fields from foreign keys for display purposes
+            if (!empty($data['beachvolley_category_id'])) {
+                $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
+                $category = $BeachvolleyCategories->get($data['beachvolley_category_id']);
+                if ($category) {
+                    $data['categorie'] = $category->age_range;
+                }
+            }
             
-            if (!empty($data['categorie']) && isset($beachvolleyCategories[$data['categorie']])) {
-                $data['categorie'] = $beachvolleyCategories[$data['categorie']];
+            if (!empty($data['beachvolley_district_id'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->get($data['beachvolley_district_id']);
+                if ($district) {
+                    $data['district'] = $district->name;
+                }
+            }
+            
+            if (!empty($data['beachvolley_organisation_id'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->get($data['beachvolley_organisation_id']);
+                if ($organisation) {
+                    $data['organisation'] = $organisation->name;
+                }
             }
             
             // Générer une référence d'inscription unique pour beach volleyball
@@ -2847,7 +2880,7 @@ class TeamsController extends AppController
         // Load dropdown options
         $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
         $beachvolleyCategories = $BeachvolleyCategories->find('list', [
-            'keyField' => 'name',
+            'keyField' => 'id',
             'valueField' => 'age_range'
         ])->where(['active' => true])->toArray();
         

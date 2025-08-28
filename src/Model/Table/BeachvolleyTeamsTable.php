@@ -52,18 +52,18 @@ class BeachvolleyTeamsTable extends Table
             'joinType' => 'INNER',
         ]);
         
-        $this->belongsTo('FootballCategories', [
-            'foreignKey' => 'football_category_id',
+        $this->belongsTo('BeachvolleyCategories', [
+            'foreignKey' => 'beachvolley_category_id',
             'joinType' => 'LEFT',
         ]);
         
         $this->belongsTo('FootballDistricts', [
-            'foreignKey' => 'football_district_id',
+            'foreignKey' => 'beachvolley_district_id',
             'joinType' => 'LEFT',
         ]);
         
         $this->belongsTo('FootballOrganisations', [
-            'foreignKey' => 'football_organisation_id',
+            'foreignKey' => 'beachvolley_organisation_id',
             'joinType' => 'LEFT',
         ]);
         
@@ -119,6 +119,19 @@ class BeachvolleyTeamsTable extends Table
         $validator
             ->integer('user_id')
             ->notEmptyString('user_id');
+
+        // Validations pour les champs de relation
+        $validator
+            ->allowEmpty('beachvolley_category_id')
+            ->integer('beachvolley_category_id');
+
+        $validator
+            ->allowEmpty('beachvolley_district_id')
+            ->integer('beachvolley_district_id');
+
+        $validator
+            ->allowEmpty('beachvolley_organisation_id')
+            ->integer('beachvolley_organisation_id');
 
         return $validator;
     }

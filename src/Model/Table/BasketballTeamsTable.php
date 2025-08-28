@@ -58,7 +58,7 @@ class BasketballTeamsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
-        $this->belongsTo('FootballCategories', [
+        $this->belongsTo('BasketballCategories', [
             'foreignKey' => 'basketball_category_id',
         ]);
         $this->belongsTo('FootballDistricts', [
@@ -131,16 +131,16 @@ class BasketballTeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->integer('football_category_id')
-            ->allowEmptyString('football_category_id');
+            ->allowEmpty('basketball_category_id')
+            ->integer('basketball_category_id');
 
         $validator
-            ->integer('football_district_id')
-            ->allowEmptyString('football_district_id');
+            ->allowEmpty('basketball_district_id')
+            ->integer('basketball_district_id');
 
         $validator
-            ->integer('football_organisation_id')
-            ->allowEmptyString('football_organisation_id');
+            ->allowEmpty('basketball_organisation_id')
+            ->integer('basketball_organisation_id');
 
         // Champs responsable
         $validator

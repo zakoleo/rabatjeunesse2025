@@ -130,16 +130,16 @@ class TeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->integer('football_category_id')
-            ->allowEmptyString('football_category_id');
+            ->allowEmpty('football_category_id')
+            ->integer('football_category_id');
 
         $validator
-            ->integer('football_district_id')
-            ->allowEmptyString('football_district_id');
+            ->allowEmpty('football_district_id')
+            ->integer('football_district_id');
 
         $validator
-            ->integer('football_organisation_id')
-            ->allowEmptyString('football_organisation_id');
+            ->allowEmpty('football_organisation_id')
+            ->integer('football_organisation_id');
 
         // Champs responsable
         $validator

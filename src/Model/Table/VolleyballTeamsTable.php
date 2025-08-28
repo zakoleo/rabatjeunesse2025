@@ -52,7 +52,7 @@ class VolleyballTeamsTable extends Table
             'joinType' => 'INNER',
         ]);
         
-        $this->belongsTo('FootballCategories', [
+        $this->belongsTo('VolleyballCategories', [
             'foreignKey' => 'volleyball_category_id',
             'joinType' => 'LEFT',
         ]);
@@ -119,6 +119,19 @@ class VolleyballTeamsTable extends Table
         $validator
             ->integer('user_id')
             ->notEmptyString('user_id');
+
+        // Validations pour les champs de relation
+        $validator
+            ->allowEmpty('volleyball_category_id')
+            ->integer('volleyball_category_id');
+
+        $validator
+            ->allowEmpty('volleyball_district_id')
+            ->integer('volleyball_district_id');
+
+        $validator
+            ->allowEmpty('volleyball_organisation_id')
+            ->integer('volleyball_organisation_id');
 
         return $validator;
     }
