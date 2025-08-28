@@ -131,15 +131,15 @@ class BasketballTeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->allowEmpty('basketball_category_id')
+            ->allowEmptyString('basketball_category_id')
             ->integer('basketball_category_id');
 
         $validator
-            ->allowEmpty('basketball_district_id')
+            ->allowEmptyString('basketball_district_id')
             ->integer('basketball_district_id');
 
         $validator
-            ->allowEmpty('basketball_organisation_id')
+            ->allowEmptyString('basketball_organisation_id')
             ->integer('basketball_organisation_id');
 
         // Champs responsable

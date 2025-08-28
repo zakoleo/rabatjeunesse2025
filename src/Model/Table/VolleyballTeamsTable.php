@@ -122,15 +122,15 @@ class VolleyballTeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->allowEmpty('volleyball_category_id')
+            ->allowEmptyString('volleyball_category_id')
             ->integer('volleyball_category_id');
 
         $validator
-            ->allowEmpty('volleyball_district_id')
+            ->allowEmptyString('volleyball_district_id')
             ->integer('volleyball_district_id');
 
         $validator
-            ->allowEmpty('volleyball_organisation_id')
+            ->allowEmptyString('volleyball_organisation_id')
             ->integer('volleyball_organisation_id');
 
         return $validator;

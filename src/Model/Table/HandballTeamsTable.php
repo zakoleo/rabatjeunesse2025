@@ -137,15 +137,15 @@ class HandballTeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->allowEmpty('handball_category_id')
+            ->allowEmptyString('handball_category_id')
             ->integer('handball_category_id');
 
         $validator
-            ->allowEmpty('handball_district_id')
+            ->allowEmptyString('handball_district_id')
             ->integer('handball_district_id');
 
         $validator
-            ->allowEmpty('handball_organisation_id')
+            ->allowEmptyString('handball_organisation_id')
             ->integer('handball_organisation_id');
 
         // Responsable validation

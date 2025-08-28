@@ -122,15 +122,15 @@ class BeachvolleyTeamsTable extends Table
 
         // Validations pour les champs de relation
         $validator
-            ->allowEmpty('beachvolley_category_id')
+            ->allowEmptyString('beachvolley_category_id')
             ->integer('beachvolley_category_id');
 
         $validator
-            ->allowEmpty('beachvolley_district_id')
+            ->allowEmptyString('beachvolley_district_id')
             ->integer('beachvolley_district_id');
 
         $validator
-            ->allowEmpty('beachvolley_organisation_id')
+            ->allowEmptyString('beachvolley_organisation_id')
             ->integer('beachvolley_organisation_id');
 
         return $validator;
