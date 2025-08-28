@@ -234,7 +234,7 @@ class TeamsController extends AppController
             
             // Générer une référence d'inscription unique
             if (empty($data['reference_inscription'])) {
-                $data['reference_inscription'] = 'FB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                $data['reference_inscription'] = 'FB' . date('Ymd') . str_pad((string)rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
             
             // S'assurer que le statut est défini
@@ -1050,7 +1050,7 @@ class TeamsController extends AppController
             
             // Générer une référence d'inscription unique pour basketball
             if (empty($data['reference_inscription'])) {
-                $data['reference_inscription'] = 'BB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                $data['reference_inscription'] = 'BB' . date('Ymd') . str_pad((string)rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
             
             // S'assurer que le statut est défini
@@ -1768,7 +1768,7 @@ class TeamsController extends AppController
             
             // Générer une référence d'inscription unique pour handball
             if (empty($data['reference_inscription'])) {
-                $data['reference_inscription'] = 'HB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                $data['reference_inscription'] = 'HB' . date('Ymd') . str_pad((string)rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
             
             // S'assurer que le statut est défini
@@ -2548,7 +2548,7 @@ class TeamsController extends AppController
             
             // Générer une référence d'inscription unique pour volleyball
             if (empty($data['reference_inscription'])) {
-                $data['reference_inscription'] = 'VB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                $data['reference_inscription'] = 'VB' . date('Ymd') . str_pad((string)rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
             
             // S'assurer que le statut est défini
@@ -2770,7 +2770,7 @@ class TeamsController extends AppController
             
             // Générer une référence d'inscription unique pour beach volleyball
             if (empty($data['reference_inscription'])) {
-                $data['reference_inscription'] = 'BV' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                $data['reference_inscription'] = 'BV' . date('Ymd') . str_pad((string)rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
             
             // S'assurer que le statut est défini
