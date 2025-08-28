@@ -14,11 +14,32 @@ document.addEventListener('DOMContentLoaded', function() {
         '3x3': { min: 3, max: 6, description: '3x3: 3-6 joueurs' }
     };
     
-    const AGE_CATEGORIES = {
-        '-17 ans': { minYear: 2008, maxYear: 2025 },
-        '-21 ans': { minYear: 2004, maxYear: 2025 },
-        '+21 ans': { minYear: 1970, maxYear: 2003 }
-    };
+    // Age categories (will be loaded dynamically)
+    let AGE_CATEGORIES = {};
+    
+    // Load age categories from database
+    async function loadAgeCategories() {
+        try {
+            const response = await fetch('/api/beachvolley-date-ranges');
+            if (!response.ok) {
+                throw new Error('Failed to load age categories');
+            }
+            const data = await response.json();
+            AGE_CATEGORIES = data.ageCategories || {};
+            console.log('Loaded beachvolley age categories:', AGE_CATEGORIES);
+        } catch (error) {
+            console.error('Error loading age categories:', error);
+            // Fallback to default ranges if API fails
+            AGE_CATEGORIES = {
+                '-17 ans': { minYear: 2008, maxYear: 2025 },
+                '-21 ans': { minYear: 2004, maxYear: 2025 },
+                '+21 ans': { minYear: 1970, maxYear: 2003 }
+            };
+        }
+    }
+    
+    // Initialize age categories on page load
+    loadAgeCategories();
     
     const TOTAL_STEPS = 3;
     

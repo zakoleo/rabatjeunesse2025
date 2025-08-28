@@ -98,20 +98,53 @@ class TeamsController extends AppController
             // Définir l'utilisateur connecté
             $data['user_id'] = $this->Authentication->getIdentity()->get('id');
             
-            // Mapper les champs des select vers les champs texte
-            $footballCategories = [
-                '-12' => '-12 ans',
-                '-15' => '-15 ans', 
-                '-18' => '-18 ans',
-                '+18' => '+18 ans'
-            ];
-            
-            if (!empty($data['categorie']) && isset($footballCategories[$data['categorie']])) {
-                $data['categorie'] = $footballCategories[$data['categorie']];
+            // Mapper les catégories vers les foreign keys
+            if (!empty($data['categorie'])) {
+                $FootballCategories = $this->fetchTable('FootballCategories');
+                $category = $FootballCategories->find()
+                    ->where(['name' => $data['categorie']])
+                    ->first();
+                
+                if ($category) {
+                    $data['football_category_id'] = $category->id;
+                    $data['categorie'] = $category->age_range; // Set the text field to display value
+                } else {
+                    // Fallback: load from database for dynamic mapping
+                    $FootballCategories = $this->fetchTable('FootballCategories');
+                    $footballCategories = $FootballCategories->find('list', [
+                        'keyField' => 'name',
+                        'valueField' => 'age_range'
+                    ])->where(['active' => true])->toArray();
+                    
+                    if (isset($footballCategories[$data['categorie']])) {
+                        $data['categorie'] = $footballCategories[$data['categorie']];
+                    }
+                }
             }
             
-            // Les districts et organisations peuvent être stockés directement
-            // car ils sont des champs texte dans le formulaire
+            // Mapper les districts vers les foreign keys
+            if (!empty($data['district'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->find()
+                    ->where(['name' => $data['district']])
+                    ->first();
+                
+                if ($district) {
+                    $data['football_district_id'] = $district->id;
+                }
+            }
+            
+            // Mapper les organisations vers les foreign keys
+            if (!empty($data['organisation'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->find()
+                    ->where(['name' => $data['organisation']])
+                    ->first();
+                
+                if ($organisation) {
+                    $data['football_organisation_id'] = $organisation->id;
+                }
+            }
             
             // Gérer les uploads de fichiers
             $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
@@ -168,20 +201,18 @@ class TeamsController extends AppController
             if (!empty($data['joueurs'])) {
                 $data['joueurs'] = array_values($data['joueurs']);
                 
-                // Valider les dates de naissance des joueurs
-                $categorie = $data['categorie'] ?? '';
-                $dateRanges = [
-                    'U12' => ['min' => '2014-01-01', 'max' => '2015-12-31'],
-                    'U15' => ['min' => '2012-01-01', 'max' => '2013-12-31'],
-                    'U18' => ['min' => '2008-01-01', 'max' => '2010-12-31'],
-                    '18+' => ['min' => '1970-01-01', 'max' => '2007-12-31'],
-                    'U21' => ['min' => '2005-01-01', 'max' => '2007-12-31']
-                ];
+                // Valider les dates de naissance des joueurs depuis la base de données
+                $selectedCategory = $data['categorie'] ?? '';
                 
-                if (isset($dateRanges[$categorie])) {
-                    $range = $dateRanges[$categorie];
-                    $minDate = new \DateTime($range['min']);
-                    $maxDate = new \DateTime($range['max']);
+                // Récupérer la catégorie avec ses date ranges depuis la DB
+                $FootballCategories = $this->fetchTable('FootballCategories');
+                $category = $FootballCategories->find()
+                    ->where(['name' => $selectedCategory])
+                    ->first();
+                
+                if ($category && !empty($category->min_date) && !empty($category->max_date)) {
+                    $minDate = new \DateTime($category->min_date);
+                    $maxDate = new \DateTime($category->max_date);
                     
                     foreach ($data['joueurs'] as $index => $joueur) {
                         if (!empty($joueur['date_naissance'])) {
@@ -192,7 +223,7 @@ class TeamsController extends AppController
                                     $joueur['nom_complet'] ?? 'n°' . ($index + 1),
                                     $minDate->format('d/m/Y'),
                                     $maxDate->format('d/m/Y'),
-                                    $categorie
+                                    $category->age_range
                                 ));
                                 return $this->redirect(['action' => 'add']);
                             }
@@ -200,6 +231,14 @@ class TeamsController extends AppController
                     }
                 }
             }
+            
+            // Générer une référence d'inscription unique
+            if (empty($data['reference_inscription'])) {
+                $data['reference_inscription'] = 'FB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+            
+            // S'assurer que le statut est défini
+            $data['status'] = $data['status'] ?? 'pending';
             
             // Gérer les données associées
             $team = $this->Teams->patchEntity($team, $data, [
@@ -229,25 +268,188 @@ class TeamsController extends AppController
             }
         }
         
-        // Charger les listes pour les dropdowns
-        $footballCategories = [
-            '-12' => '-12 ans',
-            '-15' => '-15 ans', 
-            '-18' => '-18 ans',
-            '+18' => '+18 ans'
-        ];
+        // Charger les listes pour les dropdowns depuis la base de données
+        $FootballCategories = $this->fetchTable('FootballCategories');
+        $footballCategories = $FootballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
-        $footballDistricts = $this->Teams->FootballDistricts->find('list', [
-            'keyField' => 'id',
+        $FootballDistricts = $this->fetchTable('FootballDistricts');
+        $footballDistricts = $FootballDistricts->find('list', [
+            'keyField' => 'name',
             'valueField' => 'name'
-        ])->where(['active' => true]);
+        ])->where(['active' => true])->toArray();
         
-        $footballOrganisations = $this->Teams->FootballOrganisations->find('list', [
-            'keyField' => 'id',
+        $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+        $footballOrganisations = $FootballOrganisations->find('list', [
+            'keyField' => 'name',
             'valueField' => 'name'
-        ])->where(['active' => true]);
+        ])->where(['active' => true])->toArray();
         
         $this->set(compact('team', 'footballCategories', 'footballDistricts', 'footballOrganisations'));
+    }
+
+    /**
+     * Get football categories date ranges as JSON
+     * Used by JavaScript for dynamic validation
+     *
+     * @return \Cake\Http\Response JSON response with date ranges
+     */
+    public function getFootballDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        $FootballCategories = $this->fetchTable('FootballCategories');
+        $categories = $FootballCategories->find()
+            ->where(['active' => true])
+            ->select(['name', 'age_range', 'min_date', 'max_date'])
+            ->all();
+
+        $dateRanges = [];
+        foreach ($categories as $category) {
+            $dateRanges[$category->age_range] = [
+                'min' => $category->min_date,
+                'max' => $category->max_date,
+                'name' => $category->name
+            ];
+        }
+
+        $this->set([
+            'dateRanges' => $dateRanges,
+            '_serialize' => ['dateRanges']
+        ]);
+
+        return $this->response->withType('application/json');
+    }
+
+    /**
+     * Get basketball categories date ranges as JSON
+     */
+    public function getBasketballDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        // Load basketball categories from database
+        $BasketballCategories = $this->fetchTable('BasketballCategories');
+        $categories = $BasketballCategories->find()
+            ->where(['active' => true])
+            ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
+            ->all();
+
+        $dateRanges = [];
+        foreach ($categories as $category) {
+            $dateRanges[$category->age_range] = [
+                'minYear' => $category->min_birth_year,
+                'maxYear' => $category->max_birth_year,
+                'name' => $category->name
+            ];
+        }
+
+        $this->set([
+            'ageCategories' => $dateRanges,
+            '_serialize' => ['ageCategories']
+        ]);
+
+        return $this->response->withType('application/json');
+    }
+
+    /**
+     * Get handball categories date ranges as JSON
+     */
+    public function getHandballDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        // Load handball categories from database
+        $HandballCategories = $this->fetchTable('HandballCategories');
+        $categories = $HandballCategories->find()
+            ->where(['active' => true])
+            ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
+            ->all();
+
+        $dateRanges = [];
+        foreach ($categories as $category) {
+            $dateRanges[$category->age_range] = [
+                'minYear' => $category->min_birth_year,
+                'maxYear' => $category->max_birth_year,
+                'name' => $category->name
+            ];
+        }
+
+        $this->set([
+            'ageCategories' => $dateRanges,
+            '_serialize' => ['ageCategories']
+        ]);
+
+        return $this->response->withType('application/json');
+    }
+
+    /**
+     * Get volleyball categories date ranges as JSON
+     */
+    public function getVolleyballDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        // Load volleyball categories from database
+        $VolleyballCategories = $this->fetchTable('VolleyballCategories');
+        $categories = $VolleyballCategories->find()
+            ->where(['active' => true])
+            ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
+            ->all();
+
+        $dateRanges = [];
+        foreach ($categories as $category) {
+            $dateRanges[$category->age_range] = [
+                'minYear' => $category->min_birth_year,
+                'maxYear' => $category->max_birth_year,
+                'name' => $category->name
+            ];
+        }
+
+        $this->set([
+            'ageCategories' => $dateRanges,
+            '_serialize' => ['ageCategories']
+        ]);
+
+        return $this->response->withType('application/json');
+    }
+
+    /**
+     * Get beachvolley categories date ranges as JSON
+     */
+    public function getBeachvolleyDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        // Load beachvolley categories from database
+        $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
+        $categories = $BeachvolleyCategories->find()
+            ->where(['active' => true])
+            ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
+            ->all();
+
+        $dateRanges = [];
+        foreach ($categories as $category) {
+            $dateRanges[$category->age_range] = [
+                'minYear' => $category->min_birth_year,
+                'maxYear' => $category->max_birth_year,
+                'name' => $category->name
+            ];
+        }
+
+        $this->set([
+            'ageCategories' => $dateRanges,
+            '_serialize' => ['ageCategories']
+        ]);
+
+        return $this->response->withType('application/json');
     }
 
     /**
@@ -297,20 +499,18 @@ class TeamsController extends AppController
                     return !empty($joueur['nom_complet']);
                 }));
                 
-                // Valider les dates de naissance des joueurs
-                $categorie = $data['categorie'] ?? $team->categorie ?? '';
-                $dateRanges = [
-                    'U12' => ['min' => '2014-01-01', 'max' => '2015-12-31'],
-                    'U15' => ['min' => '2012-01-01', 'max' => '2013-12-31'],
-                    'U18' => ['min' => '2008-01-01', 'max' => '2010-12-31'],
-                    '18+' => ['min' => '1970-01-01', 'max' => '2007-12-31'],
-                    'U21' => ['min' => '2005-01-01', 'max' => '2007-12-31']
-                ];
+                // Valider les dates de naissance des joueurs depuis la base de données
+                $selectedCategory = $data['categorie'] ?? $team->categorie ?? '';
                 
-                if (isset($dateRanges[$categorie])) {
-                    $range = $dateRanges[$categorie];
-                    $minDate = new \DateTime($range['min']);
-                    $maxDate = new \DateTime($range['max']);
+                // Récupérer la catégorie avec ses date ranges depuis la DB
+                $FootballCategories = $this->fetchTable('FootballCategories');
+                $category = $FootballCategories->find()
+                    ->where(['name' => $selectedCategory])
+                    ->first();
+                
+                if ($category && !empty($category->min_date) && !empty($category->max_date)) {
+                    $minDate = new \DateTime($category->min_date);
+                    $maxDate = new \DateTime($category->max_date);
                     
                     foreach ($data['joueurs'] as $index => $joueur) {
                         if (!empty($joueur['date_naissance'])) {
@@ -321,7 +521,7 @@ class TeamsController extends AppController
                                     $joueur['nom_complet'] ?? 'n°' . ($index + 1),
                                     $minDate->format('d/m/Y'),
                                     $maxDate->format('d/m/Y'),
-                                    $categorie
+                                    $category->age_range
                                 ));
                                 return $this->redirect(['action' => 'edit', $id]);
                             }
@@ -357,50 +557,36 @@ class TeamsController extends AppController
             }
         }
         
-        // Charger les listes pour les dropdowns
-        $footballCategories = [
-            '-12' => '-12 ans',
-            '-15' => '-15 ans', 
-            '-18' => '-18 ans',
-            '+18' => '+18 ans'
-        ];
+        // Charger les listes pour les dropdowns depuis la base de données
+        $FootballCategories = $this->fetchTable('FootballCategories');
+        $footballCategories = $FootballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
-        $footballDistricts = $this->Teams->FootballDistricts->find('list', [
-            'keyField' => 'id',
+        $FootballDistricts = $this->fetchTable('FootballDistricts');
+        $footballDistricts = $FootballDistricts->find('list', [
+            'keyField' => 'name',
             'valueField' => 'name'
-        ])->where(['active' => true]);
+        ])->where(['active' => true])->toArray();
         
-        $footballOrganisations = $this->Teams->FootballOrganisations->find('list', [
-            'keyField' => 'id',
+        $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+        $footballOrganisations = $FootballOrganisations->find('list', [
+            'keyField' => 'name',
             'valueField' => 'name'
-        ])->where(['active' => true]);
+        ])->where(['active' => true])->toArray();
         
-        // Trouver les IDs correspondants aux valeurs texte stockées
-        if (!empty($team->categorie)) {
-            $category = $this->Teams->FootballCategories->find()
-                ->where(['name' => $team->categorie])
-                ->first();
-            if ($category) {
-                $team->basketball_category_id = $category->id;
-            }
+        // Définir les IDs correspondants aux valeurs texte pour l'affichage du formulaire
+        if (!empty($team->football_category_id)) {
+            $team->categorie = $FootballCategories->get($team->football_category_id)->name;
         }
         
-        if (!empty($team->district)) {
-            $district = $this->Teams->FootballDistricts->find()
-                ->where(['name' => $team->district])
-                ->first();
-            if ($district) {
-                $team->basketball_district_id = $district->id;
-            }
+        if (!empty($team->football_district_id)) {
+            $team->district = $FootballDistricts->get($team->football_district_id)->name;
         }
         
-        if (!empty($team->organisation)) {
-            $organisation = $this->Teams->FootballOrganisations->find()
-                ->where(['name' => $team->organisation])
-                ->first();
-            if ($organisation) {
-                $team->basketball_organisation_id = $organisation->id;
-            }
+        if (!empty($team->football_organisation_id)) {
+            $team->organisation = $FootballOrganisations->get($team->football_organisation_id)->name;
         }
         
         $this->set(compact('team', 'footballCategories', 'footballDistricts', 'footballOrganisations'));
@@ -851,6 +1037,25 @@ class TeamsController extends AppController
                 }
             }
             
+            // Mapper les champs des select vers les champs texte pour basketball
+            $BasketballCategories = $this->fetchTable('BasketballCategories');
+            $basketballCategories = $BasketballCategories->find('list', [
+                'keyField' => 'name',
+                'valueField' => 'age_range'
+            ])->where(['active' => true])->toArray();
+            
+            if (!empty($data['categorie']) && isset($basketballCategories[$data['categorie']])) {
+                $data['categorie'] = $basketballCategories[$data['categorie']];
+            }
+            
+            // Générer une référence d'inscription unique pour basketball
+            if (empty($data['reference_inscription'])) {
+                $data['reference_inscription'] = 'BB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+            
+            // S'assurer que le statut est défini
+            $data['status'] = $data['status'] ?? 'pending';
+            
             // Ensure joueurs are properly indexed and map to basketball_teams_joueurs
             if (!empty($data['joueurs'])) {
                 $data['basketball_teams_joueurs'] = array_values($data['joueurs']);
@@ -870,12 +1075,11 @@ class TeamsController extends AppController
         }
         
         // Load basketball categories, districts and organizations
-        $basketballCategories = [
-            '-15' => '-15 ans',
-            '-17' => '-17 ans',
-            '-21' => '-21 ans', 
-            '+21' => '+21 ans'
-        ];
+        $BasketballCategories = $this->fetchTable('BasketballCategories');
+        $basketballCategories = $BasketballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -1409,12 +1613,11 @@ class TeamsController extends AppController
         }
         
         // Charger les listes pour les dropdowns
-        $basketballCategories = [
-            '-15' => '-15 ans',
-            '-17' => '-17 ans',
-            '-21' => '-21 ans', 
-            '+21' => '+21 ans'
-        ];
+        $BasketballCategories = $this->fetchTable('BasketballCategories');
+        $basketballCategories = $BasketballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -1552,6 +1755,25 @@ class TeamsController extends AppController
                 }
             }
             
+            // Mapper les champs des select vers les champs texte pour handball
+            $HandballCategories = $this->fetchTable('HandballCategories');
+            $handballCategories = $HandballCategories->find('list', [
+                'keyField' => 'name',
+                'valueField' => 'age_range'
+            ])->where(['active' => true])->toArray();
+            
+            if (!empty($data['categorie']) && isset($handballCategories[$data['categorie']])) {
+                $data['categorie'] = $handballCategories[$data['categorie']];
+            }
+            
+            // Générer une référence d'inscription unique pour handball
+            if (empty($data['reference_inscription'])) {
+                $data['reference_inscription'] = 'HB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+            
+            // S'assurer que le statut est défini
+            $data['status'] = $data['status'] ?? 'pending';
+            
             // Ensure joueurs are properly indexed and map to handball_teams_joueurs
             if (!empty($data['joueurs'])) {
                 $playersData = [];
@@ -1621,11 +1843,11 @@ class TeamsController extends AppController
         }
         
         // Load dropdown options
-        $handballCategories = [
-            '-15' => '-15 ans',
-            '-17' => '-17 ans',
-            '-19' => '-19 ans'
-        ];
+        $HandballCategories = $this->fetchTable('HandballCategories');
+        $handballCategories = $HandballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -1812,11 +2034,11 @@ class TeamsController extends AppController
         }
         
         // Charger les listes pour les dropdowns
-        $handballCategories = [
-            '-15' => '-15 ans',
-            '-17' => '-17 ans',
-            '-19' => '-19 ans'
-        ];
+        $HandballCategories = $this->fetchTable('HandballCategories');
+        $handballCategories = $HandballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -2313,6 +2535,25 @@ class TeamsController extends AppController
                 }
             }
             
+            // Mapper les champs des select vers les champs texte pour volleyball
+            $VolleyballCategories = $this->fetchTable('VolleyballCategories');
+            $volleyballCategories = $VolleyballCategories->find('list', [
+                'keyField' => 'name',
+                'valueField' => 'age_range'
+            ])->where(['active' => true])->toArray();
+            
+            if (!empty($data['categorie']) && isset($volleyballCategories[$data['categorie']])) {
+                $data['categorie'] = $volleyballCategories[$data['categorie']];
+            }
+            
+            // Générer une référence d'inscription unique pour volleyball
+            if (empty($data['reference_inscription'])) {
+                $data['reference_inscription'] = 'VB' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+            
+            // S'assurer que le statut est défini
+            $data['status'] = $data['status'] ?? 'pending';
+            
             // Ensure joueurs are properly indexed and map to volleyball_teams_joueurs
             if (!empty($data['joueurs'])) {
                 $playersData = [];
@@ -2382,11 +2623,11 @@ class TeamsController extends AppController
         }
         
         // Load dropdown options
-        $volleyballCategories = [
-            '-15' => '-15 ans',
-            '-17' => '-17 ans',
-            '-19' => '-19 ans'
-        ];
+        $VolleyballCategories = $this->fetchTable('VolleyballCategories');
+        $volleyballCategories = $VolleyballCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $volleyballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -2516,6 +2757,25 @@ class TeamsController extends AppController
                 }
             }
             
+            // Mapper les champs des select vers les champs texte pour beachvolley
+            $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
+            $beachvolleyCategories = $BeachvolleyCategories->find('list', [
+                'keyField' => 'name',
+                'valueField' => 'age_range'
+            ])->where(['active' => true])->toArray();
+            
+            if (!empty($data['categorie']) && isset($beachvolleyCategories[$data['categorie']])) {
+                $data['categorie'] = $beachvolleyCategories[$data['categorie']];
+            }
+            
+            // Générer une référence d'inscription unique pour beach volleyball
+            if (empty($data['reference_inscription'])) {
+                $data['reference_inscription'] = 'BV' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+            
+            // S'assurer que le statut est défini
+            $data['status'] = $data['status'] ?? 'pending';
+            
             // Ensure joueurs are properly indexed and map to beachvolley_teams_joueurs
             if (!empty($data['joueurs'])) {
                 $playersData = [];
@@ -2585,11 +2845,11 @@ class TeamsController extends AppController
         }
         
         // Load dropdown options
-        $beachvolleyCategories = [
-            '-17' => '-17 ans',
-            '-21' => '-21 ans',
-            '+21' => '+21 ans'
-        ];
+        $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
+        $beachvolleyCategories = $BeachvolleyCategories->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'age_range'
+        ])->where(['active' => true])->toArray();
         
         $footballDistricts = $beachvolleyTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',

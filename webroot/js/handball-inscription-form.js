@@ -14,11 +14,32 @@ document.addEventListener('DOMContentLoaded', function() {
         '5x5': { min: 5, max: 8, description: '5x5: 5-8 joueurs' }
     };
     
-    const AGE_CATEGORIES = {
-        '-15 ans': { minYear: 2010, maxYear: 2025 },
-        '-17 ans': { minYear: 2008, maxYear: 2025 },
-        '-19 ans': { minYear: 2006, maxYear: 2025 }
-    };
+    // Age categories (will be loaded dynamically)
+    let AGE_CATEGORIES = {};
+    
+    // Load age categories from database
+    async function loadAgeCategories() {
+        try {
+            const response = await fetch('/api/handball-date-ranges');
+            if (!response.ok) {
+                throw new Error('Failed to load age categories');
+            }
+            const data = await response.json();
+            AGE_CATEGORIES = data.ageCategories || {};
+            console.log('Loaded handball age categories:', AGE_CATEGORIES);
+        } catch (error) {
+            console.error('Error loading age categories:', error);
+            // Fallback to default ranges if API fails
+            AGE_CATEGORIES = {
+                '-15 ans': { minYear: 2010, maxYear: 2025 },
+                '-17 ans': { minYear: 2008, maxYear: 2025 },
+                '-19 ans': { minYear: 2006, maxYear: 2025 }
+            };
+        }
+    }
+    
+    // Initialize age categories on page load
+    loadAgeCategories();
     
     const TOTAL_STEPS = 3;
     

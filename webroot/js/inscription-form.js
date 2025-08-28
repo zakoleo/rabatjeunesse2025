@@ -18,13 +18,33 @@ document.addEventListener('DOMContentLoaded', function() {
         '11x11': 18
     };
     
-    // Règles de validation des dates de naissance par catégorie
-    const categoriesDateRanges = {
-        '-12 ans': { min: '2013-01-01', max: '2025-12-31' },
-        '-15 ans': { min: '2010-01-01', max: '2025-12-31' },
-        '-18 ans': { min: '2007-01-01', max: '2025-12-31' },
-        '+18 ans': { min: '1970-01-01', max: '2006-12-31' }
-    };
+    // Règles de validation des dates de naissance par catégorie (will be loaded dynamically)
+    let categoriesDateRanges = {};
+    
+    // Load date ranges from database
+    async function loadDateRanges() {
+        try {
+            const response = await fetch('/api/football-date-ranges');
+            if (!response.ok) {
+                throw new Error('Failed to load date ranges');
+            }
+            const data = await response.json();
+            categoriesDateRanges = data.dateRanges || {};
+            console.log('Loaded date ranges:', categoriesDateRanges);
+        } catch (error) {
+            console.error('Error loading date ranges:', error);
+            // Fallback to default ranges if API fails
+            categoriesDateRanges = {
+                '-12 ans': { min: '2014-01-01', max: '2015-12-31' },
+                '-15 ans': { min: '2012-01-01', max: '2013-12-31' },
+                '-18 ans': { min: '2008-01-01', max: '2010-12-31' },
+                '+18 ans': { min: '1970-01-01', max: '2007-12-31' }
+            };
+        }
+    }
+    
+    // Initialize date ranges on page load
+    loadDateRanges();
     
     // Wizard functionality
     let currentStep = 1;

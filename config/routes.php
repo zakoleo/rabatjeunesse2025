@@ -73,6 +73,15 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/sports/beachvolley', ['controller' => 'Sports', 'action' => 'beachvolley']);
 
         /*
+         * API routes for dynamic data
+         */
+        $builder->connect('/api/football-date-ranges', ['controller' => 'Teams', 'action' => 'getFootballDateRanges']);
+        $builder->connect('/api/basketball-date-ranges', ['controller' => 'Teams', 'action' => 'getBasketballDateRanges']);
+        $builder->connect('/api/handball-date-ranges', ['controller' => 'Teams', 'action' => 'getHandballDateRanges']);
+        $builder->connect('/api/volleyball-date-ranges', ['controller' => 'Teams', 'action' => 'getVolleyballDateRanges']);
+        $builder->connect('/api/beachvolley-date-ranges', ['controller' => 'Teams', 'action' => 'getBeachvolleyDateRanges']);
+
+        /*
          * Connect catchall routes for all controllers.
          *
          * The `fallbacks` method is a shortcut for
