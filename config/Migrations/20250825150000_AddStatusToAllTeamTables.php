@@ -51,7 +51,7 @@ class AddStatusToAllTeamTables extends BaseMigration
         foreach ($tables as $tableName) {
             $this->execute("
                 ALTER TABLE {$tableName} 
-                ADD CONSTRAINT IF NOT EXISTS fk_{$tableName}_verified_by 
+                ADD CONSTRAINT fk_{$tableName}_verified_by 
                 FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
             ");
         }
@@ -74,13 +74,13 @@ class AddStatusToAllTeamTables extends BaseMigration
         
         foreach ($tables as $tableName) {
             // Drop foreign key first
-            $this->execute("ALTER TABLE {$tableName} DROP FOREIGN KEY IF EXISTS fk_{$tableName}_verified_by");
+            $this->execute("ALTER TABLE {$tableName} DROP FOREIGN KEY fk_{$tableName}_verified_by");
             
             // Drop columns
-            $this->execute("ALTER TABLE {$tableName} DROP COLUMN IF EXISTS verification_notes");
-            $this->execute("ALTER TABLE {$tableName} DROP COLUMN IF EXISTS verified_by");
-            $this->execute("ALTER TABLE {$tableName} DROP COLUMN IF EXISTS verified_at");
-            $this->execute("ALTER TABLE {$tableName} DROP COLUMN IF EXISTS status");
+            $this->execute("ALTER TABLE {$tableName} DROP COLUMN verification_notes");
+            $this->execute("ALTER TABLE {$tableName} DROP COLUMN verified_by");
+            $this->execute("ALTER TABLE {$tableName} DROP COLUMN verified_at");
+            $this->execute("ALTER TABLE {$tableName} DROP COLUMN status");
         }
     }
 }
