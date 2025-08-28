@@ -119,14 +119,6 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             'queryParam' => 'redirect',
         ]);
 
-        // Load identifiers, ensure we check email and password fields
-        $authenticationService->loadIdentifier('Authentication.Password', [
-            'fields' => [
-                'username' => 'email',
-                'password' => 'password',
-            ]
-        ]);
-
         // Load the authenticators, you want session first
         $authenticationService->loadAuthenticator('Authentication.Session');
         // Configure form data check to pick email and password
@@ -136,6 +128,13 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 'password' => 'password',
             ],
             'loginUrl' => Router::url('/users/login'),
+            'identifier' => [
+                'className' => 'Authentication.Password',
+                'fields' => [
+                    'username' => 'email',
+                    'password' => 'password',
+                ]
+            ]
         ]);
 
         return $authenticationService;
