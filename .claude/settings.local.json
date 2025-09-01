@@ -24,7 +24,8 @@
       "Bash(/mnt/c/xampp/php/php.exe create_admin.php:*)",
       "Bash(/mnt/c/xampp/php/php.exe:*)",
       "Bash(echo:*)",
-      "Bash(/mnt/c/xampp/mysql/bin/mysql:*)"
+      "Bash(/mnt/c/xampp/mysql/bin/mysql:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

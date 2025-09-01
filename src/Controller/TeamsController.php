@@ -270,7 +270,6 @@ class TeamsController extends AppController
         
         $this->set(compact('team', 'footballCategories', 'footballDistricts', 'footballOrganisations'));
         $this->set('sport', 'football');
-        $this->render('add_unified');
     }
 
     /**
@@ -1144,7 +1143,7 @@ class TeamsController extends AppController
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'user', 'basketballCategories', 'footballDistricts', 'footballOrganisations'));
         $this->set('sport', 'basketball');
-        $this->render('add_unified');
+        $this->render('add_basketball');
     }
     
     /**
@@ -1934,7 +1933,7 @@ class TeamsController extends AppController
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'handballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
         $this->set('sport', 'handball');
-        $this->render('add_unified');
+        $this->render('add_handball');
     }
 
     /**
@@ -2736,7 +2735,7 @@ class TeamsController extends AppController
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'volleyballCategories', 'footballDistricts', 'footballOrganisations', 'user'));
         $this->set('sport', 'volleyball');
-        $this->render('add_unified');
+        $this->render('add_volleyball');
     }
 
     /**
@@ -2980,7 +2979,7 @@ class TeamsController extends AppController
         $user = $this->Authentication->getIdentity();
         $this->set(compact('team', 'beachvolleyCategories', 'footballDistricts', 'footballOrganisations', 'user'));
         $this->set('sport', 'beachvolley');
-        $this->render('add_unified');
+        $this->render('add_beachvolley');
     }
 
     /**

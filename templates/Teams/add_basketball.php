@@ -330,4 +330,8 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
 </div>
 
 <?= $this->Html->css('inscription-form') ?>
-<script src="<?= $this->Url->webroot('js/basketball-inscription-form.js?v=' . time()) ?>"></script>
+<script>
+    // Pass the base URL to JavaScript
+    window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
+</script>
+<?= $this->Html->script('inscription-form') ?>

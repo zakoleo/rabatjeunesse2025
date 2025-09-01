@@ -1,591 +1,291 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-detect sport type based on form elements
-    const typeFootball = document.getElementById('type-football');
-    const typeVolleyball = document.getElementById('type-volleyball');
-    const nombreJoueursRequis = document.getElementById('nombreJoueursRequis');
-    const joueursContainer = document.getElementById('joueursContainer');
-    const ajouterJoueurBtn = document.getElementById('ajouterJoueur');
-    const inscriptionForm = document.getElementById('inscriptionForm');
-    
-    // Determine sport type and set appropriate type element
-    let sportType = 'football';
-    let typeElement = typeFootball;
-    
-    if (typeVolleyball) {
-        sportType = 'volleyball';
-        typeElement = typeVolleyball;
-    }
-    
-    let joueurCount = 0;
+    // Simple wizard functionality
+    let currentStep = 1;
+    const maxSteps = 3;
+    let playerIndex = 0;
     
     // Player limits for different sports and types
     const joueursMin = {
-        // Football
         '5x5': 5,
         '6x6': 6,
+        '7x7': 7,
         '11x11': 11,
-        // Volleyball
-        '6x6': 6  // Volleyball 6x6
+        '2x2': 2
     };
     
     const joueursMax = {
-        // Football
-        '5x5': 8,
-        '6x6': 10,
+        '5x5': 10,
+        '6x6': 12,
+        '7x7': 14,
         '11x11': 18,
-        // Volleyball  
-        '6x6': 12  // Volleyball 6x6
+        '2x2': 4
     };
     
-    // Règles de validation des dates de naissance par catégorie (will be loaded dynamically)
-    let categoriesDateRanges = {};
+    // Initialize the form
+    updateStepDisplay();
+    updatePlayerRequirements();
     
-    // Load date ranges from database based on sport type
-    async function loadDateRanges() {
-        try {
-            // Construct API endpoint using the base URL from the backend
-            const baseUrl = window.APP_BASE_URL || '/';
-            const apiPath = sportType === 'volleyball' ? 
-                'api/volleyball-date-ranges' : 
-                'api/football-date-ranges';
-            const apiEndpoint = baseUrl + apiPath;
-            const response = await fetch(apiEndpoint);
-            console.log('API Response status:', response.status, response.statusText);
-            console.log('API URL:', apiEndpoint);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Error Response:', errorText);
-                throw new Error(`Failed to load date ranges: ${response.status} ${response.statusText}`);
+    // Navigation button handlers
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (validateCurrentStep()) {
+                if (currentStep < maxSteps) {
+                    currentStep++;
+                    updateStepDisplay();
+                }
             }
-            
-            const responseText = await response.text();
-            console.log('Raw API Response:', responseText);
-            
-            if (!responseText.trim()) {
-                throw new Error('Empty response from API');
-            }
-            
-            const data = JSON.parse(responseText);
-            categoriesDateRanges = data.dateRanges || {};
-            console.log('Loaded date ranges for', sportType + ':', categoriesDateRanges);
-        } catch (error) {
-            console.error('Error loading date ranges:', error);
-            // Fallback to default ranges if API fails
-            if (sportType === 'volleyball') {
-                categoriesDateRanges = {
-                    '-15 ans': { min: '2010-01-01', max: '2025-12-31' },
-                    '-17 ans': { min: '2008-01-01', max: '2025-12-31' },
-                    '-19 ans': { min: '2006-01-01', max: '2025-12-31' }
-                };
-            } else {
-                categoriesDateRanges = {
-                    '-12 ans': { min: '2014-01-01', max: '2015-12-31' },
-                    '-15 ans': { min: '2012-01-01', max: '2013-12-31' },
-                    '-18 ans': { min: '2008-01-01', max: '2010-12-31' },
-                    '+18 ans': { min: '1970-01-01', max: '2007-12-31' }
-                };
-            }
-        }
+        });
     }
     
-    // Initialize date ranges on page load
-    loadDateRanges();
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        });
+    }
     
-    // Wizard functionality
-    let currentStep = 1;
-    const totalSteps = 3;
-    const progressSteps = document.querySelectorAll('.progress-step');
-    const wizardSteps = document.querySelectorAll('.wizard-step');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const submitBtn = document.querySelector('button[type="submit"]');
+    // Add player functionality
+    const ajouterJoueurBtn = document.getElementById('ajouterJoueur');
+    if (ajouterJoueurBtn) {
+        ajouterJoueurBtn.addEventListener('click', addPlayer);
+    }
     
-    // Debug DOM elements
-    console.log('DOM elements found:');
-    console.log('Progress steps:', progressSteps.length);
-    console.log('Wizard steps:', wizardSteps.length);
-    console.log('Prev button:', prevBtn);
-    console.log('Next button:', nextBtn);
-    console.log('Submit button:', submitBtn);
+    // Same as manager checkbox
+    const sameAsResponsable = document.getElementById('sameAsResponsable');
+    if (sameAsResponsable) {
+        sameAsResponsable.addEventListener('change', toggleCoachFields);
+    }
     
-    function showStep(step) {
-        // Hide all steps
-        wizardSteps.forEach((wizardStep, index) => {
-            wizardStep.classList.remove('active');
-            progressSteps[index]?.classList.remove('active', 'completed');
+    // Sport type change listeners
+    const typeElements = document.querySelectorAll('[id*="type-"]');
+    typeElements.forEach(element => {
+        element.addEventListener('change', updatePlayerRequirements);
+    });
+    
+    function updateStepDisplay() {
+        // Update progress indicators
+        document.querySelectorAll('.progress-step').forEach((step, index) => {
+            const stepNum = index + 1;
+            if (stepNum === currentStep) {
+                step.classList.add('active');
+                step.classList.remove('completed');
+            } else if (stepNum < currentStep) {
+                step.classList.remove('active');
+                step.classList.add('completed');
+            } else {
+                step.classList.remove('active', 'completed');
+            }
         });
         
-        // Show current step
-        const currentWizardStep = document.querySelector(`.wizard-step[data-step="${step}"]`);
-        if (currentWizardStep) {
-            currentWizardStep.classList.add('active');
+        // Update progress bar data attribute
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.setAttribute('data-progress', currentStep);
         }
         
-        // Update progress bar
-        progressSteps.forEach((progressStep, index) => {
-            if (index < step - 1) {
-                progressStep.classList.add('completed');
-            } else if (index === step - 1) {
-                progressStep.classList.add('active');
+        // Show/hide wizard steps
+        document.querySelectorAll('.wizard-step').forEach((step, index) => {
+            const stepNum = index + 1;
+            if (stepNum === currentStep) {
+                step.classList.add('active');
+                step.style.display = 'block';
+            } else {
+                step.classList.remove('active');
+                step.style.display = 'none';
             }
         });
         
         // Update navigation buttons
-        prevBtn.style.display = step === 1 ? 'none' : 'inline-block';
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.querySelector('button[type="submit"]');
         
-        if (step === totalSteps) {
-            nextBtn.style.display = 'none';
-            submitBtn.style.display = 'inline-block';
-        } else {
-            nextBtn.style.display = 'inline-block';
-            submitBtn.style.display = 'none';
+        if (prevBtn) {
+            prevBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
+        }
+        
+        if (nextBtn && submitBtn) {
+            if (currentStep < maxSteps) {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            }
         }
     }
     
-    function validateStep(step) {
-        console.log('Validating step:', step);
-        const currentWizardStep = document.querySelector(`.wizard-step[data-step="${step}"]`);
-        console.log('Current wizard step element:', currentWizardStep);
-        const requiredFields = currentWizardStep.querySelectorAll('[required]:not(:disabled)');
-        console.log('Required fields found:', requiredFields.length);
+    function validateCurrentStep() {
         let isValid = true;
-        let firstErrorField = null;
+        const currentStepElement = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
         
-        // Remove all existing error messages
-        currentWizardStep.querySelectorAll('.error-message').forEach(msg => msg.remove());
+        if (!currentStepElement) return true;
+        
+        // Clear previous errors
+        currentStepElement.querySelectorAll('.error-message').forEach(error => {
+            error.remove();
+        });
+        currentStepElement.querySelectorAll('.error').forEach(field => {
+            field.classList.remove('error');
+        });
+        
+        // Validate required fields in current step
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
         
         requiredFields.forEach(field => {
-            const formGroup = field.closest('.form-group');
-            
-            if (!field.value || field.value.trim() === '') {
-                field.classList.add('error');
+            if (!field.value.trim()) {
+                showFieldError(field, 'Ce champ est requis');
                 isValid = false;
-                
-                // Add error message
-                if (formGroup) {
-                    const errorMsg = document.createElement('span');
-                    errorMsg.className = 'error-message';
-                    errorMsg.textContent = getErrorMessage(field);
-                    errorMsg.style.color = '#dc3545';
-                    errorMsg.style.fontSize = '0.875rem';
-                    errorMsg.style.marginTop = '0.25rem';
-                    errorMsg.style.display = 'block';
-                    formGroup.appendChild(errorMsg);
-                }
-                
-                if (!firstErrorField) {
-                    firstErrorField = field;
-                }
-            } else {
-                field.classList.remove('error');
-            }
-            
-            // Validate pattern if exists and field has value
-            if (field.value && field.value.trim() !== '' && field.hasAttribute('pattern')) {
-                const pattern = new RegExp(field.getAttribute('pattern'));
-                if (!pattern.test(field.value)) {
-                    field.classList.add('error');
-                    isValid = false;
-                    
-                    if (formGroup) {
-                        const errorMsg = document.createElement('span');
-                        errorMsg.className = 'error-message';
-                        errorMsg.textContent = getPatternErrorMessage(field);
-                        errorMsg.style.color = '#dc3545';
-                        errorMsg.style.fontSize = '0.875rem';
-                        errorMsg.style.marginTop = '0.25rem';
-                        errorMsg.style.display = 'block';
-                        formGroup.appendChild(errorMsg);
-                    }
-                    
-                    if (!firstErrorField) {
-                        firstErrorField = field;
-                    }
-                }
+            } else if (field.type === 'email' && !isValidEmail(field.value)) {
+                showFieldError(field, 'Veuillez entrer une adresse e-mail valide');
+                isValid = false;
+            } else if (field.type === 'tel' && !isValidPhone(field.value)) {
+                showFieldError(field, 'Veuillez entrer un numéro de téléphone valide');
+                isValid = false;
             }
         });
         
-        // Special validation for step 1
-        if (step === 1) {
-            const categorieField = sportType === 'volleyball' ? 
-                document.getElementById('volleyball-category-id') : 
-                document.getElementById('football-category-id');
-            const typeField = sportType === 'volleyball' ? 
-                document.getElementById('type-volleyball') : 
-                document.getElementById('type-football');
+        // Step 3 validation: Check minimum players
+        if (currentStep === 3) {
+            const playersCount = document.querySelectorAll('.joueur-form, .joueur-item').length;
+            const selectedType = getSelectedSportType();
+            const minRequired = joueursMin[selectedType] || 5;
             
-            console.log('Step 1 validation - Category field:', categorieField, 'value:', categorieField?.value);
-            console.log('Step 1 validation - Type field:', typeField, 'value:', typeField?.value);
-            
-            if (!categorieField || !categorieField.value) {
-                showNotification('Veuillez sélectionner une catégorie d\'âge', 'error');
-                return false;
-            }
-            
-            if (!typeField || !typeField.value) {
-                const sportName = sportType === 'volleyball' ? 'volleyball' : 'football';
-                showNotification(`Veuillez sélectionner un type de ${sportName}`, 'error');
-                return false;
-            }
-        }
-        
-        // Special validation for step 3
-        if (step === 3) {
-            const type = typeElement?.value;
-            if (type && joueurCount < joueursMin[type]) {
-                showNotification(`Vous devez ajouter au minimum ${joueursMin[type]} joueurs`, 'error');
-                return false;
-            }
-            
-            // Valider les dates de naissance des joueurs
-            const categorieField = sportType === 'volleyball' ? 
-                document.getElementById('volleyball-category-id') : 
-                document.getElementById('football-category-id');
-            const categorieName = categorieField?.options[categorieField.selectedIndex]?.text || '';
-            const joueurItems = currentWizardStep.querySelectorAll('.joueur-item');
-            let datesValid = true;
-            
-            joueurItems.forEach((joueurItem, index) => {
-                const dateField = joueurItem.querySelector('input[type="date"]');
-                if (dateField && dateField.value) {
-                    const validation = validateJoueurDateNaissance(dateField.value, categorieName);
-                    if (!validation.valid) {
-                        datesValid = false;
-                        dateField.classList.add('error');
-                        
-                        // Ajouter le message d'erreur
-                        const formGroup = dateField.closest('.form-group');
-                        if (formGroup && !formGroup.querySelector('.error-message')) {
-                            const errorMsg = document.createElement('span');
-                            errorMsg.className = 'error-message';
-                            errorMsg.textContent = validation.message;
-                            errorMsg.style.color = '#dc3545';
-                            errorMsg.style.fontSize = '0.875rem';
-                            errorMsg.style.marginTop = '0.25rem';
-                            errorMsg.style.display = 'block';
-                            formGroup.appendChild(errorMsg);
-                        }
-                        
-                        if (!firstErrorField) {
-                            firstErrorField = dateField;
-                        }
-                    }
+            if (playersCount < minRequired) {
+                const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
+                if (container) {
+                    showContainerError(container, `Vous devez ajouter au moins ${minRequired} joueurs pour cette catégorie`);
+                    isValid = false;
                 }
-            });
-            
-            if (!datesValid) {
-                showNotification('Les dates de naissance des joueurs ne correspondent pas à la catégorie sélectionnée', 'error');
-                if (firstErrorField) {
-                    firstErrorField.focus();
-                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return false;
-            }
-            
-            if (!document.getElementById('accepter-reglement').checked) {
-                showNotification('Vous devez accepter le règlement', 'error');
-                return false;
-            }
-        }
-        
-        if (!isValid) {
-            showNotification('Veuillez corriger les erreurs avant de continuer', 'error');
-            if (firstErrorField) {
-                firstErrorField.focus();
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
         
         return isValid;
     }
     
-    function getErrorMessage(field) {
-        const label = field.closest('.form-group')?.querySelector('label')?.textContent || 'Ce champ';
-        return `${label.replace('*', '').trim()} est obligatoire`;
+    function showFieldError(field, message) {
+        field.classList.add('error');
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.textContent = message;
+        field.parentNode.appendChild(errorElement);
     }
     
-    function getPatternErrorMessage(field) {
-        if (field.type === 'tel') {
-            return 'Le numéro de téléphone doit contenir 10 chiffres';
-        }
-        return 'Format invalide';
+    function showContainerError(container, message) {
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.textContent = message;
+        errorElement.style.marginTop = '1rem';
+        errorElement.style.padding = '0.75rem';
+        errorElement.style.backgroundColor = '#fff5f5';
+        errorElement.style.border = '1px solid #dc3545';
+        errorElement.style.borderRadius = '4px';
+        container.appendChild(errorElement);
     }
     
-    function validateJoueurDateNaissance(dateNaissance, categorie) {
-        if (!dateNaissance || !categorie) return { valid: true };
-        
-        const dateRange = categoriesDateRanges[categorie];
-        if (!dateRange) return { valid: true };
-        
-        const birthDate = new Date(dateNaissance);
-        const minDate = new Date(dateRange.min);
-        const maxDate = new Date(dateRange.max);
-        
-        if (birthDate < minDate || birthDate > maxDate) {
-            return {
-                valid: false,
-                message: `Pour la catégorie ${categorie}, le joueur doit être né entre le ${formatDate(minDate)} et le ${formatDate(maxDate)}`
-            };
-        }
-        
-        return { valid: true };
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
     
-    function formatDate(date) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+    function isValidPhone(phone) {
+        return /^[0-9+\-\s()]{10,}$/.test(phone);
     }
     
-    // Add debug logging for button elements
-    console.log('nextBtn element:', nextBtn);
-    console.log('prevBtn element:', prevBtn);
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Next button clicked! Current step:', currentStep);
-            try {
-                if (validateStep(currentStep)) {
-                    console.log('Step validation passed, moving to next step');
-                    currentStep++;
-                    showStep(currentStep);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    console.log('Step validation failed');
-                }
-            } catch (error) {
-                console.error('Error in next button handler:', error);
-            }
-        });
-    } else {
-        console.error('Next button not found! Check button ID.');
+    function getSelectedSportType() {
+        const typeFootball = document.getElementById('type-football');
+        const typeVolleyball = document.getElementById('type-volleyball');
+        const typeBasketball = document.getElementById('type-basketball');
+        const typeHandball = document.getElementById('type-handball');
+        const typeBeachvolley = document.getElementById('type-beachvolley');
+        
+        if (typeFootball && typeFootball.value) return typeFootball.value;
+        if (typeVolleyball && typeVolleyball.value) return typeVolleyball.value;
+        if (typeBasketball && typeBasketball.value) return typeBasketball.value;
+        if (typeHandball && typeHandball.value) return typeHandball.value;
+        if (typeBeachvolley && typeBeachvolley.value) return typeBeachvolley.value;
+        
+        return '5x5'; // default
     }
     
-    prevBtn.addEventListener('click', () => {
-        currentStep--;
-        showStep(currentStep);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    
-    // Initialize wizard
-    showStep(currentStep);
-    
-    // Add event listeners to remove errors on input
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('error')) {
-            e.target.classList.remove('error');
-            const errorMsg = e.target.closest('.form-group')?.querySelector('.error-message');
-            if (errorMsg) {
-                errorMsg.remove();
-            }
-        }
-    });
-    
-    // Add event listeners for select fields
-    document.addEventListener('change', function(e) {
-        if (e.target.tagName === 'SELECT' && e.target.classList.contains('error')) {
-            e.target.classList.remove('error');
-            const errorMsg = e.target.closest('.form-group')?.querySelector('.error-message');
-            if (errorMsg) {
-                errorMsg.remove();
-            }
-        }
-    });
-    
-    // Handle optional fields with pattern validation
-    const whatsappField = document.getElementById('responsable-whatsapp');
-    if (whatsappField) {
-        // Remove pattern if field is empty to avoid validation issues
-        whatsappField.addEventListener('blur', function() {
-            if (!this.value) {
-                this.removeAttribute('pattern');
-            } else if (this.dataset.originalPattern) {
-                this.setAttribute('pattern', this.dataset.originalPattern);
-            }
-        });
+    function updatePlayerRequirements() {
+        const selectedType = getSelectedSportType();
+        const min = joueursMin[selectedType] || 5;
+        const max = joueursMax[selectedType] || 10;
         
-        // Store original pattern
-        whatsappField.dataset.originalPattern = whatsappField.getAttribute('pattern');
+        const nombreJoueursRequis = document.getElementById('nombreJoueursRequis');
+        if (nombreJoueursRequis) {
+            nombreJoueursRequis.innerHTML = `
+                <div class="requirement-info">
+                    <h4>Composition de l'équipe</h4>
+                    <p><strong>Minimum:</strong> ${min} joueurs</p>
+                    <p><strong>Maximum:</strong> ${max} joueurs</p>
+                    <p class="note">Vous devez inscrire au minimum ${min} joueurs pour pouvoir participer au tournoi.</p>
+                </div>
+            `;
+        }
+        
+        // Also update any existing info text
+        const infoText = document.querySelector('.info-text');
+        if (infoText) {
+            const span = infoText.querySelector('span');
+            if (span) {
+                span.textContent = `${min} - ${max} joueurs`;
+            }
+        }
     }
     
-    // Gestion des types selon la catégorie et le sport
-    const categorieSelect = sportType === 'volleyball' ? 
-        document.getElementById('volleyball-category-id') : 
-        document.getElementById('football-category-id');
-    const typeSelect = typeElement;
-    const typeHelp = sportType === 'volleyball' ? 
-        document.getElementById('type-volleyball-help') : 
-        document.getElementById('type-football-help');
-    
-    categorieSelect?.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const categorieName = selectedOption?.text || '';
-        typeSelect.value = ''; // Reset selection
-        nombreJoueursRequis.textContent = ''; // Reset player count display
+    function addPlayer() {
+        playerIndex++;
+        const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
+        if (!container) return;
         
-        // Clear existing players
-        joueursContainer.innerHTML = '';
-        joueurCount = 0;
+        // Clear any existing error messages
+        container.querySelectorAll('.error-message').forEach(error => error.remove());
         
-        // Update sport type options based on category
-        const options = typeSelect.querySelectorAll('option');
-        // For volleyball, all categories can only use 6x6
-        if (sportType === 'volleyball') {
-            options.forEach(option => {
-                if (option.value === '') return; // Skip the default option
-                option.style.display = 'block';
-                option.disabled = false;
-            });
-            
-            // Update help text for volleyball
-            if (typeHelp) {
-                typeHelp.textContent = 'Volleyball classique 6x6: équipes de 6 à 12 joueurs';
-            }
-        } else {
-            // Football logic
-            options.forEach(option => {
-                if (option.value === '') return; // Skip the default option
-                
-                if (categorieName === 'U12' || categorieName === 'U15') {
-                    // U12 and U15 can only choose 6x6
-                    if (option.value === '6x6') {
-                        option.style.display = 'block';
-                        option.disabled = false;
-                    } else {
-                        option.style.display = 'none';
-                        option.disabled = true;
-                    }
-                } else if (categorieName === 'U18' || categorieName === '18+') {
-                    // U18 and 18+ can choose 5x5 or 11x11
-                    if (option.value === '5x5' || option.value === '11x11') {
-                        option.style.display = 'block';
-                        option.disabled = false;
-                    } else {
-                        option.style.display = 'none';
-                        option.disabled = true;
-                    }
-                } else {
-                    // No category selected, show all options
-                    option.style.display = 'block';
-                    option.disabled = false;
-                }
-            });
-            
-            // Update help text based on category for football
-            if (typeHelp) {
-                if (categorieName === 'U12' || categorieName === 'U15') {
-                    typeHelp.textContent = 'Les catégories U12 et U15 participent uniquement au football à 6';
-                } else if (categorieName === 'U18' || categorieName === '18+') {
-                    typeHelp.textContent = 'Les catégories U18 et 18+ peuvent choisir entre football à 5 et football à 11';
-                } else {
-                    typeHelp.textContent = '';
-                }
-            }
-        }
+        const selectedType = getSelectedSportType();
+        const maxPlayers = joueursMax[selectedType] || 10;
+        const currentPlayers = container.querySelectorAll('.joueur-form, .joueur-item').length;
         
-        // Auto-select if only one option is available
-        const visibleOptions = Array.from(options).filter(opt => 
-            opt.value !== '' && opt.style.display !== 'none' && !opt.disabled
-        );
-        if (visibleOptions.length === 1) {
-            typeSelect.value = visibleOptions[0].value;
-            typeSelect.dispatchEvent(new Event('change'));
-        }
-    });
-    
-    // Mettre à jour le nombre de joueurs requis
-    typeSelect?.addEventListener('change', function() {
-        const type = this.value;
-        if (type && joueursMin[type]) {
-            nombreJoueursRequis.innerHTML = `<strong>Minimum ${joueursMin[type]}</strong> joueurs, <strong>Maximum ${joueursMax[type]}</strong> joueurs`;
-            // Ajouter automatiquement le minimum de joueurs
-            while (joueurCount < joueursMin[type]) {
-                ajouterJoueur();
-            }
-        } else {
-            nombreJoueursRequis.textContent = '';
-        }
-    });
-    
-    // Gérer l'entraîneur identique au responsable
-    const sameAsResponsable = document.getElementById('sameAsResponsable');
-    const entraineurFields = document.getElementById('entraineurFields');
-    
-    sameAsResponsable?.addEventListener('change', function() {
-        if (this.checked) {
-            entraineurFields.style.opacity = '0.5';
-            entraineurFields.querySelectorAll('input, select').forEach(field => {
-                field.disabled = true;
-                field.removeAttribute('required');
-            });
-        } else {
-            entraineurFields.style.opacity = '1';
-            entraineurFields.querySelectorAll('input, select').forEach(field => {
-                field.disabled = false;
-                if (field.dataset.wasRequired !== 'false') {
-                    field.setAttribute('required', 'required');
-                }
-            });
-        }
-    });
-    
-    // Ajouter un joueur
-    ajouterJoueurBtn?.addEventListener('click', function() {
-        const categorieField = document.getElementById('football-category-id');
-        const categorie = categorieField?.value;
-        if (!categorie) {
-            showNotification('Veuillez d\'abord sélectionner la catégorie d\'âge', 'error');
+        if (currentPlayers >= maxPlayers) {
+            showContainerError(container, `Vous ne pouvez pas ajouter plus de ${maxPlayers} joueurs pour cette catégorie`);
             return;
         }
         
-        const type = typeSelect?.value;
-        if (!type) {
-            const sportName = sportType === 'volleyball' ? 'volleyball' : 'football';
-            showNotification(`Veuillez d'abord sélectionner le type de ${sportName}`, 'error');
-            return;
-        }
-        
-        if (joueurCount >= joueursMax[type]) {
-            showNotification(`Nombre maximum de joueurs atteint pour le ${type}`, 'error');
-            return;
-        }
-        
-        ajouterJoueur();
-    });
-    
-    function ajouterJoueur() {
-        joueurCount++;
-        const joueurDiv = document.createElement('div');
-        joueurDiv.className = 'joueur-item';
-        joueurDiv.innerHTML = `
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'joueur-form';
+        playerDiv.innerHTML = `
             <div class="joueur-header">
-                <h3>Joueur ${joueurCount}</h3>
-                <button type="button" class="btn btn-danger" onclick="supprimerJoueur(this, ${joueurCount})">
-                    Supprimer
+                <h4>Joueur ${playerIndex}</h4>
+                <button type="button" class="btn-remove-joueur" onclick="removePlayer(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                 </button>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="joueur-${joueurCount}-nom-complet">Nom complet *</label>
-                    <input type="text" id="joueur-${joueurCount}-nom-complet" name="joueurs[${joueurCount}][nom_complet]" required>
+                    <label>Nom complet *</label>
+                    <input type="text" name="joueurs[${playerIndex}][nom_complet]" required>
                 </div>
                 <div class="form-group">
-                    <label for="joueur-${joueurCount}-date-naissance">Date de naissance *</label>
-                    <input type="date" id="joueur-${joueurCount}-date-naissance" name="joueurs[${joueurCount}][date_naissance]" required>
+                    <label>Date de naissance *</label>
+                    <input type="date" name="joueurs[${playerIndex}][date_naissance]" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="joueur-${joueurCount}-identifiant">CIN ou Code Massar *</label>
-                    <input type="text" id="joueur-${joueurCount}-identifiant" name="joueurs[${joueurCount}][identifiant]" required>
-                    <small>CIN pour les adultes, Code Massar pour les mineurs</small>
+                    <label>N° CIN ou Passeport *</label>
+                    <input type="text" name="joueurs[${playerIndex}][identifiant]" required>
                 </div>
                 <div class="form-group">
-                    <label for="joueur-${joueurCount}-taille">Taille vestimentaire *</label>
-                    <select id="joueur-${joueurCount}-taille" name="joueurs[${joueurCount}][taille_vestimentaire]" required>
+                    <label>Taille vestimentaire *</label>
+                    <select name="joueurs[${playerIndex}][taille_vestimentaire]" required>
                         <option value="">Sélectionner une taille</option>
                         <option value="XS">XS</option>
                         <option value="S">S</option>
@@ -593,162 +293,109 @@ document.addEventListener('DOMContentLoaded', function() {
                         <option value="L">L</option>
                         <option value="XL">XL</option>
                         <option value="XXL">XXL</option>
+                        <option value="XXXL">XXXL</option>
                     </select>
                 </div>
             </div>
         `;
-        joueursContainer.appendChild(joueurDiv);
         
-        // Ajouter la validation de date au nouveau joueur
-        const dateField = joueurDiv.querySelector(`#joueur-${joueurCount}-date-naissance`);
-        if (dateField) {
-            dateField.addEventListener('change', function() {
-                validateJoueurDateField(this);
-            });
-        }
-        
-        // Animate the new player
-        setTimeout(() => {
-            joueurDiv.style.opacity = '1';
-        }, 10);
+        container.appendChild(playerDiv);
+        updatePlayerCount();
     }
     
-    function validateJoueurDateField(dateField) {
-        const categorieField = document.getElementById('football-category-id');
-        const categorieName = categorieField?.options[categorieField.selectedIndex]?.text || '';
-        const validation = validateJoueurDateNaissance(dateField.value, categorieName);
+    function toggleCoachFields() {
+        const checkbox = document.getElementById('sameAsResponsable');
+        const coachFields = document.getElementById('entraineurFields') || document.getElementById('entraineur-fields');
         
-        const formGroup = dateField.closest('.form-group');
-        const existingError = formGroup?.querySelector('.error-message');
+        if (!checkbox || !coachFields) return;
         
-        if (!validation.valid) {
-            dateField.classList.add('error');
-            if (formGroup && !existingError) {
-                const errorMsg = document.createElement('span');
-                errorMsg.className = 'error-message';
-                errorMsg.textContent = validation.message;
-                errorMsg.style.color = '#dc3545';
-                errorMsg.style.fontSize = '0.875rem';
-                errorMsg.style.marginTop = '0.25rem';
-                errorMsg.style.display = 'block';
-                formGroup.appendChild(errorMsg);
-            } else if (existingError) {
-                existingError.textContent = validation.message;
-            }
-        } else {
-            dateField.classList.remove('error');
-            if (existingError) {
-                existingError.remove();
-            }
-        }
-    }
-    
-    // Supprimer un joueur
-    window.supprimerJoueur = function(button, index) {
-        const type = typeSelect?.value;
-        if (type && joueurCount <= joueursMin[type]) {
-            showNotification(`Nombre minimum de joueurs requis pour le ${type}: ${joueursMin[type]}`, 'error');
-            return;
-        }
+        const coachInputs = coachFields.querySelectorAll('input, select');
         
-        const joueurItem = button.closest('.joueur-item');
-        joueurItem.style.opacity = '0';
-        
-        setTimeout(() => {
-            joueurItem.remove();
-            joueurCount--;
+        if (checkbox.checked) {
+            // Copy manager data to coach fields
+            const managerFields = {
+                'responsable_nom_complet': 'entraineur_nom_complet',
+                'responsable_date_naissance': 'entraineur_date_naissance',
+                'responsable_tel': 'entraineur_tel',
+                'responsable_whatsapp': 'entraineur_whatsapp'
+            };
             
-            // Renuméroter les joueurs
-            const joueurs = document.querySelectorAll('.joueur-item');
-            joueurs.forEach((joueur, idx) => {
-                const newIndex = idx + 1;
-                joueur.querySelector('h3').textContent = `Joueur ${newIndex}`;
+            Object.entries(managerFields).forEach(([managerName, coachName]) => {
+                const managerField = document.querySelector(`[name="${managerName}"]`);
+                const coachField = document.querySelector(`[name="${coachName}"]`);
                 
-                // Update all field names and IDs
-                joueur.querySelectorAll('[name*="joueurs"]').forEach(field => {
-                    field.name = field.name.replace(/joueurs\[\d+\]/, `joueurs[${newIndex}]`);
-                });
-                joueur.querySelectorAll('[id*="joueur-"]').forEach(field => {
-                    field.id = field.id.replace(/joueur-\d+-/, `joueur-${newIndex}-`);
-                });
-                joueur.querySelectorAll('[for*="joueur-"]').forEach(label => {
-                    label.setAttribute('for', label.getAttribute('for').replace(/joueur-\d+-/, `joueur-${newIndex}-`));
-                });
-            });
-        }, 300);
-    };
-    
-    // Notification function
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
-    }
-    
-    // Form submission
-    inscriptionForm?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validate all steps before submission
-        let allValid = true;
-        for (let step = 1; step <= totalSteps; step++) {
-            if (!validateStep(step)) {
-                allValid = false;
-                showNotification(`Veuillez vérifier les informations de l'étape ${step}`, 'error');
-                currentStep = step;
-                showStep(currentStep);
-                break;
-            }
-        }
-        
-        if (!allValid) {
-            return;
-        }
-        
-        // Remove validation attributes from hidden fields to prevent browser validation errors
-        const allSteps = document.querySelectorAll('.wizard-step');
-        allSteps.forEach((step, index) => {
-            // For all steps (including current), handle pattern validation on optional fields
-            const fields = step.querySelectorAll('[pattern]');
-            fields.forEach(field => {
-                // If field has pattern but no required and is empty, remove pattern temporarily
-                if (!field.hasAttribute('required') && !field.value) {
-                    field.dataset.originalPattern = field.getAttribute('pattern');
-                    field.removeAttribute('pattern');
+                if (managerField && coachField && managerField.type !== 'file') {
+                    coachField.value = managerField.value;
+                    coachField.disabled = true;
+                    coachField.required = false;
                 }
             });
             
-            if (index + 1 !== currentStep) {
-                // For non-visible steps, temporarily remove all validation
-                const validationFields = step.querySelectorAll('[required], [pattern]');
-                validationFields.forEach(field => {
-                    if (field.hasAttribute('required')) {
-                        field.dataset.originalRequired = 'true';
-                        field.removeAttribute('required');
-                    }
-                    if (field.hasAttribute('pattern')) {
-                        field.dataset.originalPattern = field.getAttribute('pattern');
-                        field.removeAttribute('pattern');
-                    }
-                });
+            // Disable file fields
+            const coachFileFields = coachFields.querySelectorAll('input[type="file"]');
+            coachFileFields.forEach(field => {
+                field.disabled = true;
+                field.required = false;
+            });
+            
+        } else {
+            // Enable all coach fields
+            coachInputs.forEach(field => {
+                field.disabled = false;
+                if (field.hasAttribute('data-originally-required') || 
+                    field.closest('.form-group').querySelector('label').textContent.includes('*')) {
+                    field.required = true;
+                }
+            });
+        }
+    }
+    
+    function updatePlayerCount() {
+        const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
+        if (!container) return;
+        
+        const count = container.querySelectorAll('.joueur-form, .joueur-item').length;
+        const countElement = document.getElementById('player-count');
+        if (countElement) {
+            countElement.textContent = count;
+        }
+    }
+    
+    // Form submission handler
+    const form = document.getElementById('inscriptionForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateCurrentStep()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Final validation
+            const playersCount = document.querySelectorAll('.joueur-form, .joueur-item').length;
+            const selectedType = getSelectedSportType();
+            const minRequired = joueursMin[selectedType] || 5;
+            
+            if (playersCount < minRequired) {
+                e.preventDefault();
+                alert(`Vous devez ajouter au moins ${minRequired} joueurs pour cette catégorie`);
+                return false;
             }
         });
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Envoi en cours...';
-        
-        // Submit the form
-        setTimeout(() => {
-            this.submit();
-        }, 100);
-    });
+    }
 });
+
+// Global function for removing players
+function removePlayer(button) {
+    const playerDiv = button.closest('.joueur-form') || button.closest('.joueur-item');
+    if (playerDiv) {
+        playerDiv.remove();
+        
+        // Update player count if element exists
+        const countElement = document.getElementById('player-count');
+        if (countElement) {
+            const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
+            const count = container ? container.querySelectorAll('.joueur-form, .joueur-item').length : 0;
+            countElement.textContent = count;
+        }
+    }
+}
