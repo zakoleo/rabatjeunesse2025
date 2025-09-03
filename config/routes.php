@@ -73,6 +73,34 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/sports/beachvolley', ['controller' => 'Sports', 'action' => 'beachvolley']);
 
         /*
+         * Admin routes - Must be defined before fallbacks
+         */
+        $builder->connect('/admin/team-details/*', ['controller' => 'Admin', 'action' => 'teamDetails']);
+        $builder->connect('/admin/view-team/{sport}/{id}', ['controller' => 'Admin', 'action' => 'viewTeam'])
+            ->setPatterns(['id' => '\d+', 'sport' => 'football|basketball|handball|volleyball|beachvolley'])
+            ->setPass(['sport', 'id']);
+        
+        // Generic team status update (existing)
+        $builder->connect('/admin/update-team-status', ['controller' => 'Admin', 'action' => 'updateTeamStatus']);
+        
+        // Sport-specific team status updates
+        $builder->connect('/admin/update-football-team-status', ['controller' => 'Admin', 'action' => 'updateFootballTeamStatus']);
+        $builder->connect('/admin/update-basketball-team-status', ['controller' => 'Admin', 'action' => 'updateBasketballTeamStatus']);
+        $builder->connect('/admin/update-handball-team-status', ['controller' => 'Admin', 'action' => 'updateHandballTeamStatus']);
+        $builder->connect('/admin/update-volleyball-team-status', ['controller' => 'Admin', 'action' => 'updateVolleyballTeamStatus']);
+        $builder->connect('/admin/update-beachvolley-team-status', ['controller' => 'Admin', 'action' => 'updateBeachvolleyTeamStatus']);
+        
+        // Sport-specific verification notes
+        $builder->connect('/admin/save-football-verification-notes', ['controller' => 'Admin', 'action' => 'saveFootballVerificationNotes']);
+        $builder->connect('/admin/save-basketball-verification-notes', ['controller' => 'Admin', 'action' => 'saveBasketballVerificationNotes']);
+        $builder->connect('/admin/save-handball-verification-notes', ['controller' => 'Admin', 'action' => 'saveHandballVerificationNotes']);
+        $builder->connect('/admin/save-volleyball-verification-notes', ['controller' => 'Admin', 'action' => 'saveVolleyballVerificationNotes']);
+        $builder->connect('/admin/save-beachvolley-verification-notes', ['controller' => 'Admin', 'action' => 'saveBeachvolleyVerificationNotes']);
+        
+        // Generic verification notes (existing)
+        $builder->connect('/admin/save-verification-notes', ['controller' => 'Admin', 'action' => 'saveVerificationNotes']);
+        
+        /*
          * API routes for dynamic data
          */
         $builder->connect('/api/football-date-ranges', ['controller' => 'Teams', 'action' => 'getFootballDateRanges']);

@@ -1,0 +1,985 @@
+/**
+ * Admin Unified Styles - Fixed and Improved
+ * Centralized CSS for consistent admin interface across all pages
+ * Rabat Jeunesse 2025
+ */
+
+/* ========================================
+   CSS RESET FOR ADMIN PAGES
+======================================== */
+
+/* Reset conflicting styles from other CSS files */
+.admin-page * {
+    box-sizing: border-box;
+}
+
+.admin-page {
+    background: #f8fafc !important;
+    min-height: 100vh;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ========================================
+   PAGE HEADERS
+======================================== */
+
+.page-header-section {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    padding: 2rem !important;
+    margin: 0 0 2rem 0 !important;
+    border-radius: 0 0 16px 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dashboard-welcome {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    padding: 2rem !important;
+    margin: 0 0 2rem 0 !important;
+    border-radius: 0 0 20px 20px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.header-content, 
+.welcome-content {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 2rem !important;
+    padding: 0 2rem !important;
+}
+
+.header-info h1, 
+.welcome-text h1 {
+    font-size: 2.2rem !important;
+    font-weight: 700 !important;
+    margin: 0 0 0.5rem 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    color: white !important;
+}
+
+.header-info p, 
+.welcome-text p {
+    font-size: 1.1rem !important;
+    opacity: 0.9 !important;
+    margin: 0 0 1rem 0 !important;
+    max-width: 500px !important;
+    color: white !important;
+}
+
+.stats-summary, 
+.welcome-stats {
+    display: flex !important;
+    gap: 1.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+.stat-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.95rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+}
+
+.stat-item strong, 
+.stat-item .stat-number {
+    font-size: 1.2rem !important;
+    font-weight: 800 !important;
+    color: white !important;
+}
+
+.header-actions, 
+.welcome-actions {
+    display: flex !important;
+    gap: 1rem !important;
+    flex-direction: column !important;
+}
+
+/* ========================================
+   CONTENT SECTIONS
+======================================== */
+
+.content-section {
+    width: calc(100% - 4rem) !important;
+    max-width: none !important;
+    margin: 0 2rem 2rem 2rem !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+}
+
+.dashboard-content {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 0 2rem 2rem 2rem !important;
+}
+
+/* ========================================
+   WIDGET HEADERS
+======================================== */
+
+.widget-header {
+    padding: 1.5rem 2rem !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    background: white !important;
+}
+
+.widget-header h3 {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+
+.widget-actions {
+    display: flex !important;
+    gap: 1rem !important;
+    align-items: flex-end !important;
+    flex-wrap: wrap !important;
+}
+
+/* ========================================
+   UNIFIED TABLE STYLES
+======================================== */
+
+.table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    box-sizing: border-box !important;
+}
+
+.admin-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    background: white !important;
+    table-layout: fixed !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.admin-table th {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+    padding: 1rem 0.75rem !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+    border-bottom: 2px solid #e5e7eb !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.admin-table th i {
+    margin-right: 0.5rem !important;
+    color: #6b7280 !important;
+}
+
+.admin-table tbody tr {
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: all 0.2s ease !important;
+    background: white !important;
+}
+
+.admin-table tbody tr:hover {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+    transform: translateX(2px) !important;
+}
+
+.admin-table td {
+    padding: 1rem 0.75rem !important;
+    text-align: left !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle !important;
+    word-wrap: break-word !important;
+    background: transparent !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 0 !important;
+}
+
+/* ========================================
+   TABLE COLUMN WIDTHS - Optimized for fit
+======================================== */
+
+.admin-table th:nth-child(1),
+.admin-table td:nth-child(1) { 
+    width: 24% !important; 
+    min-width: 180px !important;
+} /* ID/Name column */
+
+.admin-table th:nth-child(2),
+.admin-table td:nth-child(2) { 
+    width: 16% !important; 
+    min-width: 120px !important;
+} /* User/Sport column */
+
+.admin-table th:nth-child(3),
+.admin-table td:nth-child(3) { 
+    width: 20% !important; 
+    min-width: 140px !important;
+} /* Email/Manager column */
+
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4) { 
+    width: 16% !important; 
+    min-width: 110px !important;
+} /* Role/Date column */
+
+.admin-table th:nth-child(5),
+.admin-table td:nth-child(5) { 
+    width: 14% !important; 
+    min-width: 100px !important;
+} /* Status column */
+
+.admin-table th:nth-child(6),
+.admin-table td:nth-child(6) { 
+    width: 10% !important; 
+    min-width: 80px !important;
+} /* Actions column */
+
+/* ========================================
+   BADGES AND STATUS INDICATORS
+======================================== */
+
+.sport-badge {
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 20px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: white !important;
+    text-transform: uppercase !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sport-badge.sport-football { background: linear-gradient(135deg, #22c55e, #16a34a) !important; }
+.sport-badge.sport-basketball { background: linear-gradient(135deg, #f97316, #ea580c) !important; }
+.sport-badge.sport-handball { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
+.sport-badge.sport-volleyball { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+.sport-badge.sport-beachvolley { background: linear-gradient(135deg, #eab308, #d97706) !important; }
+
+.status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 20px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    min-width: 80px !important;
+    text-align: center !important;
+}
+
+.status-badge.status-pending,
+.status-badge.pending {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+    color: white !important;
+}
+
+.status-badge.status-verified,
+.status-badge.verified {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+.status-badge.status-rejected,
+.status-badge.rejected {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white !important;
+}
+
+.status-badge.status-active,
+.status-badge.active {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+.status-badge.admin {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    color: white !important;
+}
+
+.status-badge.user {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    color: white !important;
+}
+
+.role-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+.role-badge.user {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+    color: white !important;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem 1.5rem !important;
+    border: none !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    white-space: nowrap !important;
+    font-family: inherit !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    text-decoration: none !important;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.8rem !important;
+}
+
+.btn-lg {
+    padding: 1rem 2rem !important;
+    font-size: 1.1rem !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    color: white !important;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+    color: white !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+    color: white !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white !important;
+}
+
+.btn-outline-primary {
+    background: transparent !important;
+    color: #3b82f6 !important;
+    border: 2px solid #3b82f6 !important;
+}
+
+.btn-outline-primary:hover {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.btn-outline-secondary {
+    background: transparent !important;
+    color: #6b7280 !important;
+    border: 2px solid #6b7280 !important;
+}
+
+.btn-outline-secondary:hover {
+    background: #6b7280 !important;
+    color: white !important;
+}
+
+.btn-outline-light {
+    background: transparent !important;
+    color: white !important;
+    border: 2px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+.btn-outline-light:hover {
+    background: white !important;
+    color: #667eea !important;
+}
+
+/* Header button styles */
+.btn.header-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-primary.header-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.btn-primary.header-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn-secondary.header-btn {
+    background: rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.btn-secondary.header-btn:hover {
+    background: rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ========================================
+   TABLE SPECIFIC STYLES
+======================================== */
+
+.team-name {
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    font-size: 1rem !important;
+    margin: 0 !important;
+}
+
+.user-id {
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    font-size: 0.9rem !important;
+}
+
+.username {
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    font-size: 1rem !important;
+    margin: 0 !important;
+}
+
+.user-details, 
+.team-details {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    min-width: 180px !important;
+}
+
+.email-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+}
+
+.email {
+    color: #374151 !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+}
+
+.email-verified {
+    font-size: 0.75rem !important;
+    color: #10b981 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+}
+
+.date-info .date {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 0.95rem !important;
+}
+
+.date-info .time {
+    color: #6b7280 !important;
+    font-size: 0.8rem !important;
+}
+
+.actions {
+    white-space: nowrap !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+    min-width: 120px !important;
+}
+
+.admin-protected {
+    color: #6b7280 !important;
+    font-size: 1.2rem !important;
+    padding: 0.5rem !important;
+}
+
+.team-id {
+    color: #6b7280 !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+}
+
+/* ========================================
+   CARDS AND WIDGETS
+======================================== */
+
+.stat-card {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-card .stat-icon {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.5rem !important;
+    color: white !important;
+    flex-shrink: 0 !important;
+}
+
+.stat-info h3 {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    margin: 0 0 0.25rem 0 !important;
+    color: #1f2937 !important;
+}
+
+.stat-info p {
+    color: #6b7280 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    margin: 0 0 0.5rem 0 !important;
+}
+
+.stat-link {
+    color: #3b82f6 !important;
+    text-decoration: none !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+}
+
+.stat-link:hover {
+    color: #2563eb !important;
+}
+
+/* ========================================
+   EMPTY STATES
+======================================== */
+
+.empty-state {
+    text-align: center !important;
+    padding: 4rem 2rem !important;
+    color: #6b7280 !important;
+    background: white !important;
+}
+
+.empty-state i {
+    margin-bottom: 1.5rem !important;
+    opacity: 0.4 !important;
+    color: #9ca3af !important;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin: 0 0 1rem 0 !important;
+}
+
+.empty-state p {
+    font-size: 1rem !important;
+    margin: 0 0 2rem 0 !important;
+    opacity: 0.8 !important;
+}
+
+/* ========================================
+   GRIDS AND LAYOUTS
+======================================== */
+
+.quick-stats {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 1.5rem !important;
+    margin-bottom: 2rem !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.sports-grid, 
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+    gap: 1.5rem !important;
+    margin-bottom: 3rem !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.dashboard-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 350px !important;
+    gap: 2rem !important;
+    margin-bottom: 2rem !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* ========================================
+   FILTERS AND FORMS
+======================================== */
+
+.filter-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+}
+
+.filter-group label {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+}
+
+.form-control {
+    padding: 0.5rem 0.75rem !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    background: white !important;
+    transition: all 0.2s ease !important;
+    font-family: inherit !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.status-select {
+    min-width: 120px !important;
+    margin-right: 0.5rem !important;
+}
+
+.widget-actions .filter-group {
+    min-width: 150px !important;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 1024px) {
+    .header-content, 
+    .welcome-content {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 2rem !important;
+        padding: 0 1rem !important;
+    }
+    
+    .header-actions, 
+    .welcome-actions {
+        flex-direction: row !important;
+        justify-content: center !important;
+    }
+    
+    .stats-summary, 
+    .welcome-stats {
+        justify-content: center !important;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .sports-grid, 
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    }
+    
+    .content-section {
+        margin: 0 1rem 2rem 1rem !important;
+        width: calc(100% - 2rem) !important;
+    }
+    
+    .dashboard-content {
+        padding: 0 1rem 2rem 1rem !important;
+    }
+    
+    /* Table adjustments for tablets */
+    .admin-table {
+        min-width: 800px !important;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header-section, 
+    .dashboard-welcome {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .header-info h1, 
+    .welcome-text h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    .widget-header {
+        padding: 1rem 1.5rem !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: flex-start !important;
+    }
+    
+    .widget-actions {
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    
+    /* Mobile table adjustments */
+    .admin-table {
+        min-width: 700px !important;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 0.75rem 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Adjust column widths for mobile */
+    .admin-table th:nth-child(1),
+    .admin-table td:nth-child(1) { 
+        width: 26% !important; 
+        min-width: 160px !important;
+    }
+    
+    .admin-table th:nth-child(2),
+    .admin-table td:nth-child(2) { 
+        width: 18% !important; 
+        min-width: 100px !important;
+    }
+    
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) { 
+        width: 22% !important; 
+        min-width: 120px !important;
+    }
+    
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) { 
+        width: 16% !important; 
+        min-width: 90px !important;
+    }
+    
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5) { 
+        width: 12% !important; 
+        min-width: 80px !important;
+    }
+    
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6) { 
+        width: 6% !important; 
+        min-width: 60px !important;
+    }
+    
+    .actions {
+        flex-direction: column !important;
+        gap: 0.25rem !important;
+    }
+    
+    .user-details, 
+    .team-details {
+        gap: 0.25rem !important;
+    }
+    
+    .email-info {
+        gap: 0.125rem !important;
+    }
+    
+    .header-actions, 
+    .welcome-actions {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    .quick-stats {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    }
+    
+    .sports-grid, 
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .table-container {
+        font-size: 0.75rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Extra small screens - more compact table */
+    .admin-table {
+        min-width: 600px !important;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 0.5rem 0.3rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Hide ID column completely on small screens */
+    .admin-table th:nth-child(1),
+    .admin-table td:nth-child(1) {
+        display: none !important;
+    }
+    
+    /* Adjust remaining columns after hiding first column */
+    .admin-table th:nth-child(2),
+    .admin-table td:nth-child(2) { 
+        width: 30% !important; 
+        min-width: 140px !important;
+    } /* User/Sport becomes first visible column */
+    
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) { 
+        width: 25% !important; 
+        min-width: 110px !important;
+    } /* Email/Manager column */
+    
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) { 
+        width: 20% !important; 
+        min-width: 80px !important;
+    } /* Role/Date column */
+    
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5) { 
+        width: 15% !important; 
+        min-width: 70px !important;
+    } /* Status column */
+    
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6) { 
+        width: 10% !important; 
+        min-width: 50px !important;
+    } /* Actions column */
+    
+    .role-badge, 
+    .status-badge, 
+    .sport-badge {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.4rem !important;
+    }
+    
+    .stat-card {
+        padding: 1rem !important;
+    }
+    
+    .stat-card .stat-icon {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .stat-info h3 {
+        font-size: 1.5rem !important;
+    }
+    
+    .widget-actions {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .filter-group {
+        width: 100% !important;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.7rem !important;
+    }
+}

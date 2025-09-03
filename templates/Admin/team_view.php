@@ -175,18 +175,30 @@ echo $this->Html->css('admin');
                             <div class="documents-grid">
                                 <?php if (!empty($team->responsable_cin_recto)): ?>
                                     <div class="document-item">
-                                        <label>CIN Recto:</label>
-                                        <a href="<?= $this->Url->build('/' . $team->responsable_cin_recto) ?>" target="_blank" class="document-link">
-                                            <i class="fas fa-file-image"></i> Voir document
-                                        </a>
+                                        <div class="document-header">
+                                            <i class="fas fa-id-card"></i>
+                                            <span>CIN Responsable (Recto)</span>
+                                            <button class="btn btn-sm btn-outline toggle-image" onclick="toggleImage('responsable-recto')">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </button>
+                                        </div>
+                                        <div class="document-image" id="responsable-recto" style="display: none;">
+                                            <img src="<?= $this->Url->build('/' . $team->responsable_cin_recto) ?>" alt="CIN Responsable Recto" class="document-img" onclick="openModal(this)">
+                                        </div>
                                     </div>
                                 <?php endif; ?>
                                 <?php if (!empty($team->responsable_cin_verso)): ?>
                                     <div class="document-item">
-                                        <label>CIN Verso:</label>
-                                        <a href="<?= $this->Url->build('/' . $team->responsable_cin_verso) ?>" target="_blank" class="document-link">
-                                            <i class="fas fa-file-image"></i> Voir document
-                                        </a>
+                                        <div class="document-header">
+                                            <i class="fas fa-id-card"></i>
+                                            <span>CIN Responsable (Verso)</span>
+                                            <button class="btn btn-sm btn-outline toggle-image" onclick="toggleImage('responsable-verso')">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </button>
+                                        </div>
+                                        <div class="document-image" id="responsable-verso" style="display: none;">
+                                            <img src="<?= $this->Url->build('/' . $team->responsable_cin_verso) ?>" alt="CIN Responsable Verso" class="document-img" onclick="openModal(this)">
+                                        </div>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -233,18 +245,30 @@ echo $this->Html->css('admin');
                                 <div class="documents-grid">
                                     <?php if (!empty($team->entraineur_cin_recto)): ?>
                                         <div class="document-item">
-                                            <label>CIN Recto:</label>
-                                            <a href="<?= $this->Url->build('/' . $team->entraineur_cin_recto) ?>" target="_blank" class="document-link">
-                                                <i class="fas fa-file-image"></i> Voir document
-                                            </a>
+                                            <div class="document-header">
+                                                <i class="fas fa-id-card"></i>
+                                                <span>CIN Entraîneur (Recto)</span>
+                                                <button class="btn btn-sm btn-outline toggle-image" onclick="toggleImage('entraineur-recto')">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </button>
+                                            </div>
+                                            <div class="document-image" id="entraineur-recto" style="display: none;">
+                                                <img src="<?= $this->Url->build('/' . $team->entraineur_cin_recto) ?>" alt="CIN Entraîneur Recto" class="document-img" onclick="openModal(this)">
+                                            </div>
                                         </div>
                                     <?php endif; ?>
                                     <?php if (!empty($team->entraineur_cin_verso)): ?>
                                         <div class="document-item">
-                                            <label>CIN Verso:</label>
-                                            <a href="<?= $this->Url->build('/' . $team->entraineur_cin_verso) ?>" target="_blank" class="document-link">
-                                                <i class="fas fa-file-image"></i> Voir document
-                                            </a>
+                                            <div class="document-header">
+                                                <i class="fas fa-id-card"></i>
+                                                <span>CIN Entraîneur (Verso)</span>
+                                                <button class="btn btn-sm btn-outline toggle-image" onclick="toggleImage('entraineur-verso')">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </button>
+                                            </div>
+                                            <div class="document-image" id="entraineur-verso" style="display: none;">
+                                                <img src="<?= $this->Url->build('/' . $team->entraineur_cin_verso) ?>" alt="CIN Entraîneur Verso" class="document-img" onclick="openModal(this)">
+                                            </div>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -732,6 +756,115 @@ echo $this->Html->css('admin');
     .btn-warning { background: #ffc107; color: #212529; }
     .btn-warning:hover { background: #e0a800; color: #212529; }
 
+    /* Inline Document Display Styles */
+    .document-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .document-header span {
+        flex: 1;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .toggle-image {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        border: 1px solid #d1d5db;
+        background: white;
+        color: #374151;
+        transition: all 0.2s;
+    }
+
+    .toggle-image:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .toggle-image.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .document-image {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .document-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .document-img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modal Styles */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .modal-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10001;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
     /* Verification Actions Section */
     .verification-actions-section {
         background: white;
@@ -903,3 +1036,57 @@ echo $this->Html->css('admin');
         }
     }
 </style>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <div class="modal-content">
+        <img id="modalImage" class="modal-image" src="" alt="">
+    </div>
+</div>
+
+<script>
+    function toggleImage(imageId) {
+        const imageContainer = document.getElementById(imageId);
+        const button = event.target.closest('.toggle-image');
+        const icon = button.querySelector('i');
+        
+        if (imageContainer.style.display === 'none' || imageContainer.style.display === '') {
+            imageContainer.style.display = 'block';
+            button.classList.add('active');
+            icon.className = 'fas fa-eye-slash';
+            button.innerHTML = '<i class="fas fa-eye-slash"></i> Masquer';
+        } else {
+            imageContainer.style.display = 'none';
+            button.classList.remove('active');
+            icon.className = 'fas fa-eye';
+            button.innerHTML = '<i class="fas fa-eye"></i> Voir';
+        }
+    }
+
+    function openModal(img) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        modal.style.display = 'block';
+        modalImg.src = img.src;
+        modalImg.alt = img.alt;
+        
+        // Close modal when clicking outside the image
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+</script>

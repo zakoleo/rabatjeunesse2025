@@ -208,6 +208,11 @@ class TeamsTable extends Table
             ->boolean('entraineur_same_as_responsable')
             ->allowEmptyString('entraineur_same_as_responsable');
 
+        // Admin verification notes
+        $validator
+            ->scalar('verification_notes')
+            ->allowEmptyString('verification_notes');
+
         return $validator;
     }
 
