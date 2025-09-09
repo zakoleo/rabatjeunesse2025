@@ -2,10 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Team $team
- * @var \App\Model\Entity\User|null $user
  */
-
-$this->assign('title', 'Inscription - Équipe de Basketball');
 ?>
 <div class="teams form container">
     <div class="inscription-header">
@@ -13,18 +10,7 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
         <p class="subtitle">Complétez le formulaire ci-dessous pour inscrire votre équipe</p>
     </div>
 
-    <?php if (!$user): ?>
-        <div class="alert alert-warning">
-            <h3>Connexion requise</h3>
-            <p>Vous devez être connecté pour inscrire une équipe.</p>
-            <div class="auth-buttons">
-                <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-primary']) ?>
-                <?= $this->Html->link('Créer un compte', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-secondary']) ?>
-            </div>
-        </div>
-    <?php else: ?>
-
-    <?= $this->Form->create($team, ['type' => 'file', 'id' => 'inscriptionForm', 'novalidate' => true]) ?>
+    <?= $this->Form->create($team, ['type' => 'file', 'id' => 'inscriptionForm']) ?>
     
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -296,7 +282,7 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
                 <p class="info-text">Nombre de joueurs requis :</p>
                 <div id="nombreJoueursRequis"></div>
                 
-                <div id="joueursContainer">
+                <div id="joueursContainer" class="players-container">
                     <!-- Les joueurs seront ajoutés dynamiquement ici -->
                 </div>
                 
@@ -326,12 +312,12 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
     </div>
     
     <?= $this->Form->end() ?>
-    <?php endif; ?>
 </div>
 
 <?= $this->Html->css('inscription-form') ?>
+<?= $this->Html->css('form-validation') ?>
 <script>
     // Pass the base URL to JavaScript
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
-<?= $this->Html->script('inscription-form') ?>
+<?= $this->Html->script('basketball-wizard-validation') ?>

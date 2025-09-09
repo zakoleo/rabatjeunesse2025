@@ -166,7 +166,6 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
             <div class="nav-links">
                 <a href="<?= $this->Url->build(['controller' => 'Sports', 'action' => 'index']) ?>">Sports</a>
                 <?php if ($this->request->getAttribute('identity')): ?>
-                    <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'dashboard']) ?>">Tableau de bord</a>
                     <a href="<?= $this->Url->build(['controller' => 'Teams', 'action' => 'index']) ?>">Mes équipes</a>
                     <?php 
                     $identity = $this->request->getAttribute('identity');

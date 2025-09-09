@@ -316,8 +316,9 @@
 </div>
 
 <?= $this->Html->css('inscription-form') ?>
+<?= $this->Html->css('form-validation') ?>
 <script>
     // Pass the base URL to JavaScript
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
-<?= $this->Html->script('inscription-form') ?>
+<?= $this->Html->script('football-wizard-validation') ?>

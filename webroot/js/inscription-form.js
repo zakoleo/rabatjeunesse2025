@@ -1,92 +1,103 @@
+/**
+ * Generic Sports Team Registration Wizard Validation
+ * Works for all sports: Football, Basketball, Handball, Volleyball, Beach Volleyball
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Simple wizard functionality
+    // Wizard state
     let currentStep = 1;
     const maxSteps = 3;
     let playerIndex = 0;
     
     // Player limits for different sports and types
-    const joueursMin = {
-        '5x5': 5,
-        '6x6': 6,
-        '7x7': 7,
-        '11x11': 11,
-        '2x2': 2
+    const playerLimits = {
+        // Football
+        '5x5': { min: 5, max: 10 },
+        '6x6': { min: 6, max: 12 },
+        '11x11': { min: 11, max: 18 },
+        // Basketball
+        '3x3': { min: 3, max: 6 },
+        '5v5': { min: 5, max: 10 },
+        // Handball
+        '7v7': { min: 7, max: 10 },
+        // Volleyball
+        '6v6': { min: 6, max: 10 },
+        // Beach Volleyball
+        '2x2': { min: 2, max: 4 }
     };
     
-    const joueursMax = {
-        '5x5': 10,
-        '6x6': 12,
-        '7x7': 14,
-        '11x11': 18,
-        '2x2': 4
-    };
+    console.log('Generic sports wizard validation initialized');
     
-    // Initialize the form
-    updateStepDisplay();
-    updatePlayerRequirements();
+    // Initialize wizard
+    initializeWizard();
     
-    // Navigation button handlers
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
+    function initializeWizard() {
+        updateStepDisplay();
+        setupNavigation();
+        setupCoachToggle();
+        setupPlayerManagement();
+        setupRealTimeValidation();
+        updatePlayerRequirements();
+    }
     
-    if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-            if (validateCurrentStep()) {
-                if (currentStep < maxSteps) {
-                    currentStep++;
+    // Navigation setup
+    function setupNavigation() {
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const form = document.querySelector('form');
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Next button clicked - validating step:', currentStep);
+                
+                if (validateCurrentStep()) {
+                    if (currentStep < maxSteps) {
+                        currentStep++;
+                        updateStepDisplay();
+                        console.log('Moved to step:', currentStep);
+                    }
+                } else {
+                    console.log('Validation failed for step:', currentStep);
+                }
+            });
+        }
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentStep > 1) {
+                    currentStep--;
                     updateStepDisplay();
                 }
-            }
-        });
+            });
+        }
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted - validating all steps');
+                if (!validateAllSteps()) {
+                    e.preventDefault();
+                    console.log('Form submission blocked - validation failed');
+                }
+            });
+        }
     }
     
-    if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-            if (currentStep > 1) {
-                currentStep--;
-                updateStepDisplay();
-            }
-        });
-    }
-    
-    // Add player functionality
-    const ajouterJoueurBtn = document.getElementById('ajouterJoueur');
-    if (ajouterJoueurBtn) {
-        ajouterJoueurBtn.addEventListener('click', addPlayer);
-    }
-    
-    // Same as manager checkbox
-    const sameAsResponsable = document.getElementById('sameAsResponsable');
-    if (sameAsResponsable) {
-        sameAsResponsable.addEventListener('change', toggleCoachFields);
-    }
-    
-    // Sport type change listeners
-    const typeElements = document.querySelectorAll('[id*="type-"]');
-    typeElements.forEach(element => {
-        element.addEventListener('change', updatePlayerRequirements);
-    });
-    
+    // Update step display
     function updateStepDisplay() {
+        console.log('Updating display for step:', currentStep);
+        
         // Update progress indicators
         document.querySelectorAll('.progress-step').forEach((step, index) => {
             const stepNum = index + 1;
+            step.classList.remove('active', 'completed');
             if (stepNum === currentStep) {
                 step.classList.add('active');
-                step.classList.remove('completed');
             } else if (stepNum < currentStep) {
-                step.classList.remove('active');
                 step.classList.add('completed');
-            } else {
-                step.classList.remove('active', 'completed');
             }
         });
-        
-        // Update progress bar data attribute
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) {
-            progressBar.setAttribute('data-progress', currentStep);
-        }
         
         // Show/hide wizard steps
         document.querySelectorAll('.wizard-step').forEach((step, index) => {
@@ -120,139 +131,388 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Validate current step
     function validateCurrentStep() {
-        let isValid = true;
-        const currentStepElement = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+        const stepElement = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+        if (!stepElement) {
+            console.log('Step element not found for step:', currentStep);
+            return true;
+        }
         
-        if (!currentStepElement) return true;
+        console.log(`Validating step ${currentStep}`);
         
         // Clear previous errors
-        currentStepElement.querySelectorAll('.error-message').forEach(error => {
-            error.remove();
-        });
-        currentStepElement.querySelectorAll('.error').forEach(field => {
-            field.classList.remove('error');
-        });
+        clearStepErrors(stepElement);
         
-        // Validate required fields in current step
-        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        
+        // Get all required fields in current step
+        const requiredFields = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
         
         requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                showFieldError(field, 'Ce champ est requis');
-                isValid = false;
-            } else if (field.type === 'email' && !isValidEmail(field.value)) {
-                showFieldError(field, 'Veuillez entrer une adresse e-mail valide');
-                isValid = false;
-            } else if (field.type === 'tel' && !isValidPhone(field.value)) {
-                showFieldError(field, 'Veuillez entrer un numéro de téléphone valide');
+            // Skip file fields during wizard navigation
+            if (field.type === 'file') {
+                console.log('Skipping file field:', field.name);
+                return;
+            }
+            
+            // Skip disabled fields
+            if (field.disabled) {
+                console.log('Skipping disabled field:', field.name);
+                return;
+            }
+            
+            // Skip hidden fields
+            if (field.offsetParent === null) {
+                console.log('Skipping hidden field:', field.name);
+                return;
+            }
+            
+            // Skip coach fields if same as manager
+            if (currentStep === 2 && field.name.includes('entraineur_')) {
+                const sameAsManager = document.getElementById('sameAsResponsable');
+                if (sameAsManager && sameAsManager.checked) {
+                    console.log('Skipping coach field (same as manager):', field.name);
+                    return;
+                }
+            }
+            
+            // Validate field
+            if (!validateField(field)) {
                 isValid = false;
             }
         });
         
-        // Step 3 validation: Check minimum players
+        // Step-specific validation
         if (currentStep === 3) {
-            const playersCount = document.querySelectorAll('.joueur-form, .joueur-item').length;
-            const selectedType = getSelectedSportType();
-            const minRequired = joueursMin[selectedType] || 5;
+            if (!validatePlayerCount()) {
+                isValid = false;
+            }
             
-            if (playersCount < minRequired) {
-                const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
-                if (container) {
-                    showContainerError(container, `Vous devez ajouter au moins ${minRequired} joueurs pour cette catégorie`);
-                    isValid = false;
+            // Check accept terms checkbox
+            const acceptTerms = stepElement.querySelector('[name="accepter_reglement"]');
+            if (acceptTerms && !acceptTerms.checked) {
+                showFieldError(acceptTerms, 'Vous devez accepter le règlement');
+                isValid = false;
+            }
+        }
+        
+        console.log(`Step ${currentStep} validation result:`, isValid);
+        return isValid;
+    }
+    
+    // Validate individual field
+    function validateField(field) {
+        const value = field.value ? field.value.trim() : '';
+        
+        // Required field check
+        if (!value && field.required) {
+            showFieldError(field, 'Ce champ est requis');
+            return false;
+        }
+        
+        // Type-specific validation
+        if (value) {
+            switch (field.type) {
+                case 'email':
+                    if (!isValidEmail(value)) {
+                        showFieldError(field, 'Format d\'email invalide');
+                        return false;
+                    }
+                    break;
+                case 'tel':
+                    if (!isValidPhone(value)) {
+                        showFieldError(field, 'Format de téléphone invalide (ex: 0612345678)');
+                        return false;
+                    }
+                    break;
+                case 'date':
+                    if (field.name.includes('date_naissance')) {
+                        if (!isValidBirthDate(value)) {
+                            showFieldError(field, 'L\'âge doit être entre 18 et 70 ans');
+                            return false;
+                        }
+                    }
+                    break;
+            }
+            
+            // Name validation
+            if (field.name.includes('nom_complet')) {
+                if (!isValidName(value)) {
+                    showFieldError(field, 'Le nom ne peut contenir que des lettres et espaces');
+                    return false;
                 }
             }
         }
         
-        return isValid;
+        // Select field validation
+        if (field.tagName === 'SELECT' && (!value || value === '')) {
+            showFieldError(field, 'Veuillez faire une sélection');
+            return false;
+        }
+        
+        // Mark as valid
+        field.classList.remove('error');
+        field.classList.add('valid');
+        console.log('Field validated successfully:', field.name);
+        return true;
     }
     
-    function showFieldError(field, message) {
-        field.classList.add('error');
-        const errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
-        errorElement.textContent = message;
-        field.parentNode.appendChild(errorElement);
-    }
-    
-    function showContainerError(container, message) {
-        const errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
-        errorElement.textContent = message;
-        errorElement.style.marginTop = '1rem';
-        errorElement.style.padding = '0.75rem';
-        errorElement.style.backgroundColor = '#fff5f5';
-        errorElement.style.border = '1px solid #dc3545';
-        errorElement.style.borderRadius = '4px';
-        container.appendChild(errorElement);
-    }
-    
+    // Validation helper functions
     function isValidEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
     
     function isValidPhone(phone) {
-        return /^[0-9+\-\s()]{10,}$/.test(phone);
+        const cleanPhone = phone.replace(/[\s\-()]/g, '');
+        return /^(\+212|0)[5-7][0-9]{8}$/.test(cleanPhone) || /^[0-9]{10}$/.test(cleanPhone);
     }
     
-    function getSelectedSportType() {
-        const typeFootball = document.getElementById('type-football');
-        const typeVolleyball = document.getElementById('type-volleyball');
-        const typeBasketball = document.getElementById('type-basketball');
-        const typeHandball = document.getElementById('type-handball');
-        const typeBeachvolley = document.getElementById('type-beachvolley');
-        
-        if (typeFootball && typeFootball.value) return typeFootball.value;
-        if (typeVolleyball && typeVolleyball.value) return typeVolleyball.value;
-        if (typeBasketball && typeBasketball.value) return typeBasketball.value;
-        if (typeHandball && typeHandball.value) return typeHandball.value;
-        if (typeBeachvolley && typeBeachvolley.value) return typeBeachvolley.value;
-        
-        return '5x5'; // default
+    function isValidName(name) {
+        return /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
     }
     
-    function updatePlayerRequirements() {
-        const selectedType = getSelectedSportType();
-        const min = joueursMin[selectedType] || 5;
-        const max = joueursMax[selectedType] || 10;
+    function isValidBirthDate(dateStr) {
+        const birthDate = new Date(dateStr);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        return age >= 18 && age <= 70;
+    }
+    
+    // Player count validation
+    function validatePlayerCount() {
+        const playersCount = document.querySelectorAll('.joueur-form').length;
+        const sportType = getSelectedSportType();
+        const limits = playerLimits[sportType];
         
-        const nombreJoueursRequis = document.getElementById('nombreJoueursRequis');
-        if (nombreJoueursRequis) {
-            nombreJoueursRequis.innerHTML = `
-                <div class="requirement-info">
-                    <h4>Composition de l'équipe</h4>
-                    <p><strong>Minimum:</strong> ${min} joueurs</p>
-                    <p><strong>Maximum:</strong> ${max} joueurs</p>
-                    <p class="note">Vous devez inscrire au minimum ${min} joueurs pour pouvoir participer au tournoi.</p>
-                </div>
-            `;
+        if (!limits) {
+            console.log('Unknown sport type:', sportType, 'using default validation');
+            return playersCount >= 2; // Minimum fallback
         }
         
-        // Also update any existing info text
-        const infoText = document.querySelector('.info-text');
-        if (infoText) {
-            const span = infoText.querySelector('span');
-            if (span) {
-                span.textContent = `${min} - ${max} joueurs`;
+        console.log(`Players: ${playersCount}, Required: ${limits.min}-${limits.max} for ${sportType}`);
+        
+        if (playersCount < limits.min) {
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, `Vous devez ajouter au moins ${limits.min} joueurs pour cette catégorie`);
+            }
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Get selected sport type (works for all sports)
+    function getSelectedSportType() {
+        // Try different sport type field names
+        const typeSelectors = [
+            '[name="type_football"]',      // Football
+            '[name="type_basketball"]',    // Basketball  
+            '[name="type_handball"]',      // Handball
+            '[name="type_volleyball"]',    // Volleyball
+            '[name="type_beachvolley"]'    // Beach volleyball
+        ];
+        
+        for (const selector of typeSelectors) {
+            const field = document.querySelector(selector);
+            if (field && field.value) {
+                return field.value;
             }
         }
+        
+        // Fallback - try to detect sport from URL or form
+        const url = window.location.href;
+        if (url.includes('basketball')) return '3x3';
+        if (url.includes('handball')) return '7v7';
+        if (url.includes('volleyball')) return '6v6';
+        if (url.includes('beachvolley')) return '2x2';
+        
+        return '5x5'; // Default fallback
+    }
+    
+    // Error display functions
+    function showFieldError(field, message) {
+        // Clear existing errors
+        clearFieldError(field);
+        
+        // Add error class
+        field.classList.add('error');
+        field.classList.remove('valid');
+        
+        // Create error message
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.textContent = message;
+        errorElement.style.color = '#dc3545';
+        errorElement.style.fontSize = '0.875rem';
+        errorElement.style.marginTop = '0.25rem';
+        
+        // Insert after field
+        field.parentNode.appendChild(errorElement);
+        
+        console.log('Error shown for field:', field.name, '-', message);
+    }
+    
+    function showContainerError(container, message) {
+        // Clear existing errors
+        container.querySelectorAll('.error-message').forEach(error => error.remove());
+        
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message alert alert-danger';
+        errorElement.textContent = message;
+        errorElement.style.marginTop = '1rem';
+        errorElement.style.padding = '0.75rem';
+        errorElement.style.borderRadius = '4px';
+        container.appendChild(errorElement);
+    }
+    
+    function clearFieldError(field) {
+        field.classList.remove('error');
+        const errorElements = field.parentNode.querySelectorAll('.error-message');
+        errorElements.forEach(error => error.remove());
+    }
+    
+    function clearStepErrors(stepElement) {
+        stepElement.querySelectorAll('.error').forEach(field => {
+            field.classList.remove('error');
+        });
+        stepElement.querySelectorAll('.error-message').forEach(error => {
+            error.remove();
+        });
+    }
+    
+    // Validate all steps (for form submission)
+    function validateAllSteps() {
+        let allValid = true;
+        
+        for (let step = 1; step <= maxSteps; step++) {
+            const originalStep = currentStep;
+            currentStep = step;
+            
+            if (!validateCurrentStep()) {
+                allValid = false;
+                // Stay on first invalid step
+                if (originalStep > step) {
+                    updateStepDisplay();
+                    break;
+                }
+            }
+            
+            currentStep = originalStep;
+        }
+        
+        return allValid;
+    }
+    
+    // Coach toggle functionality
+    function setupCoachToggle() {
+        const checkbox = document.getElementById('sameAsResponsable');
+        if (checkbox) {
+            checkbox.addEventListener('change', toggleCoachFields);
+            // Initialize on load
+            toggleCoachFields();
+        }
+    }
+    
+    function toggleCoachFields() {
+        const checkbox = document.getElementById('sameAsResponsable');
+        const coachFields = document.getElementById('entraineurFields');
+        
+        if (!checkbox || !coachFields) return;
+        
+        const coachInputs = coachFields.querySelectorAll('input, select');
+        
+        if (checkbox.checked) {
+            // Hide coach fields
+            coachFields.style.display = 'none';
+            
+            // Copy manager data to coach fields
+            const fieldMapping = {
+                'responsable_nom_complet': 'entraineur_nom_complet',
+                'responsable_date_naissance': 'entraineur_date_naissance',
+                'responsable_tel': 'entraineur_tel',
+                'responsable_whatsapp': 'entraineur_whatsapp'
+            };
+            
+            Object.entries(fieldMapping).forEach(([managerName, coachName]) => {
+                const managerField = document.querySelector(`[name="${managerName}"]`);
+                const coachField = document.querySelector(`[name="${coachName}"]`);
+                
+                if (managerField && coachField && managerField.type !== 'file') {
+                    coachField.value = managerField.value;
+                }
+            });
+            
+            // Disable coach fields
+            coachInputs.forEach(field => {
+                field.disabled = true;
+                if (field.required) {
+                    field.setAttribute('data-was-required', 'true');
+                    field.required = false;
+                }
+            });
+            
+            console.log('Coach fields hidden and data copied');
+        } else {
+            // Show coach fields
+            coachFields.style.display = 'block';
+            
+            // Enable coach fields
+            coachInputs.forEach(field => {
+                field.disabled = false;
+                if (field.hasAttribute('data-was-required')) {
+                    field.required = true;
+                    field.removeAttribute('data-was-required');
+                }
+                // Clear copied values (except files)
+                if (field.type !== 'file') {
+                    field.value = '';
+                }
+            });
+            
+            console.log('Coach fields shown and enabled');
+        }
+    }
+    
+    // Player management
+    function setupPlayerManagement() {
+        const addBtn = document.getElementById('ajouterJoueur');
+        if (addBtn) {
+            addBtn.addEventListener('click', addPlayer);
+        }
+        
+        // Update requirements when sport type changes
+        const typeSelectors = [
+            '[name="type_football"]',
+            '[name="type_basketball"]',
+            '[name="type_handball"]',
+            '[name="type_volleyball"]',
+            '[name="type_beachvolley"]'
+        ];
+        
+        typeSelectors.forEach(selector => {
+            const field = document.querySelector(selector);
+            if (field) {
+                field.addEventListener('change', updatePlayerRequirements);
+            }
+        });
     }
     
     function addPlayer() {
         playerIndex++;
-        const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
+        const container = document.getElementById('joueursContainer');
         if (!container) return;
         
-        // Clear any existing error messages
+        // Clear existing errors
         container.querySelectorAll('.error-message').forEach(error => error.remove());
         
-        const selectedType = getSelectedSportType();
-        const maxPlayers = joueursMax[selectedType] || 10;
-        const currentPlayers = container.querySelectorAll('.joueur-form, .joueur-item').length;
+        const sportType = getSelectedSportType();
+        const limits = playerLimits[sportType];
+        const currentPlayers = container.querySelectorAll('.joueur-form').length;
         
-        if (currentPlayers >= maxPlayers) {
-            showContainerError(container, `Vous ne pouvez pas ajouter plus de ${maxPlayers} joueurs pour cette catégorie`);
+        if (limits && currentPlayers >= limits.max) {
+            showContainerError(container, `Maximum ${limits.max} joueurs pour cette catégorie`);
             return;
         }
         
@@ -261,12 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         playerDiv.innerHTML = `
             <div class="joueur-header">
                 <h4>Joueur ${playerIndex}</h4>
-                <button type="button" class="btn-remove-joueur" onclick="removePlayer(this)">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+                <button type="button" class="btn-remove-joueur" onclick="removePlayer(this)">×</button>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -300,102 +555,49 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         container.appendChild(playerDiv);
-        updatePlayerCount();
+        console.log('Player added:', playerIndex);
     }
     
-    function toggleCoachFields() {
-        const checkbox = document.getElementById('sameAsResponsable');
-        const coachFields = document.getElementById('entraineurFields') || document.getElementById('entraineur-fields');
+    // Global remove player function
+    window.removePlayer = function(button) {
+        const playerDiv = button.closest('.joueur-form');
+        if (playerDiv) {
+            playerDiv.remove();
+            console.log('Player removed');
+        }
+    };
+    
+    function updatePlayerRequirements() {
+        const sportType = getSelectedSportType();
+        const limits = playerLimits[sportType];
+        const requirementsElement = document.getElementById('nombreJoueursRequis');
         
-        if (!checkbox || !coachFields) return;
-        
-        const coachInputs = coachFields.querySelectorAll('input, select');
-        
-        if (checkbox.checked) {
-            // Copy manager data to coach fields
-            const managerFields = {
-                'responsable_nom_complet': 'entraineur_nom_complet',
-                'responsable_date_naissance': 'entraineur_date_naissance',
-                'responsable_tel': 'entraineur_tel',
-                'responsable_whatsapp': 'entraineur_whatsapp'
-            };
-            
-            Object.entries(managerFields).forEach(([managerName, coachName]) => {
-                const managerField = document.querySelector(`[name="${managerName}"]`);
-                const coachField = document.querySelector(`[name="${coachName}"]`);
+        if (limits && requirementsElement) {
+            requirementsElement.innerHTML = `
+                <strong>Composition de l'équipe</strong><br>
+                Minimum: ${limits.min} joueurs<br>
+                Maximum: ${limits.max} joueurs
+            `;
+        }
+    }
+    
+    // Real-time validation
+    function setupRealTimeValidation() {
+        document.addEventListener('input', function(e) {
+            const field = e.target;
+            if (field.matches('input[required], select[required], textarea[required]')) {
+                // Clear error when user starts typing
+                clearFieldError(field);
                 
-                if (managerField && coachField && managerField.type !== 'file') {
-                    coachField.value = managerField.value;
-                    coachField.disabled = true;
-                    coachField.required = false;
+                // Add valid class if field has value
+                if (field.value.trim()) {
+                    field.classList.add('valid');
+                } else {
+                    field.classList.remove('valid');
                 }
-            });
-            
-            // Disable file fields
-            const coachFileFields = coachFields.querySelectorAll('input[type="file"]');
-            coachFileFields.forEach(field => {
-                field.disabled = true;
-                field.required = false;
-            });
-            
-        } else {
-            // Enable all coach fields
-            coachInputs.forEach(field => {
-                field.disabled = false;
-                if (field.hasAttribute('data-originally-required') || 
-                    field.closest('.form-group').querySelector('label').textContent.includes('*')) {
-                    field.required = true;
-                }
-            });
-        }
-    }
-    
-    function updatePlayerCount() {
-        const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
-        if (!container) return;
-        
-        const count = container.querySelectorAll('.joueur-form, .joueur-item').length;
-        const countElement = document.getElementById('player-count');
-        if (countElement) {
-            countElement.textContent = count;
-        }
-    }
-    
-    // Form submission handler
-    const form = document.getElementById('inscriptionForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            if (!validateCurrentStep()) {
-                e.preventDefault();
-                return false;
-            }
-            
-            // Final validation
-            const playersCount = document.querySelectorAll('.joueur-form, .joueur-item').length;
-            const selectedType = getSelectedSportType();
-            const minRequired = joueursMin[selectedType] || 5;
-            
-            if (playersCount < minRequired) {
-                e.preventDefault();
-                alert(`Vous devez ajouter au moins ${minRequired} joueurs pour cette catégorie`);
-                return false;
             }
         });
     }
+    
+    console.log('Generic sports wizard validation setup complete');
 });
-
-// Global function for removing players
-function removePlayer(button) {
-    const playerDiv = button.closest('.joueur-form') || button.closest('.joueur-item');
-    if (playerDiv) {
-        playerDiv.remove();
-        
-        // Update player count if element exists
-        const countElement = document.getElementById('player-count');
-        if (countElement) {
-            const container = document.getElementById('joueursContainer') || document.getElementById('joueurs-container');
-            const count = container ? container.querySelectorAll('.joueur-form, .joueur-item').length : 0;
-            countElement.textContent = count;
-        }
-    }
-}

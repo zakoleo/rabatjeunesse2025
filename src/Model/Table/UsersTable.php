@@ -78,20 +78,23 @@ class UsersTable extends Table
     {
         $validator
             ->scalar('username')
-            ->maxLength('username', 255)
-            ->requirePresence('username', 'create')
-            ->notEmptyString('username');
+            ->maxLength('username', 255, 'Le nom d\'utilisateur ne peut pas dépasser 255 caractères.')
+            ->minLength('username', 3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères.')
+            ->requirePresence('username', 'create', 'Le nom d\'utilisateur est requis.')
+            ->notEmptyString('username', 'Le nom d\'utilisateur ne peut pas être vide.')
+            ->alphaNumeric('username', 'Le nom d\'utilisateur ne peut contenir que des lettres et des chiffres.');
 
         $validator
-            ->email('email')
-            ->requirePresence('email', 'create')
-            ->notEmptyString('email');
+            ->email('email', false, 'Veuillez entrer une adresse email valide.')
+            ->requirePresence('email', 'create', 'L\'adresse email est requise.')
+            ->notEmptyString('email', 'L\'adresse email ne peut pas être vide.');
 
         $validator
             ->scalar('password')
-            ->maxLength('password', 255)
-            ->requirePresence('password', 'create')
-            ->notEmptyString('password');
+            ->maxLength('password', 255, 'Le mot de passe ne peut pas dépasser 255 caractères.')
+            ->minLength('password', 6, 'Le mot de passe doit contenir au moins 6 caractères.')
+            ->requirePresence('password', 'create', 'Le mot de passe est requis.')
+            ->notEmptyString('password', 'Le mot de passe ne peut pas être vide.');
 
         return $validator;
     }
@@ -105,8 +108,8 @@ class UsersTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['username']), ['errorField' => 'username']);
-        $rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
+        $rules->add($rules->isUnique(['username'], 'Ce nom d\'utilisateur est déjà utilisé.'), ['errorField' => 'username']);
+        $rules->add($rules->isUnique(['email'], 'Cette adresse email est déjà utilisée.'), ['errorField' => 'email']);
 
         return $rules;
     }

@@ -101,6 +101,32 @@
                         </tr>
                         <?php endif; ?>
                     </table>
+                    
+                    <?php if ($team->responsable_cin_recto || $team->responsable_cin_verso): ?>
+                    <div class="mt-3">
+                        <h5>Documents d'identité</h5>
+                        <div class="row">
+                            <?php if ($team->responsable_cin_recto): ?>
+                            <div class="col-md-6 mb-2">
+                                <p class="small text-muted mb-1">CIN/Passeport - Recto</p>
+                                <img src="<?= $this->Url->build('/' . h($team->responsable_cin_recto)) ?>" 
+                                     alt="CIN Recto" 
+                                     class="img-fluid document-image" 
+                                     onclick="openImageModal(this)">
+                            </div>
+                            <?php endif; ?>
+                            <?php if ($team->responsable_cin_verso): ?>
+                            <div class="col-md-6 mb-2">
+                                <p class="small text-muted mb-1">CIN/Passeport - Verso</p>
+                                <img src="<?= $this->Url->build('/' . h($team->responsable_cin_verso)) ?>" 
+                                     alt="CIN Verso" 
+                                     class="img-fluid document-image" 
+                                     onclick="openImageModal(this)">
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -135,6 +161,32 @@
                             </tr>
                             <?php endif; ?>
                         </table>
+                        
+                        <?php if ($team->entraineur_cin_recto || $team->entraineur_cin_verso): ?>
+                        <div class="mt-3">
+                            <h5>Documents d'identité</h5>
+                            <div class="row">
+                                <?php if ($team->entraineur_cin_recto): ?>
+                                <div class="col-md-6 mb-2">
+                                    <p class="small text-muted mb-1">CIN/Passeport - Recto</p>
+                                    <img src="<?= $this->Url->build('/' . h($team->entraineur_cin_recto)) ?>" 
+                                         alt="CIN Recto" 
+                                         class="img-fluid document-image" 
+                                         onclick="openImageModal(this)">
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($team->entraineur_cin_verso): ?>
+                                <div class="col-md-6 mb-2">
+                                    <p class="small text-muted mb-1">CIN/Passeport - Verso</p>
+                                    <img src="<?= $this->Url->build('/' . h($team->entraineur_cin_verso)) ?>" 
+                                         alt="CIN Verso" 
+                                         class="img-fluid document-image" 
+                                         onclick="openImageModal(this)">
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -154,8 +206,8 @@
                                 <th>#</th>
                                 <th>Nom complet</th>
                                 <th>Date de naissance</th>
-                                <th>N° Licence</th>
-                                <th>Téléphone</th>
+                                <th>Identifiant</th>
+                                <th>Taille vestimentaire</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -164,8 +216,8 @@
                                 <td><?= $index + 1 ?></td>
                                 <td><?= h($joueur->nom_complet) ?></td>
                                 <td><?= h($joueur->date_naissance ? $joueur->date_naissance->format('d/m/Y') : '') ?></td>
-                                <td><?= h($joueur->numero_licence) ?></td>
-                                <td><?= h($joueur->tel) ?></td>
+                                <td><?= h($joueur->identifiant) ?></td>
+                                <td><span class="badge badge-secondary"><?= h($joueur->taille_vestimentaire) ?></span></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -181,6 +233,13 @@
         </div>
         <?php endif; ?>
     </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="modal-close" onclick="closeImageModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div class="modal-caption" id="modalCaption"></div>
 </div>
 
 <style>
@@ -213,7 +272,107 @@
         color: white;
     }
     
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
     .float-right {
         float: right;
     }
+    
+    .document-image {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        max-height: 200px;
+        object-fit: cover;
+    }
+    
+    .document-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: auto;
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10000;
+    }
+    
+    .modal-close:hover {
+        color: #ccc;
+    }
+    
+    .modal-caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        text-align: center;
+        color: #ccc;
+        padding: 10px 0;
+        font-size: 16px;
+    }
 </style>
+
+<script>
+function openImageModal(img) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    
+    modal.style.display = 'block';
+    modalImg.src = img.src;
+    captionText.innerHTML = img.alt;
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>

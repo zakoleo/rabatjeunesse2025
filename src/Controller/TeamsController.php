@@ -23,7 +23,7 @@ class TeamsController extends AppController
         $this->Authentication->addUnauthenticatedActions([
             'addBasketball', 'addHandball', 'addVolleyball', 'addBeachvolley',
             'getFootballDateRanges', 'getBasketballDateRanges', 'getHandballDateRanges', 
-            'getVolleyballDateRanges', 'getBeachvolleyDateRanges'
+            'getVolleyballDateRanges', 'getBeachvolleyDateRanges', 'getFootballCategories'
         ]);
     }
     
@@ -326,10 +326,10 @@ class TeamsController extends AppController
         $this->request->allowMethod(['get']);
         $this->viewBuilder()->setClassName('Json');
 
-        // Load basketball categories from database
-        $BasketballCategories = $this->fetchTable('BasketballCategories');
-        $categories = $BasketballCategories->find()
-            ->where(['active' => true])
+        // Load basketball categories from unified database (sport_id = 2)
+        $CategoriesTable = $this->fetchTable('Categories');
+        $categories = $CategoriesTable->find()
+            ->where(['active' => true, 'sport_id' => 2])
             ->select(['name', 'age_range', 'min_birth_year', 'max_birth_year'])
             ->all();
 
@@ -1008,7 +1008,8 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['basketball_category_id'])) {
-                $category = $basketballTeamsTable->BasketballCategories->get($data['basketball_category_id']);
+                $CategoriesTable = $this->fetchTable('Categories');
+                $category = $CategoriesTable->get($data['basketball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -1074,8 +1075,8 @@ class TeamsController extends AppController
             
             // Fill text fields from foreign keys for display purposes
             if (!empty($data['basketball_category_id'])) {
-                $BasketballCategories = $this->fetchTable('BasketballCategories');
-                $category = $BasketballCategories->get($data['basketball_category_id']);
+                $CategoriesTable = $this->fetchTable('Categories');
+                $category = $CategoriesTable->get($data['basketball_category_id']);
                 if ($category) {
                     $data['categorie'] = $category->age_range;
                 }
@@ -1123,12 +1124,12 @@ class TeamsController extends AppController
             }
         }
         
-        // Load basketball categories, districts and organizations
-        $BasketballCategories = $this->fetchTable('BasketballCategories');
-        $basketballCategories = $BasketballCategories->find('list', [
+        // Load basketball categories from unified Categories table (sport_id = 2)
+        $CategoriesTable = $this->fetchTable('Categories');
+        $basketballCategories = $CategoriesTable->find('list', [
             'keyField' => 'id',
             'valueField' => 'age_range'
-        ])->where(['active' => true])->toArray();
+        ])->where(['active' => true, 'sport_id' => 2])->toArray();
         
         $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -1549,7 +1550,8 @@ class TeamsController extends AppController
             
             // Mapper les champs des relations vers les champs texte attendus
             if (!empty($data['basketball_category_id'])) {
-                $category = $basketballTeamsTable->BasketballCategories->get($data['basketball_category_id']);
+                $CategoriesTable = $this->fetchTable('Categories');
+                $category = $CategoriesTable->get($data['basketball_category_id']);
                 $data['categorie'] = $category->name;
             }
             
@@ -1669,12 +1671,12 @@ class TeamsController extends AppController
             }
         }
         
-        // Charger les listes pour les dropdowns
-        $BasketballCategories = $this->fetchTable('BasketballCategories');
-        $basketballCategories = $BasketballCategories->find('list', [
+        // Load basketball categories from unified Categories table (sport_id = 2)
+        $CategoriesTable = $this->fetchTable('Categories');
+        $basketballCategories = $CategoriesTable->find('list', [
             'keyField' => 'id',
             'valueField' => 'age_range'
-        ])->where(['active' => true])->toArray();
+        ])->where(['active' => true, 'sport_id' => 2])->toArray();
         
         $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
             'keyField' => 'id',
@@ -3010,5 +3012,191 @@ class TeamsController extends AppController
 
         $this->set(compact('team'));
         $this->render('view');
+    }
+
+    /**
+     * Get football categories with detailed date ranges for JavaScript validation
+     *
+     * @return \Cake\Http\Response|null JSON response with categories data
+     */
+    public function getFootballCategories()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $footballCategoriesTable = $this->fetchTable('FootballCategories');
+        $categories = $footballCategoriesTable->find()
+            ->select([
+                'id',
+                'name', 
+                'age_range',
+                'min_birth_year',
+                'max_birth_year', 
+                'min_date',
+                'max_date'
+            ])
+            ->where(['active' => true])
+            ->all();
+
+        $result = [];
+        foreach ($categories as $category) {
+            $result[] = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'age_range' => $category->age_range,
+                'min_birth_year' => $category->min_birth_year,
+                'max_birth_year' => $category->max_birth_year,
+                'min_date' => $category->min_date,
+                'max_date' => $category->max_date
+            ];
+        }
+
+        $this->set(['categories' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['categories']);
+        return;
+    }
+
+    public function getSports()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $sportsTable = $this->fetchTable('Sports');
+        $sports = $sportsTable->find()
+            ->select(['id', 'name', 'code', 'min_players', 'max_players'])
+            ->where(['active' => true])
+            ->all();
+
+        $result = [];
+        foreach ($sports as $sport) {
+            $result[] = [
+                'id' => $sport->id,
+                'name' => $sport->name,
+                'code' => $sport->code,
+                'min_players' => $sport->min_players,
+                'max_players' => $sport->max_players
+            ];
+        }
+
+        $this->set(['sports' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['sports']);
+        return;
+    }
+
+    public function getCategories()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $sportId = $this->request->getQuery('sport_id');
+        
+        $categoriesTable = $this->fetchTable('Categories');
+        $query = $categoriesTable->find()
+            ->select([
+                'id', 'name', 'age_range', 'min_birth_year', 'max_birth_year', 
+                'min_birth_date', 'max_birth_date'
+            ])
+            ->where(['active' => true]);
+
+        if ($sportId) {
+            $query->where(['sport_id' => $sportId]);
+        }
+
+        $categories = $query->all();
+
+        $result = [];
+        foreach ($categories as $category) {
+            $result[] = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'age_range' => $category->age_range,
+                'min_birth_year' => $category->min_birth_year,
+                'max_birth_year' => $category->max_birth_year,
+                'min_birth_date' => $category->min_birth_date,
+                'max_birth_date' => $category->max_birth_date,
+                'format' => 'database'
+            ];
+        }
+
+        $this->set(['categories' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['categories']);
+        return;
+    }
+
+    public function getFootballTypes()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $footballTypesTable = $this->fetchTable('FootballTypes');
+        $footballTypes = $footballTypesTable->find()
+            ->select(['id', 'name', 'code', 'min_players', 'max_players'])
+            ->where(['active' => true])
+            ->all();
+
+        $result = [];
+        foreach ($footballTypes as $type) {
+            $result[] = [
+                'id' => $type->id,
+                'name' => $type->name,
+                'code' => $type->code,
+                'min_players' => $type->min_players,
+                'max_players' => $type->max_players
+            ];
+        }
+
+        $this->set(['football_types' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['football_types']);
+        return;
+    }
+
+    public function getDistricts()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $districtsTable = $this->fetchTable('Districts');
+        $districts = $districtsTable->find()
+            ->select(['id', 'name', 'code'])
+            ->where(['active' => true])
+            ->all();
+
+        $result = [];
+        foreach ($districts as $district) {
+            $result[] = [
+                'id' => $district->id,
+                'name' => $district->name,
+                'code' => $district->code
+            ];
+        }
+
+        $this->set(['districts' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['districts']);
+        return;
+    }
+
+    public function getOrganizations()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+
+        $organizationsTable = $this->fetchTable('Organizations');
+        $organizations = $organizationsTable->find()
+            ->select(['id', 'name', 'code'])
+            ->where(['active' => true])
+            ->all();
+
+        $result = [];
+        foreach ($organizations as $organization) {
+            $result[] = [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'code' => $organization->code
+            ];
+        }
+
+        $this->set(['organizations' => $result]);
+        $this->viewBuilder()->setOption('serialize', ['organizations']);
+        return;
     }
 }

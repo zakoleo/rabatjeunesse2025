@@ -17,11 +17,7 @@
 <div class="content-section">
     <div class="container">
         <div class="actions mb-4">
-            <?= $this->Html->link('Inscrire équipe de Football', ['action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
-            <?= $this->Html->link('Inscrire équipe de Basketball', ['action' => 'addBasketball'], ['class' => 'btn btn-basketball btn-large']) ?>
-            <?= $this->Html->link('Inscrire équipe de Handball', ['action' => 'addHandball'], ['class' => 'btn btn-handball btn-large']) ?>
-            <?= $this->Html->link('Inscrire équipe de Volleyball', ['action' => 'addVolleyball'], ['class' => 'btn btn-volleyball btn-large']) ?>
-            <?= $this->Html->link('Retour au tableau de bord', ['controller' => 'Users', 'action' => 'dashboard'], ['class' => 'btn btn-secondary']) ?>
+            <?= $this->Html->link('Inscrire nouvel équipe', ['controller' => 'Sports', 'action' => 'index'], ['class' => 'btn btn-primary btn-large']) ?>
         </div>
         
         <!-- Football Teams Section -->
@@ -341,10 +337,7 @@
                     <h3>Aucune équipe inscrite</h3>
                     <p class="text-light">Vous n'avez pas encore inscrit d'équipe.</p>
                     <div class="mt-3">
-                        <?= $this->Html->link('Inscrire une équipe de Football', ['action' => 'add'], ['class' => 'btn btn-primary btn-large me-2']) ?>
-                        <?= $this->Html->link('Inscrire une équipe de Basketball', ['action' => 'addBasketball'], ['class' => 'btn btn-basketball btn-large me-2']) ?>
-                        <?= $this->Html->link('Inscrire une équipe de Handball', ['action' => 'addHandball'], ['class' => 'btn btn-handball btn-large me-2']) ?>
-                        <?= $this->Html->link('Inscrire une équipe de Volleyball', ['action' => 'addVolleyball'], ['class' => 'btn btn-volleyball btn-large']) ?>
+                        <?= $this->Html->link('Inscrire nouvel équipe', ['controller' => 'Sports', 'action' => 'index'], ['class' => 'btn btn-primary btn-large']) ?>
                     </div>
                 </div>
             </div>

@@ -113,8 +113,8 @@ class UsersController extends AppController
         // If the user is logged in send them away.
         if ($result && $result->isValid()) {
             $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Users',
-                'action' => 'dashboard',
+                'controller' => 'Sports',
+                'action' => 'index',
             ]);
 
             return $this->redirect($redirect);
@@ -140,35 +140,23 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('Registration successful. Please login.'));
+                $this->Flash->success(__('Inscription réussie. Veuillez vous connecter.'));
                 return $this->redirect(['action' => 'login']);
             }
-            $this->Flash->error(__('Registration failed. Please, try again.'));
+            
+            // Check for specific validation errors
+            $errors = $user->getErrors();
+            if (!empty($errors)) {
+                foreach ($errors as $field => $fieldErrors) {
+                    foreach ($fieldErrors as $error) {
+                        $this->Flash->error($error);
+                    }
+                }
+            } else {
+                $this->Flash->error(__('Échec de l\'inscription. Veuillez réessayer.'));
+            }
         }
         $this->set(compact('user'));
     }
 
-    public function dashboard()
-    {
-        $user = $this->Authentication->getIdentity();
-        
-        // Compter les inscriptions de l'utilisateur pour chaque sport
-        $Teams = $this->fetchTable('Teams');
-        $HandballTeams = $this->fetchTable('HandballTeams');
-        $BasketballTeams = $this->fetchTable('BasketballTeams');
-        $VolleyballTeams = $this->fetchTable('VolleyballTeams');
-        $BeachvolleyTeams = $this->fetchTable('BeachvolleyTeams');
-        
-        $inscriptions = [
-            'football' => $Teams->find()->where(['user_id' => $user->id])->count(),
-            'handball' => $HandballTeams->find()->where(['user_id' => $user->id])->count(),
-            'basketball' => $BasketballTeams->find()->where(['user_id' => $user->id])->count(),
-            'volleyball' => $VolleyballTeams->find()->where(['user_id' => $user->id])->count(),
-            'beachvolley' => $BeachvolleyTeams->find()->where(['user_id' => $user->id])->count(),
-        ];
-        
-        $totalInscriptions = array_sum($inscriptions);
-        
-        $this->set(compact('user', 'inscriptions', 'totalInscriptions'));
-    }
 }

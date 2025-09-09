@@ -108,6 +108,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/api/handball-date-ranges', ['controller' => 'Teams', 'action' => 'getHandballDateRanges']);
         $builder->connect('/api/volleyball-date-ranges', ['controller' => 'Teams', 'action' => 'getVolleyballDateRanges']);
         $builder->connect('/api/beachvolley-date-ranges', ['controller' => 'Teams', 'action' => 'getBeachvolleyDateRanges']);
+        $builder->connect('/teams/getCategories', ['controller' => 'Teams', 'action' => 'getCategories']);
+        $builder->connect('/teams/getSports', ['controller' => 'Teams', 'action' => 'getSports']);
 
         /*
          * Connect catchall routes for all controllers.

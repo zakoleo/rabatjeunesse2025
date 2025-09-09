@@ -378,7 +378,7 @@ $this->assign('title', 'Inscription - Équipe de Beach Volleyball');
     // Pass the base URL to JavaScript
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
-<?= $this->Html->script('inscription-form') ?>
+<?= $this->Html->script('beachvolley-wizard-validation') ?>
 
 <style>
 .beachvolley-inscription {

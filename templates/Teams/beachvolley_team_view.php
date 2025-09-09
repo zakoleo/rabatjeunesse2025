@@ -148,6 +148,12 @@ $this->assign('title', 'Équipe de Beach Volleyball - ' . h($team->nom_equipe));
         ) ?>
     </div>
 </div>
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="modal-close" onclick="closeImageModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div class="modal-caption" id="modalCaption"></div>
+</div>
 
 <style>
 .beachvolley-team-view {
@@ -431,4 +437,94 @@ $this->assign('title', 'Équipe de Beach Volleyball - ' . h($team->nom_equipe));
         justify-content: center;
     }
 }
+
+    .document-image {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        max-height: 200px;
+        object-fit: cover;
+    }
+    
+    .document-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: auto;
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10000;
+    }
+    
+    .modal-close:hover {
+        color: #ccc;
+    }
+    
+    .modal-caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        text-align: center;
+        color: #ccc;
+        padding: 10px 0;
+        font-size: 16px;
+    }
 </style>
+<script>
+function openImageModal(img) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    
+    modal.style.display = 'block';
+    modalImg.src = img.src;
+    captionText.innerHTML = img.alt;
+    
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>

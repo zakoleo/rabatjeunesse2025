@@ -25,7 +25,11 @@
       "Bash(/mnt/c/xampp/php/php.exe:*)",
       "Bash(echo:*)",
       "Bash(/mnt/c/xampp/mysql/bin/mysql:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Read(/mnt/c/xampp/**)",
+      "Read(/mnt/c/xampp/**)",
+      "Read(/mnt/c/xampp/**)",
+      "Read(/mnt/c/xampp/**)"
     ],
     "deny": []
   }
