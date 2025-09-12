@@ -50,6 +50,13 @@ class FootballCategoriesTable extends Table
         $this->hasMany('Teams', [
             'foreignKey' => 'football_category_id',
         ]);
+        
+        // Many-to-many relationship with FootballTypes through junction table
+        $this->belongsToMany('FootballTypes', [
+            'through' => 'FootballCategoriesTypes',
+            'foreignKey' => 'football_category_id',
+            'targetForeignKey' => 'football_type_id',
+        ]);
     }
 
     /**

@@ -1,6 +1,6 @@
 /**
  * Volleyball Team Registration Wizard Validation
- * Clean, focused validation for volleyball team registration form
+ * Exact copy of football validation pattern for consistent behavior
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,370 +10,148 @@ document.addEventListener('DOMContentLoaded', function() {
     let playerIndex = 0;
     
     // Volleyball-specific player limits (will be populated from server)
-    let playerLimits = {
-        '6x6': { min: 6, max: 12 },
-        '4x4': { min: 4, max: 8 }
-    };
+    let playerLimits = {};
+    let playerLimitsLoaded = false;
     
     console.log('Volleyball wizard validation initialized');
     
     // Age categories data (will be populated from server)
     let volleyballCategories = {};
+    let categoriesLoaded = false;
     
-    // Initialize wizard
-    initializeWizard();
-    
-    // Load dynamic data
-    loadAgeCategories();
-    loadVolleyballTypes();
-    
-    // Function to load age categories from server
-    function loadAgeCategories() {
-        const categorySelect = document.querySelector('[name="volleyball_category_id"]');
-        if (categorySelect) {
-            // First, load basic info from select options
-            const options = categorySelect.querySelectorAll('option');
-            options.forEach(option => {
-                if (option.value && option.textContent.trim()) {
-                    volleyballCategories[option.value] = {
-                        id: option.value,
-                        name: option.textContent.trim()
-                    };
-                }
-            });
-            
-            // Load detailed age ranges via AJAX
-            fetchDetailedCategoryData();
-            
-            // Set up category change listener
-            categorySelect.addEventListener('change', function() {
-                console.log('Category changed, will validate player ages');
-                setTimeout(validateAllPlayerAges, 100);
-            });
-        }
-    }
-    
-    // Fetch detailed category data from server
-    function fetchDetailedCategoryData() {
-        fetch('/teams/getCategories?sport_id=4')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Received detailed category data:', data);
-                
-                // Update categories with database info
-                data.categories.forEach(category => {
-                    if (volleyballCategories[category.id]) {
-                        volleyballCategories[category.id] = {
-                            ...volleyballCategories[category.id],
-                            minAge: category.min_age || null,
-                            maxAge: category.max_age || null,
-                            minBirthYear: category.min_birth_year,
-                            maxBirthYear: category.max_birth_year,
-                            minDate: category.min_birth_date ? new Date(category.min_birth_date) : null,
-                            maxDate: category.max_birth_date ? new Date(category.max_birth_date) : null,
-                            format: 'database'
-                        };
-                    }
-                });
-                
-                console.log('Updated volleyball categories with database data:', volleyballCategories);
-            })
-            .catch(error => {
-                console.warn('Could not load detailed category data:', error);
-                console.log('Using fallback parsing from select options');
-                fallbackCategoryParsing();
-            });
-    }
-
-    // Load volleyball types from server (if needed)
-    function loadVolleyballTypes() {
-        // Volleyball types are simpler, but we can load them dynamically if needed
-        fetch('/teams/getSports')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Volleyball types loaded from server');
-            })
-            .catch(error => {
-                console.warn('Using default volleyball limits');
-            });
-    }
-    
-    // Fallback to parsing from select option text
-    function fallbackCategoryParsing() {
-        const categorySelect = document.querySelector('[name="volleyball_category_id"]');
-        if (categorySelect) {
-            const options = categorySelect.querySelectorAll('option');
-            options.forEach(option => {
-                if (option.value && option.textContent.trim()) {
-                    const text = option.textContent.trim();
-                    const ageRange = extractAgeRange(text);
-                    if (ageRange && volleyballCategories[option.value]) {
-                        volleyballCategories[option.value] = {
-                            ...volleyballCategories[option.value],
-                            ...ageRange
-                        };
-                    }
-                }
-            });
-        }
-    }
-    
-    // Extract age range from database category text 
-    function extractAgeRange(text) {
-        console.log('Parsing category text:', text);
+    // Parse date string to local Date object avoiding timezone issues
+    function parseLocalDate(dateStr) {
+        if (!dateStr) return null;
         
-        const agePatterns = [
-            /(\d{4})\s*-\s*(\d{4})/,
-            /(\d{4})\/(\d{4})/,
-            /-(\d+)\s*ans?/i,
-            /U(\d+)/i,
-            /Senior/i
+        // If it's already a Date object, return it
+        if (dateStr instanceof Date) {
+            return dateStr;
+        }
+        
+        // Handle YYYY-MM-DD format specifically to avoid timezone issues
+        if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day); // month is 0-indexed
+            return localDate;
+        }
+        
+        // Handle other date formats or datetime strings
+        const parsedDate = new Date(dateStr);
+        return parsedDate;
+    }
+    
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    
+    function isValidPhone(phone) {
+        const cleanPhone = phone.replace(/[\s\-()]/g, '');
+        return /^(\+212|0)[5-7][0-9]{8}$/.test(cleanPhone) || /^[0-9]{10}$/.test(cleanPhone);
+    }
+    
+    function isValidWhatsApp(whatsapp) {
+        const cleanWhatsApp = whatsapp.replace(/[\s\-()]/g, '');
+        const patterns = [
+            /^\+212[5-7][0-9]{8}$/,
+            /^212[5-7][0-9]{8}$/,
+            /^0[5-7][0-9]{8}$/,
+            /^[5-7][0-9]{8}$/,
+            /^\+[1-9][0-9]{8,14}$/,
+            /^[0-9]{10,15}$/
         ];
+        return patterns.some(pattern => pattern.test(cleanWhatsApp));
+    }
+    
+    function isValidName(name) {
+        return /^[a-zA-ZÀ-ÿ\s\-'\.]+$/.test(name);
+    }
+    
+    function isValidBirthDate(dateStr, field = null) {
+        const birthDate = parseLocalDate(dateStr);
+        const today = new Date();
         
-        for (let pattern of agePatterns) {
-            const match = text.match(pattern);
-            if (match) {
-                if (pattern.source.includes('Senior')) {
-                    return { minAge: 18, maxAge: 35, format: 'fallback' };
-                } else if (pattern.source.includes('U')) {
-                    const maxAge = parseInt(match[1]);
-                    return { minAge: Math.max(6, maxAge - 3), maxAge: maxAge, format: 'fallback' };
-                } else if (pattern.source.includes('ans')) {
-                    const age = parseInt(match[1]);
-                    return { minAge: Math.max(6, age - 1), maxAge: age, format: 'fallback' };
+        // More accurate age calculation
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        // For player fields, validate against selected age category
+        if (field && field.name && field.name.includes('joueurs[')) {
+            if (!categoriesLoaded) {
+                return age >= 6 && age <= 35; // Basic fallback
+            }
+            
+            const category = getSelectedAgeCategory();
+            if (category) {
+                // Use database date range validation if available
+                if (category.minDate && category.maxDate) {
+                    const isAfterMin = birthDate >= category.minDate;
+                    const isBeforeMax = birthDate <= category.maxDate;
+                    return isAfterMin && isBeforeMax;
+                } else if (category.minAge !== null && category.maxAge !== null) {
+                    return age >= category.minAge && age <= category.maxAge;
                 } else {
-                    return { 
-                        minBirthYear: parseInt(match[1]),
-                        maxBirthYear: parseInt(match[2]),
-                        format: 'fallback'
-                    };
+                    return age >= 6 && age <= 35; // General fallback
                 }
+            } else {
+                return age >= 6 && age <= 35;
             }
         }
         
-        return { minAge: 6, maxAge: 35, format: 'fallback' };
+        // For non-player fields (manager/coach), use general age range
+        return age >= 16 && age <= 80;
     }
     
-    function initializeWizard() {
-        console.log('Initializing volleyball wizard...');
-        
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const submitBtn = document.querySelector('button[type="submit"]');
-        
-        if (nextBtn) nextBtn.addEventListener('click', nextStep);
-        if (prevBtn) prevBtn.addEventListener('click', prevStep);
-        
-        showStep(currentStep);
-        
-        // Set up real-time validation for all form fields
-        setupRealTimeValidation();
-        
-        // Set up volleyball type change handler for player limits
-        const volleyballTypeSelect = document.querySelector('[name="type_volleyball"]');
-        if (volleyballTypeSelect) {
-            volleyballTypeSelect.addEventListener('change', updatePlayerRequirements);
-            // Initialize on load
-            setTimeout(updatePlayerRequirements, 100);
-        }
-    }
-    
-    function updatePlayerRequirements() {
-        const volleyballTypeSelect = document.querySelector('[name="type_volleyball"]');
-        if (!volleyballTypeSelect) return;
-        
-        const selectedType = volleyballTypeSelect.value;
-        console.log('Volleyball type changed to:', selectedType);
-        
-        if (playerLimits[selectedType]) {
-            const limits = playerLimits[selectedType];
-            console.log('Player limits for', selectedType, ':', limits);
-            
-            // Update player sections if we're on step 3
-            if (currentStep === 3) {
-                generatePlayerForms(limits.min);
-            }
-            
-            // Update any info displays
-            updatePlayerCountDisplay(selectedType, limits);
-        }
-    }
-    
-    function updatePlayerCountDisplay(type, limits) {
-        const infoElements = document.querySelectorAll('.volleyball-info, .player-info');
-        infoElements.forEach(element => {
-            element.innerHTML = `<small class="text-info">${type}: Minimum ${limits.min} joueurs, Maximum ${limits.max} joueurs</small>`;
-        });
-    }
-    
-    function generatePlayerForms(minPlayers) {
-        const playersContainer = document.querySelector('.players-container');
-        if (!playersContainer) return;
-        
-        // Clear existing player forms
-        playersContainer.innerHTML = '';
-        
-        // Generate minimum required player forms
-        for (let i = 0; i < minPlayers; i++) {
-            const playerForm = createPlayerForm(i);
-            playersContainer.appendChild(playerForm);
-        }
-        
-        // Add "Add Player" button
-        const addPlayerBtn = document.createElement('button');
-        addPlayerBtn.type = 'button';
-        addPlayerBtn.className = 'btn btn-outline-primary btn-add-player';
-        addPlayerBtn.innerHTML = '<i class="fas fa-plus"></i> Ajouter un joueur';
-        addPlayerBtn.addEventListener('click', addPlayerForm);
-        playersContainer.appendChild(addPlayerBtn);
-        
-        playerIndex = minPlayers;
-    }
-    
-    function createPlayerForm(index) {
-        const playerDiv = document.createElement('div');
-        playerDiv.className = 'player-form card mb-3';
-        playerDiv.innerHTML = `
-            <div class="card-header">
-                <h5>Joueur ${index + 1}</h5>
-                ${index >= getMinPlayers() ? `<button type="button" class="btn btn-sm btn-danger remove-player">Supprimer</button>` : ''}
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label>Nom complet *</label>
-                        <input type="text" name="joueurs[${index}][nom_complet]" class="form-control" required>
-                        <div class="error-message"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label>Date de naissance *</label>
-                        <input type="date" name="joueurs[${index}][date_naissance]" class="form-control" required>
-                        <div class="error-message"></div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <label>Numéro CIN/Passeport *</label>
-                        <input type="text" name="joueurs[${index}][identifiant]" class="form-control" required>
-                        <div class="error-message"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label>Taille vestimentaire *</label>
-                        <select name="joueurs[${index}][taille_vestimentaire]" class="form-control" required>
-                            <option value="">Sélectionner...</option>
-                            <option value="XS">XS</option>
-                            <option value="S">S</option>
-                            <option value="M">M</option>
-                            <option value="L">L</option>
-                            <option value="XL">XL</option>
-                            <option value="XXL">XXL</option>
-                            <option value="XXXL">XXXL</option>
-                        </select>
-                        <div class="error-message"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add remove functionality for optional players
-        const removeBtn = playerDiv.querySelector('.remove-player');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => removePlayerForm(playerDiv));
-        }
-        
-        return playerDiv;
-    }
-    
-    function getMinPlayers() {
-        const volleyballTypeSelect = document.querySelector('[name="type_volleyball"]');
-        const selectedType = volleyballTypeSelect ? volleyballTypeSelect.value : '6x6';
-        return playerLimits[selectedType] ? playerLimits[selectedType].min : 6;
-    }
-    
-    function addPlayerForm() {
-        const volleyballTypeSelect = document.querySelector('[name="type_volleyball"]');
-        const selectedType = volleyballTypeSelect ? volleyballTypeSelect.value : '6x6';
-        const maxPlayers = playerLimits[selectedType] ? playerLimits[selectedType].max : 12;
-        
-        const currentPlayerCount = document.querySelectorAll('.player-form').length;
-        
-        if (currentPlayerCount >= maxPlayers) {
-            alert(`Maximum ${maxPlayers} joueurs autorisés pour le ${selectedType}`);
-            return;
-        }
-        
-        const playersContainer = document.querySelector('.players-container');
-        const addButton = document.querySelector('.btn-add-player');
-        
-        const playerForm = createPlayerForm(playerIndex);
-        playersContainer.insertBefore(playerForm, addButton);
-        
-        playerIndex++;
-        setupFieldValidation(playerForm);
-    }
-    
-    function removePlayerForm(playerDiv) {
-        const minPlayers = getMinPlayers();
-        const currentPlayerCount = document.querySelectorAll('.player-form').length;
-        
-        if (currentPlayerCount <= minPlayers) {
-            alert(`Minimum ${minPlayers} joueurs requis`);
-            return;
-        }
-        
-        playerDiv.remove();
-        
-        // Renumber remaining players
-        const playerForms = document.querySelectorAll('.player-form');
-        playerForms.forEach((form, index) => {
-            const header = form.querySelector('.card-header h5');
-            if (header) header.textContent = `Joueur ${index + 1}`;
-            
-            // Update input names
-            const inputs = form.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                if (input.name.includes('joueurs[')) {
-                    input.name = input.name.replace(/joueurs\[\d+\]/, `joueurs[${index}]`);
-                }
-            });
-        });
-        
-        playerIndex = playerForms.length;
-    }
-    
-    function setupRealTimeValidation() {
-        // Set up validation for all current form fields
-        const formFields = document.querySelectorAll('input, select, textarea');
-        formFields.forEach(field => setupFieldValidation(field));
-    }
-    
-    function setupFieldValidation(container = document) {
-        const fields = container.querySelectorAll ? container.querySelectorAll('input, select, textarea') : [container];
-        
-        fields.forEach(field => {
-            // Skip if already has event listeners
-            if (field.hasAttribute('data-validation-setup')) return;
-            field.setAttribute('data-validation-setup', 'true');
-            
-            field.addEventListener('input', function() {
-                validateField(this);
-            });
-            
-            field.addEventListener('change', function() {
-                validateField(this);
-            });
-            
-            field.addEventListener('blur', function() {
-                validateField(this);
-            });
-        });
-    }
-    
-    function validateField(field) {
+    // Error display functions
+    function showFieldError(field, message) {
         clearFieldError(field);
         
-        // Check required fields
-        if (field.hasAttribute('required') && !field.value.trim()) {
+        field.classList.add('error', 'form-control');
+        field.classList.remove('valid');
+        
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.textContent = message;
+        
+        field.parentNode.appendChild(errorElement);
+    }
+    
+    function showContainerError(container, message) {
+        container.querySelectorAll('.error-message').forEach(error => error.remove());
+        
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message alert alert-danger';
+        errorElement.textContent = message;
+        errorElement.style.marginTop = '1rem';
+        errorElement.style.padding = '0.75rem';
+        errorElement.style.borderRadius = '4px';
+        container.appendChild(errorElement);
+    }
+    
+    function clearFieldError(field) {
+        field.classList.remove('error');
+        const errorElements = field.parentNode.querySelectorAll('.error-message');
+        errorElements.forEach(error => error.remove());
+    }
+    
+    function clearStepErrors(stepElement) {
+        stepElement.querySelectorAll('.error').forEach(field => {
+            field.classList.remove('error');
+        });
+        stepElement.querySelectorAll('.error-message').forEach(error => {
+            error.remove();
+        });
+    }
+    
+    // Validate individual field
+    function validateField(field) {
+        const value = field.value ? field.value.trim() : '';
+        
+        // Required field check
+        if (!value && field.required) {
             if (field.type !== 'file') {
                 showFieldError(field, 'Ce champ est obligatoire');
                 return false;
@@ -387,16 +165,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Mark as valid if empty and not required
         field.classList.remove('error');
-        field.classList.add('valid', 'form-control');
+        field.classList.add('valid');
         return true;
     }
     
+    // Validate field format only (for optional fields with values)
     function validateOptionalField(field) {
         const value = field.value.trim();
         
         // Skip validation for WhatsApp if empty (it's optional)
         if (field.name.includes('whatsapp') && !value) {
-            console.log('WhatsApp field is empty - considered valid:', field.name);
             field.classList.remove('error');
             return true;
         }
@@ -472,231 +250,1103 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Mark as valid
-        field.classList.remove('error');
-        field.classList.add('valid', 'form-control');
+        // Clear any existing errors
+        clearFieldError(field);
+        field.classList.add('valid');
         return true;
     }
     
-    // Validation helper functions
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-    
-    function isValidPhone(phone) {
-        const cleanPhone = phone.replace(/[\s\-()]/g, '');
-        return /^(\+212|0)[5-7][0-9]{8}$/.test(cleanPhone) || /^[0-9]{10}$/.test(cleanPhone);
-    }
-    
-    function isValidWhatsApp(whatsapp) {
-        const cleanWhatsApp = whatsapp.replace(/[\s\-()]/g, '');
-        const patterns = [
-            /^\+212[5-7][0-9]{8}$/,
-            /^212[5-7][0-9]{8}$/,
-            /^0[5-7][0-9]{8}$/
-        ];
-        return patterns.some(pattern => pattern.test(cleanWhatsApp));
-    }
-    
-    function isValidName(name) {
-        return /^[a-zA-ZÀ-ÿ\s\-'\.]+$/.test(name);
-    }
-    
-    function isValidBirthDate(dateValue, field) {
-        const birthDate = new Date(dateValue);
-        const today = new Date();
-        const age = today.getFullYear() - birthDate.getFullYear() - 
-                   ((today.getMonth() < birthDate.getMonth() || 
-                     (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) ? 1 : 0);
-        
-        if (field.name.includes('joueurs[')) {
-            // Player age validation
-            const category = getSelectedAgeCategory();
-            if (category) {
-                return isValidAgeForCategory(birthDate, category);
-            }
-            return age >= 6 && age <= 35;
-        } else {
-            // Manager/Coach age validation
-            return age >= 16 && age <= 80;
-        }
-    }
-    
+    // Get selected age category
     function getSelectedAgeCategory() {
         const categorySelect = document.querySelector('[name="volleyball_category_id"]');
-        if (!categorySelect || !categorySelect.value) return null;
         
-        return volleyballCategories[categorySelect.value] || null;
+        if (categorySelect && categorySelect.value) {
+            const selectedId = categorySelect.value;
+            const category = volleyballCategories[selectedId];
+            return category;
+        }
+        
+        return null;
     }
     
-    function isValidAgeForCategory(birthDate, category) {
-        if (category.format === 'database' && category.minDate && category.maxDate) {
-            return birthDate >= category.minDate && birthDate <= category.maxDate;
+    // Get selected volleyball type
+    function getSelectedVolleyballType() {
+        const typeField = document.querySelector('[name="type_volleyball"]');
+        const selectedValue = typeField ? typeField.value : null;
+        
+        if (selectedValue) {
+            return selectedValue;
         }
         
-        if (category.minBirthYear && category.maxBirthYear) {
-            const birthYear = birthDate.getFullYear();
-            return birthYear >= category.minBirthYear && birthYear <= category.maxBirthYear;
-        }
-        
-        if (category.minAge !== null && category.maxAge !== null) {
-            const today = new Date();
-            const age = today.getFullYear() - birthDate.getFullYear() - 
-                       ((today.getMonth() < birthDate.getMonth() || 
-                         (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) ? 1 : 0);
-            return age >= category.minAge && age <= category.maxAge;
-        }
-        
-        return true;
+        return null;
     }
     
+    // Validate all player ages against selected category
     function validateAllPlayerAges() {
-        const playerBirthInputs = document.querySelectorAll('input[name*="joueurs"][name*="date_naissance"]');
-        playerBirthInputs.forEach(validateField);
-    }
-    
-    function showFieldError(field, message) {
-        field.classList.add('error');
-        field.classList.remove('valid');
-        
-        let errorDiv = field.parentNode.querySelector('.error-message');
-        if (!errorDiv) {
-            errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            field.parentNode.appendChild(errorDiv);
+        const selectedCategory = getSelectedAgeCategory();
+        if (!selectedCategory) {
+            return;
         }
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
+        
+        const playerForms = document.querySelectorAll('.joueur-form');
+        playerForms.forEach((playerForm, index) => {
+            const birthDateField = playerForm.querySelector('[name*="date_naissance"]');
+            if (birthDateField && birthDateField.value) {
+                validatePlayerAge(birthDateField, selectedCategory);
+            }
+        });
     }
     
-    function clearFieldError(field) {
-        field.classList.remove('error');
-        const errorDiv = field.parentNode.querySelector('.error-message');
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
+    // Validate individual player age
+    function validatePlayerAge(birthDateField, category = null) {
+        if (!category) {
+            category = getSelectedAgeCategory();
+        }
+        
+        if (!category) {
+            return true;
+        }
+        
+        const birthDate = new Date(birthDateField.value);
+        const today = new Date();
+        
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        const isValidAge = age >= category.minAge && age <= category.maxAge;
+        
+        clearFieldError(birthDateField);
+        
+        if (!isValidAge) {
+            let message;
+            if (category.minDate && category.maxDate) {
+                const startDate = category.minDate.toLocaleDateString('fr-FR');
+                const endDate = category.maxDate.toLocaleDateString('fr-FR');
+                const playerDate = new Date(birthDateField.value).toLocaleDateString('fr-FR');
+                message = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${playerDate})`;
+            } else if (category.minBirthYear && category.maxBirthYear) {
+                const birthYear = new Date(birthDateField.value).getFullYear();
+                message = `Année de naissance invalide pour la catégorie ${category.name}. Années requises: ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
+            } else if (category.minAge !== undefined && category.maxAge !== undefined) {
+                message = `Âge invalide pour la catégorie ${category.name}. Âge requis: ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
+            } else {
+                message = `Âge invalide pour la catégorie ${category.name} (joueur: ${age} ans)`;
+            }
+            showFieldError(birthDateField, message);
+            return false;
+        } else {
+            birthDateField.classList.add('valid', 'form-control');
+            birthDateField.classList.remove('error');
+            return true;
         }
     }
     
-    function validateStep(step) {
-        console.log('Validating step:', step);
-        let isValid = true;
-        const stepContainer = document.querySelector(`[data-step="${step}"]`);
-        
-        if (!stepContainer) {
-            console.error('Step container not found for step:', step);
+    // Player count validation
+    function validatePlayerCount() {
+        if (!playerLimitsLoaded) {
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, 'Erreur: Les données de validation ne sont pas chargées. Veuillez rafraîchir la page.');
+            }
             return false;
         }
         
-        // Clear previous errors
-        stepContainer.querySelectorAll('.error-message').forEach(error => {
-            error.style.display = 'none';
-        });
-        stepContainer.querySelectorAll('.error').forEach(field => {
-            field.classList.remove('error');
-        });
+        const playersCount = document.querySelectorAll('.joueur-form').length;
+        const volleyballType = getSelectedVolleyballType();
+        const limits = playerLimits[volleyballType];
         
-        // Validate all fields in current step
-        const fields = stepContainer.querySelectorAll('input[required], select[required], textarea[required]');
-        fields.forEach(field => {
+        if (!limits) {
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, `Erreur: Type de volleyball "${volleyballType}" non reconnu. Veuillez sélectionner un autre type.`);
+            }
+            return false;
+        }
+        
+        if (playersCount < limits.min) {
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, `Vous devez ajouter au moins ${limits.min} joueurs pour le ${volleyballType}`);
+            }
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Validate current step
+    function validateCurrentStep() {
+        const stepElement = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+        if (!stepElement) {
+            return true;
+        }
+        
+        // Clear previous errors
+        clearStepErrors(stepElement);
+        
+        let isValid = true;
+        
+        // Get all required fields in current step  
+        const requiredFields = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
+        const allFields = stepElement.querySelectorAll('input, select, textarea');
+        const optionalFields = Array.from(allFields).filter(f => !f.required && (f.value.trim() || f.name.includes('whatsapp')));
+        
+        requiredFields.forEach(field => {
+            // Handle file fields during wizard navigation
+            if (field.type === 'file') {
+                // Skip coach file fields if same as manager
+                if (currentStep === 2 && field.name.includes('entraineur_')) {
+                    const sameAsManager = document.getElementById('sameAsResponsable');
+                    if (sameAsManager && sameAsManager.checked) {
+                        return;
+                    }
+                }
+                
+                if (field.required && (!field.files || field.files.length === 0)) {
+                    showFieldError(field, 'Veuillez sélectionner un fichier');
+                    isValid = false;
+                }
+                return;
+            }
+            
+            // Skip disabled fields
+            if (field.disabled) {
+                return;
+            }
+            
+            // Skip hidden fields
+            if (field.offsetParent === null) {
+                return;
+            }
+            
+            // Skip coach fields if same as manager
+            if (currentStep === 2 && field.name.includes('entraineur_')) {
+                const sameAsManager = document.getElementById('sameAsResponsable');
+                if (sameAsManager && sameAsManager.checked) {
+                    return;
+                }
+            }
+            
+            // Validate field
             if (!validateField(field)) {
                 isValid = false;
             }
         });
         
+        // Validate optional fields that have values
+        optionalFields.forEach(field => {
+            if (field.type === 'file') {
+                return;
+            }
+            
+            if (field.disabled) {
+                return;
+            }
+            
+            if (field.offsetParent === null) {
+                return;
+            }
+            
+            if (currentStep === 2 && field.name.includes('entraineur_')) {
+                const sameAsManager = document.getElementById('sameAsResponsable');
+                if (sameAsManager && sameAsManager.checked) {
+                    return;
+                }
+            }
+            
+            if (!validateOptionalField(field)) {
+                isValid = false;
+            }
+        });
+        
         // Step-specific validation
-        if (step === 3) {
-            isValid = isValid && validatePlayerCount();
+        if (currentStep === 3) {
+            if (!validatePlayerCount()) {
+                isValid = false;
+            }
         }
         
-        console.log('Step', step, 'validation result:', isValid);
         return isValid;
     }
     
-    function validatePlayerCount() {
-        const volleyballTypeSelect = document.querySelector('[name="type_volleyball"]');
-        const selectedType = volleyballTypeSelect ? volleyballTypeSelect.value : '6x6';
-        const limits = playerLimits[selectedType] || { min: 6, max: 12 };
+    // Validate all steps (for form submission)
+    function validateAllSteps() {
+        let allValid = true;
         
-        const playerCount = document.querySelectorAll('.player-form').length;
-        
-        if (playerCount < limits.min) {
-            alert(`Minimum ${limits.min} joueurs requis pour le ${selectedType}`);
-            return false;
-        }
-        
-        if (playerCount > limits.max) {
-            alert(`Maximum ${limits.max} joueurs autorisés pour le ${selectedType}`);
-            return false;
-        }
-        
-        return true;
-    }
-    
-    function nextStep() {
-        if (validateStep(currentStep)) {
-            if (currentStep < maxSteps) {
-                currentStep++;
-                showStep(currentStep);
-                
-                // Generate player forms when reaching step 3
-                if (currentStep === 3) {
-                    const minPlayers = getMinPlayers();
-                    generatePlayerForms(minPlayers);
-                    setupRealTimeValidation();
+        for (let step = 1; step <= maxSteps; step++) {
+            const originalStep = currentStep;
+            currentStep = step;
+            
+            if (!validateCurrentStep()) {
+                allValid = false;
+                // Stay on first invalid step
+                if (originalStep > step) {
+                    updateStepDisplay();
+                    break;
                 }
             }
+            
+            currentStep = originalStep;
+        }
+        
+        return allValid;
+    }
+    
+    // Function to load age categories from server
+    function loadAgeCategories() {
+        const categorySelect = document.querySelector('[name="volleyball_category_id"]');
+        if (categorySelect) {
+            fetchDetailedCategoryData();
+            
+            categorySelect.addEventListener('change', function() {
+                updatePlayerRequirements();
+                setTimeout(validateAllPlayerAges, 100);
+            });
         }
     }
     
-    function prevStep() {
-        if (currentStep > 1) {
-            currentStep--;
-            showStep(currentStep);
+    // Fetch detailed category data from server
+    function fetchDetailedCategoryData() {
+        const categoriesUrl = (window.API_URLS && window.API_URLS.getVolleyballCategories) 
+            ? window.API_URLS.getVolleyballCategories
+            : (window.APP_BASE_URL || '') + 'teams/getVolleyballCategories';
+        
+        fetch(categoriesUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.categories && Array.isArray(data.categories)) {
+                    volleyballCategories = {};
+                    
+                    data.categories.forEach(category => {
+                        let minDate = null;
+                        let maxDate = null;
+                        
+                        if (category.min_date && category.max_date) {
+                            minDate = parseLocalDate(category.min_date);
+                            maxDate = parseLocalDate(category.max_date);
+                        }
+                        else if (category.min_birth_date && category.max_birth_date) {
+                            minDate = parseLocalDate(category.min_birth_date);
+                            maxDate = parseLocalDate(category.max_birth_date);
+                        }
+                        else if (category.min_birth_year && category.max_birth_year) {
+                            minDate = new Date(category.min_birth_year, 0, 1);
+                            maxDate = new Date(category.max_birth_year, 11, 31);
+                        }
+                        
+                        volleyballCategories[category.id] = {
+                            id: category.id,
+                            name: category.name,
+                            minAge: category.min_age || null,
+                            maxAge: category.max_age || null,
+                            minBirthYear: category.min_birth_year,
+                            maxBirthYear: category.max_birth_year,
+                            minDate: minDate,
+                            maxDate: maxDate,
+                            allowedVolleyballTypes: category.allowed_volleyball_types || [],
+                            format: 'database'
+                        };
+                    });
+                    
+                    categoriesLoaded = true;
+                    updateVolleyballTypesDropdown();
+                } else {
+                    throw new Error('Invalid data format received');
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load category data:', error);
+                categoriesLoaded = false;
+                showGlobalError('Erreur de connexion: Impossible de charger les catégories d\'âge. Veuillez rafraîchir la page ou contacter l\'administrateur.');
+                disableFormSubmission('Les données des catégories ne peuvent pas être chargées. Veuillez rafraîchir la page.');
+            });
+    }
+
+    // Filter volleyball types based on selected category
+    function updateVolleyballTypesDropdown() {
+        const categorySelect = document.querySelector('[name="volleyball_category_id"]');
+        const typeSelect = document.querySelector('[name="type_volleyball"]');
+        
+        if (!categorySelect || !typeSelect || !categorySelect.value) {
+            return;
+        }
+        
+        const selectedCategory = volleyballCategories[categorySelect.value];
+        if (!selectedCategory) {
+            return;
+        }
+        
+        // Store currently selected value
+        const currentValue = typeSelect.value;
+        
+        // Clear all options except the placeholder
+        const placeholder = typeSelect.querySelector('option[value=""]');
+        typeSelect.innerHTML = '';
+        if (placeholder) {
+            typeSelect.appendChild(placeholder);
+        } else {
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Sélectionner un type de volleyball';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            typeSelect.appendChild(defaultOption);
+        }
+        
+        // Add allowed volleyball types for this category
+        if (selectedCategory.allowedVolleyballTypes && Array.isArray(selectedCategory.allowedVolleyballTypes)) {
+            selectedCategory.allowedVolleyballTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.id;
+                option.textContent = `${type.name} (${type.min_players}-${type.max_players} joueurs)`;
+                option.dataset.minPlayers = type.min_players;
+                option.dataset.maxPlayers = type.max_players;
+                option.dataset.code = type.code;
+                typeSelect.appendChild(option);
+            });
+            
+            // Restore previous selection if it's still valid
+            if (currentValue && typeSelect.querySelector(`option[value="${currentValue}"]`)) {
+                typeSelect.value = currentValue;
+            }
+        }
+        
+        // Update player requirements display
+        updatePlayerRequirements();
+    }
+
+    // Load volleyball types from server
+    function loadVolleyballTypes() {
+        const volleyballTypesUrl = (window.API_URLS && window.API_URLS.getVolleyballTypes) 
+            ? window.API_URLS.getVolleyballTypes
+            : (window.APP_BASE_URL || '') + 'teams/getVolleyballTypes';
+        
+        fetch(volleyballTypesUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.volleyball_types && Array.isArray(data.volleyball_types)) {
+                    playerLimits = {};
+                    data.volleyball_types.forEach(type => {
+                        playerLimits[type.code] = {
+                            min: type.min_players,
+                            max: type.max_players,
+                            name: type.name,
+                            id: type.id
+                        };
+                    });
+                    
+                    playerLimitsLoaded = true;
+                    updatePlayerRequirements();
+                    if (currentStep === 3) {
+                        generateMinimumPlayers();
+                    }
+                } else {
+                    throw new Error('Invalid data format received');
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load volleyball types data:', error);
+                playerLimitsLoaded = false;
+                showGlobalError('Erreur de connexion: Impossible de charger les types de volleyball. Veuillez rafraîchir la page ou contacter l\'administrateur.');
+                disableFormSubmission('Les données du formulaire ne peuvent pas être chargées. Veuillez rafraîchir la page.');
+            });
+    }
+    
+    function initializeWizard() {
+        updateStepDisplay();
+        setupNavigation();
+        setupCoachToggle();
+        setupPlayerManagement();
+        setupRealTimeValidation();
+        updatePlayerRequirements();
+    }
+    
+    // Navigation setup
+    function setupNavigation() {
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const form = document.getElementById('inscriptionForm');
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Next button clicked - current step:', currentStep);
+                
+                const validationResult = validateCurrentStep();
+                console.log('Validation result for step', currentStep, ':', validationResult);
+                
+                if (validationResult) {
+                    if (currentStep < maxSteps) {
+                        console.log('Moving from step', currentStep, 'to', currentStep + 1);
+                        currentStep++;
+                        updateStepDisplay();
+                        console.log('Successfully moved to step:', currentStep);
+                    }
+                } else {
+                    console.log('Validation failed for step:', currentStep, '- staying on current step');
+                }
+            });
+        }
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateStepDisplay();
+                }
+            });
+        }
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!validateAllSteps()) {
+                    e.preventDefault();
+                }
+            });
         }
     }
     
-    function showStep(step) {
-        // Hide all steps
-        document.querySelectorAll('.wizard-step').forEach(stepDiv => {
-            stepDiv.classList.remove('active');
+    // Update step display
+    function updateStepDisplay() {
+        // Update progress indicators
+        document.querySelectorAll('.progress-step').forEach((step, index) => {
+            const stepNum = index + 1;
+            step.classList.remove('active', 'completed');
+            if (stepNum === currentStep) {
+                step.classList.add('active');
+            } else if (stepNum < currentStep) {
+                step.classList.add('completed');
+            }
         });
         
-        // Show current step
-        const currentStepDiv = document.querySelector(`.wizard-step[data-step="${step}"]`);
-        if (currentStepDiv) {
-            currentStepDiv.classList.add('active');
-        }
-        
-        // Update progress bar
-        document.querySelectorAll('.progress-step').forEach((progressStep, index) => {
-            if (index + 1 <= step) {
-                progressStep.classList.add('active');
+        // Show/hide wizard steps
+        document.querySelectorAll('.wizard-step').forEach((step, index) => {
+            const stepNum = index + 1;
+            if (stepNum === currentStep) {
+                step.classList.add('active');
+                step.style.display = 'block';
             } else {
-                progressStep.classList.remove('active');
+                step.classList.remove('active');
+                step.style.display = 'none';
             }
         });
         
         // Update navigation buttons
-        const nextBtn = document.getElementById('nextBtn');
         const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.querySelector('button[type="submit"]');
         
-        if (prevBtn) prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
-        
-        if (step === maxSteps) {
-            if (nextBtn) nextBtn.style.display = 'none';
-            if (submitBtn) submitBtn.style.display = 'inline-block';
-        } else {
-            if (nextBtn) nextBtn.style.display = 'inline-block';
-            if (submitBtn) submitBtn.style.display = 'none';
+        if (prevBtn) {
+            prevBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
         }
         
-        // Scroll to top of form
-        const formContainer = document.querySelector('.wizard-container');
-        if (formContainer) {
-            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (nextBtn && submitBtn) {
+            if (currentStep < maxSteps) {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // Generate minimum players when reaching step 3
+        if (currentStep === 3) {
+            setTimeout(() => {
+                generateMinimumPlayers();
+            }, 100);
         }
     }
     
-    console.log('Volleyball wizard validation script loaded successfully');
+    // Coach toggle functionality
+    function setupCoachToggle() {
+        const checkbox = document.getElementById('sameAsResponsable');
+        if (checkbox) {
+            checkbox.addEventListener('change', toggleCoachFields);
+            toggleCoachFields();
+        }
+    }
+    
+    function toggleCoachFields() {
+        const checkbox = document.getElementById('sameAsResponsable');
+        const coachFields = document.getElementById('entraineurFields');
+        
+        if (!checkbox || !coachFields) {
+            return;
+        }
+        
+        const coachInputs = coachFields.querySelectorAll('input, select');
+        
+        if (checkbox.checked) {
+            // Hide coach fields
+            coachFields.style.display = 'none';
+            
+            // Copy manager data to coach fields
+            const fieldMapping = {
+                'responsable_nom_complet': 'entraineur_nom_complet',
+                'responsable_date_naissance': 'entraineur_date_naissance',
+                'responsable_tel': 'entraineur_tel',
+                'responsable_whatsapp': 'entraineur_whatsapp'
+            };
+            
+            Object.entries(fieldMapping).forEach(([managerName, coachName]) => {
+                const managerField = document.querySelector(`[name="${managerName}"]`);
+                const coachField = document.querySelector(`[name="${coachName}"]`);
+                
+                if (managerField && coachField && managerField.type !== 'file') {
+                    coachField.value = managerField.value;
+                }
+            });
+            
+            // Disable coach fields
+            coachInputs.forEach(field => {
+                field.disabled = true;
+                if (field.required) {
+                    field.setAttribute('data-was-required', 'true');
+                    field.required = false;
+                }
+            });
+        } else {
+            // Show coach fields
+            coachFields.style.display = 'block';
+            
+            // Enable coach fields
+            coachInputs.forEach(field => {
+                field.disabled = false;
+                if (field.hasAttribute('data-was-required')) {
+                    field.required = true;
+                    field.removeAttribute('data-was-required');
+                }
+                if (field.type !== 'file') {
+                    field.value = '';
+                }
+            });
+        }
+    }
+    
+    // Player management
+    function setupPlayerManagement() {
+        const addBtn = document.getElementById('ajouterJoueur');
+        if (addBtn) {
+            addBtn.addEventListener('click', addPlayer);
+        }
+        
+        // Update requirements when volleyball type changes
+        const typeField = document.querySelector('[name="type_volleyball"]');
+        if (typeField) {
+            typeField.addEventListener('change', function() {
+                updatePlayerRequirements();
+                generateMinimumPlayers();
+            });
+        }
+        
+        // Re-validate player ages when age category changes
+        const categoryField = document.querySelector('[name="volleyball_category_id"]');
+        if (categoryField) {
+            categoryField.addEventListener('change', function() {
+                setTimeout(validateAllPlayerAges, 100);
+            });
+        }
+        
+        generateMinimumPlayers();
+    }
+    
+    function addPlayer() {
+        const container = document.getElementById('joueursContainer');
+        if (!container) return;
+        
+        // Clear existing errors
+        container.querySelectorAll('.error-message').forEach(error => error.remove());
+        
+        const volleyballType = getSelectedVolleyballType();
+        const limits = playerLimits[volleyballType];
+        const currentPlayers = container.querySelectorAll('.joueur-form').length;
+        
+        if (limits && currentPlayers >= limits.max) {
+            showContainerError(container, `Maximum ${limits.max} joueurs pour le ${volleyballType}`);
+            return;
+        }
+        
+        playerIndex++;
+        
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'joueur-form';
+        playerDiv.innerHTML = `
+            <div class="joueur-header">
+                <h4>Joueur ${playerIndex}</h4>
+                <button type="button" class="btn-remove-joueur" onclick="removePlayer(this)">×</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom complet *</label>
+                    <input type="text" name="joueurs[${playerIndex}][nom_complet]" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Date de naissance *</label>
+                    <input type="date" name="joueurs[${playerIndex}][date_naissance]" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>N° CIN ou Passeport *</label>
+                    <input type="text" name="joueurs[${playerIndex}][identifiant]" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Taille vestimentaire *</label>
+                    <select name="joueurs[${playerIndex}][taille_vestimentaire]" class="form-control" required>
+                        <option value="">Sélectionner une taille</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                        <option value="XXXL">XXXL</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(playerDiv);
+        
+        // Add real-time validation to new player fields
+        const newPlayerFields = playerDiv.querySelectorAll('input, select');
+        newPlayerFields.forEach(field => {
+            field.addEventListener('input', function() {
+                if (field.value.trim()) {
+                    field.classList.add('has-content');
+                } else {
+                    field.classList.remove('has-content');
+                }
+            });
+            
+            field.addEventListener('focus', function() {
+                field.classList.add('focused');
+            });
+            
+            field.addEventListener('blur', function() {
+                field.classList.remove('focused');
+            });
+        });
+        
+        updateAddButtonText();
+        setupPlayerFormValidation(playerDiv);
+    }
+    
+    // Set up validation status tracking for individual player forms
+    function setupPlayerFormValidation(playerDiv) {
+        const inputs = playerDiv.querySelectorAll('input, select');
+        
+        function checkPlayerFormValidation() {
+            let hasErrors = false;
+            let allFilled = true;
+            
+            inputs.forEach(input => {
+                if (input.classList.contains('error')) {
+                    hasErrors = true;
+                }
+                if (input.required && !input.value.trim()) {
+                    allFilled = false;
+                }
+            });
+            
+            playerDiv.classList.remove('error', 'valid');
+            if (hasErrors) {
+                playerDiv.classList.add('error');
+            } else if (allFilled) {
+                playerDiv.classList.add('valid');
+            }
+        }
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', checkPlayerFormValidation);
+            input.addEventListener('change', checkPlayerFormValidation);
+            input.addEventListener('blur', checkPlayerFormValidation);
+        });
+    }
+    
+    // Generate minimum required player forms
+    function generateMinimumPlayers() {
+        const container = document.getElementById('joueursContainer');
+        if (!container) {
+            return;
+        }
+        
+        const volleyballType = getSelectedVolleyballType();
+        const limits = playerLimits[volleyballType];
+        const currentPlayerCount = container.querySelectorAll('.joueur-form').length;
+        
+        if (!limits) {
+            return;
+        }
+        
+        // Add players up to minimum required
+        const playersToAdd = limits.min - currentPlayerCount;
+        if (playersToAdd > 0) {
+            for (let i = 0; i < playersToAdd; i++) {
+                addPlayer();
+            }
+        }
+        
+        updateAddButtonText();
+    }
+    
+    function updateAddButtonText() {
+        const addBtn = document.getElementById('ajouterJoueur');
+        const container = document.getElementById('joueursContainer');
+        
+        if (!addBtn || !container) return;
+        
+        const volleyballType = getSelectedVolleyballType();
+        const limits = playerLimits[volleyballType];
+        const currentCount = container.querySelectorAll('.joueur-form').length;
+        
+        if (limits) {
+            const remaining = limits.max - currentCount;
+            if (remaining > 0) {
+                addBtn.textContent = `Ajouter un joueur (${remaining} restants)`;
+                addBtn.disabled = false;
+            } else {
+                addBtn.textContent = `Maximum atteint (${limits.max} joueurs)`;
+                addBtn.disabled = true;
+            }
+        }
+    }
+    
+    function updatePlayerRequirements() {
+        const requirementsElement = document.getElementById('nombreJoueursRequis');
+        
+        if (!playerLimitsLoaded) {
+            if (requirementsElement) {
+                requirementsElement.innerHTML = `
+                    <strong>⚠️ Chargement des données...</strong><br>
+                    Les informations sur les équipes sont en cours de chargement.
+                `;
+            }
+            return;
+        }
+        
+        const volleyballType = getSelectedVolleyballType();
+        if (!volleyballType) {
+            if (requirementsElement) {
+                requirementsElement.innerHTML = `
+                    <strong>⚠️ Sélectionnez un type de volleyball</strong><br>
+                    Veuillez choisir le type d'équipe pour voir les exigences.
+                `;
+            }
+            return;
+        }
+        
+        const limits = playerLimits[volleyballType];
+        const selectedCategory = getSelectedAgeCategory();
+        
+        if (limits && requirementsElement) {
+            let categoryInfo = '';
+            if (selectedCategory && categoriesLoaded) {
+                if (selectedCategory.minDate && selectedCategory.maxDate) {
+                    const startDate = selectedCategory.minDate.toLocaleDateString('fr-FR');
+                    const endDate = selectedCategory.maxDate.toLocaleDateString('fr-FR');
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Années de naissance acceptées: ${startDate} - ${endDate}
+                        </div>
+                    `;
+                } else if (selectedCategory.minBirthYear && selectedCategory.maxBirthYear) {
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Années de naissance acceptées: ${selectedCategory.minBirthYear} - ${selectedCategory.maxBirthYear}
+                        </div>
+                    `;
+                } else if (selectedCategory.minAge !== null && selectedCategory.maxAge !== null) {
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Âges acceptés: ${selectedCategory.minAge} - ${selectedCategory.maxAge} ans
+                        </div>
+                    `;
+                }
+            } else if (!categoriesLoaded) {
+                categoryInfo = `
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9em;">
+                        ⏳ Chargement des catégories d'âge...
+                    </div>
+                `;
+            }
+            
+            requirementsElement.innerHTML = `
+                <strong>Composition de l'équipe ${volleyballType}</strong><br>
+                Minimum: ${limits.min} joueurs<br>
+                Maximum: ${limits.max} joueurs
+                ${categoryInfo}
+            `;
+        }
+        
+        updateAddButtonText();
+    }
+    
+    // Real-time validation
+    function setupRealTimeValidation() {
+        document.addEventListener('input', function(e) {
+            const field = e.target;
+            
+            if (field.matches('input[required], select[required], textarea[required]')) {
+                clearFieldError(field);
+                
+                const value = field.value.trim();
+                
+                if (value) {
+                    let isValid = true;
+                    
+                    // Date validation for player birth dates
+                    if (field.type === 'date' && field.name.includes('date_naissance')) {
+                        if (!isValidBirthDate(value, field)) {
+                            let errorMessage;
+                            if (field.name.includes('joueurs[')) {
+                                const category = getSelectedAgeCategory();
+                                if (category) {
+                                    const birthDate = new Date(value);
+                                    const today = new Date();
+                                    let age = today.getFullYear() - birthDate.getFullYear();
+                                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                                        age--;
+                                    }
+                                    if (category.minDate && category.maxDate) {
+                                        const startDate = category.minDate.toLocaleDateString('fr-FR');
+                                        const endDate = category.maxDate.toLocaleDateString('fr-FR');
+                                        errorMessage = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${new Date(value).toLocaleDateString('fr-FR')})`;
+                                    } else if (category.minBirthYear && category.maxBirthYear) {
+                                        const birthYear = new Date(value).getFullYear();
+                                        errorMessage = `Année de naissance invalide pour ${category.name}: requis ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
+                                    } else if (category.minAge !== undefined && category.maxAge !== undefined) {
+                                        errorMessage = `Âge invalide pour ${category.name}: requis ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
+                                    } else {
+                                        errorMessage = `Catégorie ${category.name}: âge accepté 6-35 ans (joueur: ${age} ans)`;
+                                    }
+                                } else {
+                                    errorMessage = 'Âge accepté: 6-35 ans. Sélectionnez une catégorie d\'âge pour validation précise par dates de naissance';
+                                }
+                            } else {
+                                errorMessage = 'L\'âge doit être entre 16 et 80 ans';
+                            }
+                            showFieldError(field, errorMessage);
+                            isValid = false;
+                        }
+                    }
+                    
+                    // Phone validation
+                    else if (field.type === 'tel') {
+                        if (field.name.includes('whatsapp')) {
+                            if (!isValidWhatsApp(value)) {
+                                showFieldError(field, 'Format WhatsApp invalide (ex: +212612345678 ou 0612345678)');
+                                isValid = false;
+                            }
+                        } else {
+                            if (!isValidPhone(value)) {
+                                showFieldError(field, 'Format de téléphone invalide (ex: 0612345678)');
+                                isValid = false;
+                            }
+                        }
+                    }
+                    
+                    // Email validation
+                    else if (field.type === 'email') {
+                        if (!isValidEmail(value)) {
+                            showFieldError(field, 'Format d\'email invalide');
+                            isValid = false;
+                        }
+                    }
+                    
+                    // Name validation for player names
+                    else if (field.name.includes('nom_complet')) {
+                        if (!isValidName(value)) {
+                            showFieldError(field, 'Le nom ne peut contenir que des lettres et espaces');
+                            isValid = false;
+                        }
+                    }
+                    
+                    if (isValid) {
+                        field.classList.add('valid', 'form-control');
+                        field.classList.remove('error');
+                    }
+                } else {
+                    field.classList.remove('valid', 'error');
+                }
+            }
+            
+            // Handle optional WhatsApp fields
+            else if (field.name && field.name.includes('whatsapp')) {
+                clearFieldError(field);
+                
+                const value = field.value.trim();
+                if (!value) {
+                    field.classList.remove('error', 'valid');
+                } else {
+                    if (field.type === 'tel' && !isValidWhatsApp(value)) {
+                        showFieldError(field, 'Format WhatsApp invalide (ex: +212612345678 ou 0612345678)');
+                    } else {
+                        field.classList.add('valid', 'form-control');
+                        field.classList.remove('error');
+                    }
+                }
+            }
+            
+            // Handle other optional fields that might need format validation
+            else if (field.value.trim()) {
+                clearFieldError(field);
+                
+                const value = field.value.trim();
+                let isValid = true;
+                
+                if (field.type === 'email' && !isValidEmail(value)) {
+                    showFieldError(field, 'Format d\'email invalide');
+                    isValid = false;
+                } else if (field.name.includes('nom_complet') && !isValidName(value)) {
+                    showFieldError(field, 'Le nom ne peut contenir que des lettres et espaces');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    field.classList.add('valid', 'form-control');
+                    field.classList.remove('error');
+                }
+            }
+        });
+        
+        // Also handle select field changes
+        document.addEventListener('change', function(e) {
+            const field = e.target;
+            
+            if (field.matches('select[required]')) {
+                clearFieldError(field);
+                
+                if (field.value && field.value !== '') {
+                    field.classList.add('valid', 'form-control');
+                    field.classList.remove('error');
+                } else {
+                    field.classList.remove('valid', 'error');
+                }
+            }
+        });
+    }
+    
+    // Global error display function
+    function showGlobalError(message) {
+        document.querySelectorAll('.global-error').forEach(error => error.remove());
+        
+        const errorElement = document.createElement('div');
+        errorElement.className = 'global-error alert alert-danger';
+        errorElement.style.cssText = `
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        errorElement.innerHTML = `
+            <strong>⚠️ Erreur de chargement</strong><br>
+            ${message}
+            <button type="button" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2em; color: #721c24; cursor: pointer;">×</button>
+        `;
+        
+        document.body.insertBefore(errorElement, document.body.firstChild);
+        
+        setTimeout(() => {
+            if (errorElement.parentNode) {
+                errorElement.remove();
+            }
+        }, 10000);
+    }
+    
+    // Function to disable form submission
+    function disableFormSubmission(reason) {
+        const form = document.getElementById('inscriptionForm');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                showGlobalError(reason);
+                return false;
+            });
+        }
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.title = reason;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = true;
+            nextBtn.title = reason;
+            nextBtn.style.opacity = '0.6';
+            nextBtn.style.cursor = 'not-allowed';
+        }
+    }
+    
+    // Initialize wizard
+    initializeWizard();
+    
+    // Load dynamic data
+    loadAgeCategories();
+    loadVolleyballTypes();
+    
+    // Global remove player function
+    window.removePlayer = function(button) {
+        const container = document.getElementById('joueursContainer');
+        const playerDiv = button.closest('.joueur-form');
+        
+        if (!container || !playerDiv) return;
+        
+        const volleyballType = getSelectedVolleyballType();
+        const limits = playerLimits[volleyballType];
+        const currentCount = container.querySelectorAll('.joueur-form').length;
+        
+        // Prevent removing below minimum required
+        if (limits && currentCount <= limits.min) {
+            const message = document.createElement('div');
+            message.className = 'alert alert-warning';
+            message.style.marginTop = '10px';
+            message.textContent = `Impossible de supprimer: minimum ${limits.min} joueurs requis pour le ${volleyballType}`;
+            
+            container.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+            
+            return;
+        }
+        
+        playerDiv.remove();
+        updateAddButtonText();
+    };
+    
+    console.log('Volleyball wizard validation setup complete');
 });

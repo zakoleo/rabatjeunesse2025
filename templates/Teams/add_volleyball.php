@@ -316,7 +316,14 @@
 
 <?= $this->Html->css('inscription-form') ?>
 <script>
-    // Pass the base URL to JavaScript
+    // Pass properly generated URLs to JavaScript
+    window.API_URLS = {
+        getVolleyballCategories: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getVolleyballCategories'])) ?>,
+        getVolleyballTypes: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getVolleyballTypes'])) ?>,
+        getSports: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getSports'])) ?>,
+        testEndpoint: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'testEndpoint'])) ?>
+    };
+    // Keep base URL for backward compatibility
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
 <?= $this->Html->script('volleyball-wizard-validation') ?>

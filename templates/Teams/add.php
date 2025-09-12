@@ -318,7 +318,14 @@
 <?= $this->Html->css('inscription-form') ?>
 <?= $this->Html->css('form-validation') ?>
 <script>
-    // Pass the base URL to JavaScript
+    // Pass properly generated URLs to JavaScript
+    window.API_URLS = {
+        getCategories: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getCategories'])) ?>,
+        getFootballTypes: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getFootballTypes'])) ?>,
+        getSports: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getSports'])) ?>,
+        testEndpoint: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'testEndpoint'])) ?>
+    };
+    // Keep base URL for backward compatibility
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
 <?= $this->Html->script('football-wizard-validation') ?>

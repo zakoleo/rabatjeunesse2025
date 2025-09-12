@@ -43,10 +43,32 @@
                             <th><?= __('Genre') ?></th>
                             <td><?= h($team->genre) ?></td>
                         </tr>
+                        <?php if (!empty($team->type_football)): ?>
                         <tr>
                             <th><?= __('Type de football') ?></th>
                             <td><span class="badge badge-info"><?= h($team->type_football) ?></span></td>
                         </tr>
+                        <?php elseif (!empty($team->type_basketball)): ?>
+                        <tr>
+                            <th><?= __('Type de basketball') ?></th>
+                            <td><span class="badge badge-info"><?= h($team->type_basketball) ?></span></td>
+                        </tr>
+                        <?php elseif (!empty($team->type_handball)): ?>
+                        <tr>
+                            <th><?= __('Type de handball') ?></th>
+                            <td><span class="badge badge-info"><?= h($team->type_handball) ?></span></td>
+                        </tr>
+                        <?php elseif (!empty($team->type_volleyball)): ?>
+                        <tr>
+                            <th><?= __('Type de volleyball') ?></th>
+                            <td><span class="badge badge-info"><?= h($team->type_volleyball) ?></span></td>
+                        </tr>
+                        <?php elseif (!empty($team->type_beachvolley)): ?>
+                        <tr>
+                            <th><?= __('Type de beach volleyball') ?></th>
+                            <td><span class="badge badge-info"><?= h($team->type_beachvolley) ?></span></td>
+                        </tr>
+                        <?php endif; ?>
                         <tr>
                             <th><?= __('District') ?></th>
                             <td><?= h($team->district) ?></td>

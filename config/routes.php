@@ -96,6 +96,35 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/admin/save-handball-verification-notes', ['controller' => 'Admin', 'action' => 'saveHandballVerificationNotes']);
         $builder->connect('/admin/save-volleyball-verification-notes', ['controller' => 'Admin', 'action' => 'saveVolleyballVerificationNotes']);
         $builder->connect('/admin/save-beachvolley-verification-notes', ['controller' => 'Admin', 'action' => 'saveBeachvolleyVerificationNotes']);
+
+        /*
+         * Football Management Admin Routes
+         */
+        $builder->connect('/admin/football-management', ['controller' => 'FootballManagement', 'action' => 'index']);
+        $builder->connect('/admin/football-management/categories', ['controller' => 'FootballManagement', 'action' => 'categories']);
+        $builder->connect('/admin/football-management/add-category', ['controller' => 'FootballManagement', 'action' => 'addCategory']);
+        $builder->connect('/admin/football-management/edit-category/{id}', ['controller' => 'FootballManagement', 'action' => 'editCategory'])
+            ->setPatterns(['id' => '\d+'])
+            ->setPass(['id']);
+        $builder->connect('/admin/football-management/delete-category/{id}', ['controller' => 'FootballManagement', 'action' => 'deleteCategory'])
+            ->setPatterns(['id' => '\d+'])
+            ->setPass(['id']);
+        
+        $builder->connect('/admin/football-management/types', ['controller' => 'FootballManagement', 'action' => 'types']);
+        $builder->connect('/admin/football-management/add-type', ['controller' => 'FootballManagement', 'action' => 'addType']);
+        $builder->connect('/admin/football-management/edit-type/{id}', ['controller' => 'FootballManagement', 'action' => 'editType'])
+            ->setPatterns(['id' => '\d+'])
+            ->setPass(['id']);
+        $builder->connect('/admin/football-management/delete-type/{id}', ['controller' => 'FootballManagement', 'action' => 'deleteType'])
+            ->setPatterns(['id' => '\d+'])
+            ->setPass(['id']);
+        
+        $builder->connect('/admin/football-management/relationships', ['controller' => 'FootballManagement', 'action' => 'relationships']);
+        $builder->connect('/admin/football-management/add-relationship', ['controller' => 'FootballManagement', 'action' => 'addRelationship']);
+        $builder->connect('/admin/football-management/remove-relationship', ['controller' => 'FootballManagement', 'action' => 'removeRelationship']);
+        $builder->connect('/admin/football-management/manage-relationships/{categoryId}', ['controller' => 'FootballManagement', 'action' => 'manageRelationships'])
+            ->setPatterns(['categoryId' => '\d+'])
+            ->setPass(['categoryId']);
         
         // Generic verification notes (existing)
         $builder->connect('/admin/save-verification-notes', ['controller' => 'Admin', 'action' => 'saveVerificationNotes']);
@@ -108,8 +137,29 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/api/handball-date-ranges', ['controller' => 'Teams', 'action' => 'getHandballDateRanges']);
         $builder->connect('/api/volleyball-date-ranges', ['controller' => 'Teams', 'action' => 'getVolleyballDateRanges']);
         $builder->connect('/api/beachvolley-date-ranges', ['controller' => 'Teams', 'action' => 'getBeachvolleyDateRanges']);
+        $builder->connect('/api/categories', ['controller' => 'Teams', 'action' => 'getCategories']);
+        $builder->connect('/teams/get-categories', ['controller' => 'Teams', 'action' => 'getCategories']);
         $builder->connect('/teams/getCategories', ['controller' => 'Teams', 'action' => 'getCategories']);
         $builder->connect('/teams/getSports', ['controller' => 'Teams', 'action' => 'getSports']);
+        $builder->connect('/api/sports', ['controller' => 'Teams', 'action' => 'getSports']);
+        $builder->connect('/teams/getBasketballTypes', ['controller' => 'Teams', 'action' => 'getBasketballTypes']);
+        $builder->connect('/teams/getBasketballCategories', ['controller' => 'Teams', 'action' => 'getBasketballCategories']);
+        $builder->connect('/teams/getHandballTypes', ['controller' => 'Teams', 'action' => 'getHandballTypes']);
+        $builder->connect('/teams/getHandballCategories', ['controller' => 'Teams', 'action' => 'getHandballCategories']);
+        $builder->connect('/teams/getVolleyballTypes', ['controller' => 'Teams', 'action' => 'getVolleyballTypes']);
+        $builder->connect('/teams/getVolleyballCategories', ['controller' => 'Teams', 'action' => 'getVolleyballCategories']);
+        $builder->connect('/teams/getBeachvolleyTypes', ['controller' => 'Teams', 'action' => 'getBeachvolleyTypes']);
+        $builder->connect('/teams/getBeachvolleyCategories', ['controller' => 'Teams', 'action' => 'getBeachvolleyCategories']);
+        $builder->connect('/api/basketball-types', ['controller' => 'Teams', 'action' => 'getBasketballTypes']);
+        $builder->connect('/api/basketball-categories', ['controller' => 'Teams', 'action' => 'getBasketballCategories']);
+        $builder->connect('/api/handball-types', ['controller' => 'Teams', 'action' => 'getHandballTypes']);
+        $builder->connect('/api/handball-categories', ['controller' => 'Teams', 'action' => 'getHandballCategories']);
+        $builder->connect('/api/volleyball-types', ['controller' => 'Teams', 'action' => 'getVolleyballTypes']);
+        $builder->connect('/api/volleyball-categories', ['controller' => 'Teams', 'action' => 'getVolleyballCategories']);
+        $builder->connect('/api/beachvolley-types', ['controller' => 'Teams', 'action' => 'getBeachvolleyTypes']);
+        $builder->connect('/api/beachvolley-categories', ['controller' => 'Teams', 'action' => 'getBeachvolleyCategories']);
+        $builder->connect('/teams/test', ['controller' => 'Teams', 'action' => 'testEndpoint']);
+        $builder->connect('/api/test', ['controller' => 'Teams', 'action' => 'testEndpoint']);
 
         /*
          * Connect catchall routes for all controllers.

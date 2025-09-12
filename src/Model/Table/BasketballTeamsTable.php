@@ -213,6 +213,29 @@ class BasketballTeamsTable extends Table
             ->boolean('entraineur_same_as_responsable')
             ->allowEmptyString('entraineur_same_as_responsable');
 
+        // Reference and status fields
+        $validator
+            ->scalar('reference_inscription')
+            ->maxLength('reference_inscription', 50)
+            ->allowEmptyString('reference_inscription');
+
+        $validator
+            ->scalar('status')
+            ->maxLength('status', 20)
+            ->allowEmptyString('status')
+            ->inList('status', ['pending', 'verified', 'rejected']);
+
+        // Admin verification notes
+        $validator
+            ->scalar('verification_notes')
+            ->allowEmptyString('verification_notes');
+
+        // Custom validation for player count based on basketball type
+        $validator->add('basketball_teams_joueurs', 'validPlayerCount', [
+            'rule' => [$this, 'validatePlayerCount'],
+            'message' => 'Le nombre de joueurs ne correspond pas au type de basketball sélectionné.'
+        ]);
+
         return $validator;
     }
 
@@ -226,6 +249,9 @@ class BasketballTeamsTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
+        $rules->add($rules->existsIn(['basketball_category_id'], 'BasketballCategories'), ['errorField' => 'basketball_category_id']);
+        $rules->add($rules->existsIn(['basketball_district_id'], 'FootballDistricts'), ['errorField' => 'basketball_district_id']);
+        $rules->add($rules->existsIn(['basketball_organisation_id'], 'FootballOrganisations'), ['errorField' => 'basketball_organisation_id']);
 
         return $rules;
     }
@@ -241,6 +267,31 @@ class BasketballTeamsTable extends Table
         ];
         
         return $limits[$type] ?? null;
+    }
+    
+    /**
+     * Custom validation method for player count
+     *
+     * @param mixed $value The field value
+     * @param array $context The validation context
+     * @return bool
+     */
+    public function validatePlayerCount($value, array $context): bool
+    {
+        if (empty($context['data']['type_basketball']) || empty($value)) {
+            return true; // Skip validation if type or players not set
+        }
+        
+        $type = $context['data']['type_basketball'];
+        $limits = $this->getPlayerLimits($type);
+        
+        if (!$limits) {
+            return false; // Invalid basketball type
+        }
+        
+        $playerCount = is_array($value) ? count($value) : 0;
+        
+        return $playerCount >= $limits['min'] && $playerCount <= $limits['max'];
     }
     
     /**

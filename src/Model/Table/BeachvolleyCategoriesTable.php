@@ -44,6 +44,17 @@ class BeachvolleyCategoriesTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+
+        $this->hasMany('BeachvolleyTeams', [
+            'foreignKey' => 'beachvolley_category_id',
+        ]);
+        
+        // Many-to-many relationship with BeachvolleyTypes through junction table
+        $this->belongsToMany('BeachvolleyTypes', [
+            'through' => 'BeachvolleyCategoriesTypes',
+            'foreignKey' => 'beachvolley_category_id',
+            'targetForeignKey' => 'beachvolley_type_id',
+        ]);
     }
 
     /**

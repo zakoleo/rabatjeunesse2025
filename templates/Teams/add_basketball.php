@@ -78,9 +78,10 @@
                                 '5x5' => 'Basketball à 5 (5x5)'
                             ],
                             'required' => true,
-                            'empty' => false
+                            'empty' => false,
+                            'id' => 'type-basketball'
                         ]) ?>
-                        <small class="form-text text-muted" id="type-football-help">3x3: 3-4 joueurs | 5x5: 5-8 joueurs</small>
+                        <small class="form-text text-muted" id="type-basketball-help"></small>
                     </div>
                 </div>
                 
@@ -88,7 +89,7 @@
                     <div class="form-group">
                         <?= $this->Form->control('basketball_district_id', [
                             'label' => 'District (Quartier) *',
-                            'options' => $footballDistricts,
+                            'options' => $basketballDistricts ?? $footballDistricts,
                             'required' => true,
                             'empty' => 'Sélectionner un district'
                         ]) ?>
@@ -97,7 +98,7 @@
                     <div class="form-group">
                         <?= $this->Form->control('basketball_organisation_id', [
                             'label' => 'Type d\'organisation *',
-                            'options' => $footballOrganisations,
+                            'options' => $basketballOrganisations ?? $footballOrganisations,
                             'required' => true,
                             'empty' => 'Sélectionner le type'
                         ]) ?>
@@ -279,10 +280,9 @@
                 <div class="section-header">
                     <h2>Liste des joueurs</h2>
                 </div>
-                <p class="info-text">Nombre de joueurs requis :</p>
-                <div id="nombreJoueursRequis"></div>
+                <p class="info-text">Nombre de joueurs requis : <span id="nombreJoueursRequis"></span></p>
                 
-                <div id="joueursContainer" class="players-container">
+                <div id="joueursContainer">
                     <!-- Les joueurs seront ajoutés dynamiquement ici -->
                 </div>
                 
@@ -317,7 +317,49 @@
 <?= $this->Html->css('inscription-form') ?>
 <?= $this->Html->css('form-validation') ?>
 <script>
-    // Pass the base URL to JavaScript
-    window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
+    // Pass properly generated URLs to JavaScript with correct base path
+    <?php 
+        $basePath = $this->Url->build('/', ['fullBase' => false]);
+        $getBasePath = function($action) use ($basePath) {
+            return rtrim($basePath, '/') . '/teams/' . $action;
+        };
+    ?>
+    window.API_URLS = {
+        getCategories: <?= json_encode($getBasePath('getCategories')) ?>,
+        getBasketballTypes: <?= json_encode($getBasePath('getBasketballTypes')) ?>,
+        getSports: <?= json_encode($getBasePath('getSports')) ?>,
+        testEndpoint: <?= json_encode($getBasePath('testEndpoint')) ?>,
+        // Alternative API endpoints
+        getCategoriesAlt: <?= json_encode(rtrim($basePath, '/') . '/api/categories') ?>
+    };
+    // Keep base URL for backward compatibility  
+    window.APP_BASE_URL = <?= json_encode($basePath) ?>;
+    
+    // Basketball type help text
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeField = document.getElementById('type-basketball');
+        const helpText = document.getElementById('type-basketball-help');
+        
+        function updateHelpText() {
+            const selectedType = typeField ? typeField.value : '';
+            if (helpText) {
+                switch(selectedType) {
+                    case '3x3':
+                        helpText.textContent = '3x3: 3 joueurs minimum, 4 maximum';
+                        break;
+                    case '5x5':
+                        helpText.textContent = '5x5: 5 joueurs minimum, 8 maximum';
+                        break;
+                    default:
+                        helpText.textContent = 'Sélectionnez le type pour voir les exigences';
+                }
+            }
+        }
+        
+        if (typeField) {
+            typeField.addEventListener('change', updateHelpText);
+            updateHelpText(); // Initialize
+        }
+    });
 </script>
 <?= $this->Html->script('basketball-wizard-validation') ?>

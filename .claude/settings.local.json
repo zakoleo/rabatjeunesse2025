@@ -29,7 +29,9 @@
       "Read(/mnt/c/xampp/**)",
       "Read(/mnt/c/xampp/**)",
       "Read(/mnt/c/xampp/**)",
-      "Read(/mnt/c/xampp/**)"
+      "Read(/mnt/c/xampp/**)",
+      "Read(//mnt/c/xampp/**)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

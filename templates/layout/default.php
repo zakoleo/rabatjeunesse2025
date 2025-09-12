@@ -25,7 +25,9 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
         <?= $cakeDescription ?>:
         <?= $this->fetch('title') ?>
     </title>
-    <?= $this->Html->meta('icon') ?>
+    <?= $this->Html->meta('icon', $this->Url->image('logo.webp')) ?>
+    <link rel="apple-touch-icon" href="<?= $this->Url->image('logo.webp') ?>">
+    <link rel="icon" type="image/webp" href="<?= $this->Url->image('logo.webp') ?>">
 
     <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'app']) ?>
     
@@ -134,6 +136,164 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
             all: unset;
         }
         
+        /* User Dropdown Styles */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            color: #495057;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .user-dropdown-toggle:hover {
+            background: #e9ecef;
+            color: #343a40;
+            text-decoration: none;
+        }
+        
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1;
+        }
+        
+        .user-role {
+            font-size: 11px;
+            color: #6c757d;
+            line-height: 1;
+        }
+        
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+        }
+        
+        .user-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            margin-top: 5px;
+        }
+        
+        .user-dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-right: none;
+            transform: rotate(45deg);
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            color: #495057;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:first-child {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #343a40;
+            text-decoration: none;
+        }
+        
+        .dropdown-item.danger {
+            color: #dc3545;
+        }
+        
+        .dropdown-item.danger:hover {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: #dee2e6;
+            margin: 5px 0;
+        }
+        
+        /* White button style for Inscription */
+        .btn-white {
+            background: white !important;
+            color: #333 !important;
+            border: 2px solid #dee2e6 !important;
+        }
+        
+        .btn-white:hover {
+            background: #f8f9fa !important;
+            color: #333 !important;
+            text-decoration: none;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .nav-container {
@@ -199,10 +359,32 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
                             <i class="fas fa-shield-alt"></i> Administration
                         </a>
                     <?php endif; ?>
-                    <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']) ?>" class="btn btn-danger">Déconnexion</a>
+                    
+                    <!-- User Dropdown -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                            <div class="user-avatar">
+                                <?= strtoupper(substr($identity->username ?? $identity->email ?? 'U', 0, 1)) ?>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name"><?= h($identity->username ?? explode('@', $identity->email)[0] ?? 'Utilisateur') ?></div>
+                                <div class="user-role"><?= $isAdmin ? 'Administrateur' : 'Utilisateur' ?></div>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user-cog"></i> Mon profil
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']) ?>" class="dropdown-item danger">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
                 <?php else: ?>
                     <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'login']) ?>">Connexion</a>
-                    <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'register']) ?>" class="btn btn-primary">Inscription</a>
+                    <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'register']) ?>" class="btn btn-white">Inscription</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -215,5 +397,32 @@ $cakeDescription = 'Rabat Jeunesse - Inscriptions Tournois';
     </main>
     <footer>
     </footer>
+
+    <script>
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const isClickInside = dropdown && dropdown.contains(event.target);
+            
+            if (!isClickInside && dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Close dropdown when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('userDropdown');
+                if (dropdown && dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

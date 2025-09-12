@@ -10,16 +10,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let playerIndex = 0;
     
     // Football-specific player limits (will be populated from server)
-    let playerLimits = {
-        '5x5': { min: 5, max: 10 },
-        '6x6': { min: 6, max: 12 },
-        '11x11': { min: 11, max: 18 }
-    };
+    let playerLimits = {};
+    let playerLimitsLoaded = false;
     
     console.log('Football wizard validation initialized');
     
     // Age categories data (will be populated from server)
     let footballCategories = {};
+    let categoriesLoaded = false;
     
     // Initialize wizard
     initializeWizard();
@@ -32,185 +30,267 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadAgeCategories() {
         const categorySelect = document.querySelector('[name="football_category_id"]');
         if (categorySelect) {
-            // First, load basic info from select options
-            const options = categorySelect.querySelectorAll('option');
-            options.forEach(option => {
-                if (option.value && option.textContent.trim()) {
-                    footballCategories[option.value] = {
-                        id: option.value,
-                        name: option.textContent.trim()
-                    };
-                }
-            });
-            
-            // Load detailed age ranges via AJAX
+            // Load categories directly from database API
             fetchDetailedCategoryData();
             
             // Set up category change listener
             categorySelect.addEventListener('change', function() {
-                console.log('Category changed, will validate player ages');
+                console.log('Category changed, will validate player ages and update display');
+                // Filter football types based on selected category
+                filterFootballTypesByCategory();
+                // Update the player requirements display to show new category
+                updatePlayerRequirements();
+                // Validate all existing player ages against new category
                 setTimeout(validateAllPlayerAges, 100);
             });
         }
     }
     
-    // Fetch detailed category data from server
+    // Fetch detailed category data from server - uses only database data
     function fetchDetailedCategoryData() {
-        fetch('/teams/getCategories?sport_id=1')
-            .then(response => response.json())
+        // Try football-specific endpoint first, fallback to generic
+        const categoriesUrl = (window.API_URLS && window.API_URLS.getFootballCategories) 
+            ? window.API_URLS.getFootballCategories
+            : (window.APP_BASE_URL || '') + 'teams/getFootballCategories';
+        
+        console.log('🔍 Fetching football categories from URL:', categoriesUrl);
+        console.log('🔍 Current categoriesLoaded state:', categoriesLoaded);
+        console.log('🔍 Current footballCategories:', footballCategories);
+        
+        fetch(categoriesUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                console.log('Received detailed category data:', data);
+                console.log('Received category data from database:', data);
                 
-                // Update categories with database info
-                data.categories.forEach(category => {
-                    if (footballCategories[category.id]) {
+                if (data.categories && Array.isArray(data.categories)) {
+                    // Clear existing categories and populate only from database
+                    footballCategories = {};
+                    
+                    data.categories.forEach(category => {
+                        // Parse dates from API response - try multiple field names
+                        let minDate = null;
+                        let maxDate = null;
+                        
+                        // Try min_date/max_date first
+                        if (category.min_date && category.max_date) {
+                            minDate = parseLocalDate(category.min_date);
+                            maxDate = parseLocalDate(category.max_date);
+                        }
+                        // Fallback to min_birth_date/max_birth_date  
+                        else if (category.min_birth_date && category.max_birth_date) {
+                            minDate = parseLocalDate(category.min_birth_date);
+                            maxDate = parseLocalDate(category.max_birth_date);
+                        }
+                        // Last resort: construct dates from birth years
+                        else if (category.min_birth_year && category.max_birth_year) {
+                            minDate = new Date(category.min_birth_year, 0, 1); // January 1st
+                            maxDate = new Date(category.max_birth_year, 11, 31); // December 31st
+                        }
+                        
                         footballCategories[category.id] = {
-                            ...footballCategories[category.id],
+                            id: category.id,
+                            name: category.name,
                             minAge: category.min_age || null,
                             maxAge: category.max_age || null,
                             minBirthYear: category.min_birth_year,
                             maxBirthYear: category.max_birth_year,
-                            minDate: category.min_birth_date ? new Date(category.min_birth_date) : null,
-                            maxDate: category.max_birth_date ? new Date(category.max_birth_date) : null,
+                            minDate: minDate,
+                            maxDate: maxDate,
+                            allowedTypes: category.allowed_football_types || [],
                             format: 'database'
                         };
-                    }
-                });
-                
-                console.log('Updated football categories with database data:', footballCategories);
+                        
+                        console.log(`📅 Processed category ${category.name}:`, {
+                            raw_min_date: category.min_date,
+                            raw_max_date: category.max_date,
+                            raw_min_birth_date: category.min_birth_date,
+                            raw_max_birth_date: category.max_birth_date,
+                            parsed_minDate: minDate,
+                            parsed_maxDate: maxDate,
+                            minBirthYear: category.min_birth_year,
+                            maxBirthYear: category.max_birth_year
+                        });
+                    });
+                    
+                    console.log('Football categories loaded from database:', footballCategories);
+                    categoriesLoaded = true;
+                } else {
+                    console.error('Invalid category data format:', data);
+                    throw new Error('Invalid data format received');
+                }
             })
             .catch(error => {
-                console.warn('Could not load detailed category data:', error);
-                console.log('Using fallback parsing from select options');
-                fallbackCategoryParsing();
+                console.error('Failed to load category data:', error);
+                categoriesLoaded = false;
+                
+                // Show error message to user
+                showGlobalError('Erreur de connexion: Impossible de charger les catégories d\'âge. Veuillez rafraîchir la page ou contacter l\'administrateur.');
+                
+                // Disable form submission until data is loaded
+                disableFormSubmission('Les données des catégories ne peuvent pas être chargées. Veuillez rafraîchir la page.');
             });
     }
 
     // Load football types from server
     function loadFootballTypes() {
-        fetch('/teams/getFootballTypes')
-            .then(response => response.json())
+        const footballTypesUrl = (window.API_URLS && window.API_URLS.getFootballTypes) 
+            ? window.API_URLS.getFootballTypes
+            : (window.APP_BASE_URL || '') + 'teams/getFootballTypes';
+        
+        console.log('Fetching football types from URL:', footballTypesUrl);
+        fetch(footballTypesUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Received football types data:', data);
                 
-                // Update player limits with server data
-                const newPlayerLimits = {};
-                data.football_types.forEach(type => {
-                    newPlayerLimits[type.code] = {
-                        min: type.min_players,
-                        max: type.max_players,
-                        name: type.name,
-                        id: type.id
-                    };
-                });
-                
-                // Merge with existing limits (fallback)
-                playerLimits = { ...playerLimits, ...newPlayerLimits };
-                console.log('Updated player limits:', playerLimits);
+                if (data.football_types && Array.isArray(data.football_types)) {
+                    // Clear any existing limits and populate from database
+                    playerLimits = {};
+                    data.football_types.forEach(type => {
+                        playerLimits[type.code] = {
+                            min: type.min_players,
+                            max: type.max_players,
+                            name: type.name,
+                            id: type.id
+                        };
+                    });
+                    
+                    console.log('Updated player limits from database:', playerLimits);
+                    playerLimitsLoaded = true;
+                    
+                    // Update UI elements that depend on player limits
+                    updatePlayerRequirements();
+                    if (currentStep === 3) {
+                        generateMinimumPlayers();
+                    }
+                } else {
+                    console.error('Invalid football types data format:', data);
+                    throw new Error('Invalid data format received');
+                }
             })
             .catch(error => {
-                console.warn('Could not load football types data, using defaults:', error);
-            });
-    }
-    
-    // Fallback to parsing from select option text
-    function fallbackCategoryParsing() {
-        const categorySelect = document.querySelector('[name="football_category_id"]');
-        if (categorySelect) {
-            const options = categorySelect.querySelectorAll('option');
-            options.forEach(option => {
-                if (option.value && option.textContent.trim()) {
-                    const text = option.textContent.trim();
-                    const ageRange = extractAgeRange(text);
-                    if (ageRange && footballCategories[option.value]) {
-                        footballCategories[option.value] = {
-                            ...footballCategories[option.value],
-                            ...ageRange
-                        };
-                    }
-                }
-            });
-        }
-    }
-    
-    // Extract age range from database category text 
-    // Format examples: "-12 (-12 ans, 2014, 2015, 2014-01-01, 2015-12-31)"
-    function extractAgeRange(text) {
-        console.log('Parsing category text:', text);
-        
-        // Try to extract age directly from category name (e.g., "-12", "U17", etc.)
-        const agePatterns = [
-            // Database format: "-12 (-12 ans, 2014, 2015, 2014-01-01, 2015-12-31)"
-            /^-(\d+)\s*\(-(\d+)\s*ans?,\s*(\d{4}),\s*(\d{4}),\s*(\d{4}-\d{2}-\d{2}),\s*(\d{4}-\d{2}-\d{2})\)/,
-            
-            // Other possible formats
-            /(\d+)-(\d+)\s*ans?/i,           // "15-17 ans"
-            /(\d+)\s*à\s*(\d+)\s*ans?/i,     // "15 à 17 ans"
-            /U(\d+)/i,                       // "U17" (under 17)
-            /-(\d+)/,                        // "-12" format
-            /(\d+)\s*ans?/i,                 // "12 ans"
-        ];
-        
-        for (const pattern of agePatterns) {
-            const match = text.match(pattern);
-            if (match) {
-                console.log('Pattern matched:', pattern, 'Result:', match);
+                console.error('Failed to load football types data:', error);
+                playerLimitsLoaded = false;
                 
-                if (pattern === agePatterns[0]) {
-                    // Database format: "-12 (-12 ans, 2014, 2015, 2014-01-01, 2015-12-31)"
-                    const age = parseInt(match[2]); // -12 ans
-                    const birthYearStart = parseInt(match[3]); // 2014
-                    const birthYearEnd = parseInt(match[4]); // 2015
-                    const birthDateStart = match[5]; // 2014-01-01
-                    const birthDateEnd = match[6]; // 2015-12-31
-                    
-                    return {
-                        age: age,
-                        minAge: age,
-                        maxAge: age,
-                        birthYearStart: birthYearStart,
-                        birthYearEnd: birthYearEnd,
-                        birthDateStart: new Date(birthDateStart),
-                        birthDateEnd: new Date(birthDateEnd),
-                        format: 'database'
-                    };
-                } else if (pattern === agePatterns[2]) {
-                    // "15 à 17 ans"
-                    const minAge = parseInt(match[1]);
-                    const maxAge = parseInt(match[2]);
-                    return { minAge: minAge, maxAge: maxAge, format: 'range' };
-                } else if (pattern === agePatterns[1]) {
-                    // "15-17 ans"
-                    const minAge = parseInt(match[1]);
-                    const maxAge = parseInt(match[2]);
-                    return { minAge: minAge, maxAge: maxAge, format: 'range' };
-                } else if (pattern === agePatterns[3]) {
-                    // "U17"
-                    const maxAge = parseInt(match[1]);
-                    const minAge = Math.max(0, maxAge - 2);
-                    return { minAge: minAge, maxAge: maxAge, format: 'under' };
-                } else if (pattern === agePatterns[4]) {
-                    // "-12"
-                    const age = parseInt(match[1]);
-                    return { minAge: age, maxAge: age, age: age, format: 'single' };
-                } else if (pattern === agePatterns[5]) {
-                    // "12 ans"
-                    const age = parseInt(match[1]);
-                    return { minAge: age, maxAge: age, age: age, format: 'single' };
-                }
-            }
+                // Show error message to user
+                showGlobalError('Erreur de connexion: Impossible de charger les types de football. Veuillez rafraîchir la page ou contacter l\'administrateur.');
+                
+                // Disable form submission until data is loaded
+                disableFormSubmission('Les données du formulaire ne peuvent pas être chargées. Veuillez rafraîchir la page.');
+            });
+    }
+    
+    
+    // Filter football types dropdown based on selected category
+    function filterFootballTypesByCategory() {
+        const categorySelect = document.querySelector('[name="football_category_id"]');
+        const typeSelect = document.querySelector('[name="type_football"]');
+        
+        if (!categorySelect || !typeSelect || !categorySelect.value) {
+            console.log('Category select, type select, or category value not found');
+            return;
         }
         
-        console.warn('Could not extract age range from:', text);
-        return null;
+        const selectedCategory = footballCategories[categorySelect.value];
+        if (!selectedCategory) {
+            console.error('Selected category not found in footballCategories:', categorySelect.value);
+            return;
+        }
+        
+        console.log('🎯 Filtering football types for category:', selectedCategory.name);
+        console.log('   Allowed types:', selectedCategory.allowedTypes);
+        
+        // Store currently selected value
+        const currentValue = typeSelect.value;
+        
+        // Clear all options except the placeholder
+        const placeholder = typeSelect.querySelector('option[value=""]');
+        typeSelect.innerHTML = '';
+        if (placeholder) {
+            typeSelect.appendChild(placeholder);
+        } else {
+            // Add default placeholder if it doesn't exist
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Sélectionner un type de football';
+            typeSelect.appendChild(defaultOption);
+        }
+        
+        // Add allowed types for this category
+        if (selectedCategory.allowedTypes && selectedCategory.allowedTypes.length > 0) {
+            selectedCategory.allowedTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.code || type.id;
+                option.textContent = `${type.name} (${type.min_players}-${type.max_players} joueurs)`;
+                option.dataset.typeId = type.id;
+                option.dataset.minPlayers = type.min_players;
+                option.dataset.maxPlayers = type.max_players;
+                typeSelect.appendChild(option);
+                
+                console.log(`   Added type option: ${type.name} (${type.code})`);
+            });
+            
+            // Restore previous selection if it's still valid
+            if (currentValue && typeSelect.querySelector(`option[value="${currentValue}"]`)) {
+                typeSelect.value = currentValue;
+                console.log('✅ Restored previous selection:', currentValue);
+            } else if (selectedCategory.allowedTypes.length === 1) {
+                // Auto-select if only one option is available
+                typeSelect.value = selectedCategory.allowedTypes[0].code || selectedCategory.allowedTypes[0].id;
+                console.log('✅ Auto-selected only available option:', typeSelect.value);
+            }
+        } else {
+            console.warn('❌ No allowed types found for category:', selectedCategory.name);
+            
+            // Add a message option
+            const messageOption = document.createElement('option');
+            messageOption.value = '';
+            messageOption.textContent = 'Aucun type disponible pour cette catégorie';
+            messageOption.disabled = true;
+            typeSelect.appendChild(messageOption);
+        }
+        
+        // Trigger change event to update player requirements
+        typeSelect.dispatchEvent(new Event('change'));
     }
     
     // Get selected age category
     function getSelectedAgeCategory() {
         const categorySelect = document.querySelector('[name="football_category_id"]');
+        
+        console.log('🔍 getSelectedAgeCategory() debugging:');
+        console.log('  categorySelect found:', !!categorySelect);
+        console.log('  categorySelect.value:', categorySelect?.value);
+        console.log('  categoriesLoaded:', categoriesLoaded);
+        console.log('  footballCategories keys:', Object.keys(footballCategories));
+        console.log('  footballCategories object:', footballCategories);
+        
         if (categorySelect && categorySelect.value) {
-            return footballCategories[categorySelect.value];
+            const selectedId = categorySelect.value;
+            const category = footballCategories[selectedId];
+            
+            console.log(`  Looking for category ID: ${selectedId}`);
+            console.log(`  Found category:`, category);
+            
+            if (!category) {
+                console.error(`❌ Category ID ${selectedId} not found in footballCategories object!`);
+                console.error(`Available category IDs:`, Object.keys(footballCategories));
+            }
+            
+            return category;
         }
+        
+        console.warn('❌ No category selected or categorySelect not found');
         return null;
     }
     
@@ -263,11 +343,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!isValidAge) {
             let message;
-            if (category.format === 'database' && category.minBirthYear && category.maxBirthYear) {
+            if (category.minDate && category.maxDate) {
+                const startDate = category.minDate.toLocaleDateString('fr-FR');
+                const endDate = category.maxDate.toLocaleDateString('fr-FR');
+                const playerDate = new Date(birthDateField.value).toLocaleDateString('fr-FR');
+                message = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${playerDate})`;
+            } else if (category.minBirthYear && category.maxBirthYear) {
                 const birthYear = new Date(birthDateField.value).getFullYear();
                 message = `Année de naissance invalide pour la catégorie ${category.name}. Années requises: ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
-            } else {
+            } else if (category.minAge !== undefined && category.maxAge !== undefined) {
                 message = `Âge invalide pour la catégorie ${category.name}. Âge requis: ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
+            } else {
+                message = `Âge invalide pour la catégorie ${category.name} (joueur: ${age} ans)`;
             }
             showFieldError(birthDateField, message);
             return false;
@@ -753,14 +840,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                                         age--;
                                     }
-                                    if (category.format === 'database' && category.minDate && category.maxDate) {
-                                    const startDate = category.minDate.toLocaleDateString('fr-FR');
-                                    const endDate = category.maxDate.toLocaleDateString('fr-FR');
-                                    errorMessage = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${new Date(value).toLocaleDateString('fr-FR')})`;
-                                } else if (category.minBirthYear && category.maxBirthYear) {
+                                    if (category.minDate && category.maxDate) {
+                                        const startDate = category.minDate.toLocaleDateString('fr-FR');
+                                        const endDate = category.maxDate.toLocaleDateString('fr-FR');
+                                        errorMessage = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${new Date(value).toLocaleDateString('fr-FR')})`;
+                                    } else if (category.minBirthYear && category.maxBirthYear) {
                                     const birthYear = new Date(value).getFullYear();
                                     errorMessage = `Année de naissance invalide pour ${category.name}: requis ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
-                                } else if (category.minAge !== null && category.maxAge !== null) {
+                                } else if (category.minAge !== undefined && category.maxAge !== undefined) {
                                     errorMessage = `Âge invalide pour ${category.name}: requis ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
                                 } else {
                                     errorMessage = `Catégorie ${category.name}: âge accepté 6-35 ans (joueur: ${age} ans)`;
@@ -864,7 +951,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 } else if (category.minBirthYear && category.maxBirthYear) {
                                     const birthYear = new Date(value).getFullYear();
                                     errorMessage = `Année de naissance invalide pour ${category.name}: requis ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
-                                } else if (category.minAge !== null && category.maxAge !== null) {
+                                } else if (category.minAge !== undefined && category.maxAge !== undefined) {
                                     errorMessage = `Âge invalide pour ${category.name}: requis ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
                                 } else {
                                     errorMessage = `Catégorie ${category.name}: âge accepté 6-35 ans (joueur: ${age} ans)`;
@@ -898,6 +985,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Validation helper functions
+    
+    // Parse date string to local Date object avoiding timezone issues
+    function parseLocalDate(dateStr) {
+        if (!dateStr) return null;
+        
+        console.log('🔍 Parsing date string:', dateStr);
+        
+        // If it's already a Date object, return it
+        if (dateStr instanceof Date) {
+            console.log('Already a Date object:', dateStr);
+            return dateStr;
+        }
+        
+        // Handle YYYY-MM-DD format specifically to avoid timezone issues
+        if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day); // month is 0-indexed
+            console.log(`Parsed ${dateStr} as local date:`, localDate, 'ISO:', localDate.toISOString());
+            return localDate;
+        }
+        
+        // Handle other date formats or datetime strings
+        const parsedDate = new Date(dateStr);
+        console.log(`Parsed ${dateStr} with new Date():`, parsedDate, 'ISO:', parsedDate.toISOString());
+        return parsedDate;
+    }
+    
     function isValidEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
@@ -950,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function isValidBirthDate(dateStr, field = null) {
-        const birthDate = new Date(dateStr);
+        const birthDate = parseLocalDate(dateStr);
         const today = new Date();
         
         // More accurate age calculation
@@ -965,15 +1079,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // For player fields, validate against selected age category
         if (field && field.name && field.name.includes('joueurs[')) {
+            console.log('🔍 Player birth date validation started');
+            
+            if (!categoriesLoaded) {
+                console.warn('❌ Categories not loaded yet - cannot validate');
+                return age >= 6 && age <= 35; // Basic fallback
+            }
+            
             const category = getSelectedAgeCategory();
             if (category) {
-                console.log(`Player validation against category: ${category.name}`, category);
+                console.log(`✅ Using category: ${category.name}`, category);
                 
                 // Use database date range validation if available
-                if (category.format === 'database' && category.minDate && category.maxDate) {
-                    console.log(`Using database date range validation: ${category.minDate} to ${category.maxDate}`);
-                    const isValidDate = birthDate >= category.minDate && birthDate <= category.maxDate;
-                    console.log(`Date range validation result: ${isValidDate} for birth date: ${birthDate}`);
+                if (category.minDate && category.maxDate) {
+                    console.log(`🔍 DEBUGGING DATE VALIDATION for ${dateStr}:`);
+                    console.log(`  Category: ${category.name}`);
+                    console.log(`  Expected range: ${category.minDate.toLocaleDateString('fr-FR')} to ${category.maxDate.toLocaleDateString('fr-FR')}`);
+                    console.log(`  Input date: ${dateStr} -> parsed as: ${birthDate.toLocaleDateString('fr-FR')}`);
+                    
+                    console.log(`  Detailed comparison:`);
+                    console.log(`    Min date: ${category.minDate.toLocaleDateString('fr-FR')} (${category.minDate.getTime()})`);
+                    console.log(`    Birth date: ${birthDate.toLocaleDateString('fr-FR')} (${birthDate.getTime()})`);
+                    console.log(`    Max date: ${category.maxDate.toLocaleDateString('fr-FR')} (${category.maxDate.getTime()})`);
+                    
+                    const isAfterMin = birthDate >= category.minDate;
+                    const isBeforeMax = birthDate <= category.maxDate;
+                    const isValidDate = isAfterMin && isBeforeMax;
+                    
+                    console.log(`  Results:`);
+                    console.log(`    ✅ Birth date >= Min date: ${isAfterMin}`);
+                    console.log(`    ✅ Birth date <= Max date: ${isBeforeMax}`);
+                    console.log(`    🎯 Final result: ${isValidDate ? 'VALID' : 'INVALID'}`);
+                    
+                    if (!isValidDate) {
+                        console.log(`  ❌ VALIDATION FAILED:`);
+                        console.log(`     Input: ${birthDate.toLocaleDateString('fr-FR')}`);
+                        console.log(`     Expected: Between ${category.minDate.toLocaleDateString('fr-FR')} and ${category.maxDate.toLocaleDateString('fr-FR')}`);
+                    }
+                    
                     return isValidDate;
                 } else if (category.minAge !== null && category.maxAge !== null) {
                     // Fallback to age range validation
@@ -996,13 +1139,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Player count validation
     function validatePlayerCount() {
+        // Check if player limits data is loaded
+        if (!playerLimitsLoaded) {
+            console.error('Player limits not loaded - cannot validate player count');
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, 'Erreur: Les données de validation ne sont pas chargées. Veuillez rafraîchir la page.');
+            }
+            return false;
+        }
+        
         const playersCount = document.querySelectorAll('.joueur-form').length;
         const footballType = getSelectedFootballType();
         const limits = playerLimits[footballType];
         
         if (!limits) {
-            console.log('Unknown football type:', footballType);
-            return true;
+            console.error('No limits found for football type:', footballType, 'Available:', Object.keys(playerLimits));
+            const container = document.getElementById('joueursContainer');
+            if (container) {
+                showContainerError(container, `Erreur: Type de football "${footballType}" non reconnu. Veuillez sélectionner un autre type.`);
+            }
+            return false;
         }
         
         console.log(`Players: ${playersCount}, Required: ${limits.min}-${limits.max} for ${footballType}`);
@@ -1021,7 +1178,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get selected football type
     function getSelectedFootballType() {
         const typeField = document.querySelector('[name="type_football"]');
-        return typeField ? typeField.value : '5x5';
+        const selectedValue = typeField ? typeField.value : null;
+        
+        // If we have a selected value, return it
+        if (selectedValue) {
+            return selectedValue;
+        }
+        
+        // If no value is selected, return null - do not use fallbacks
+        console.warn('No football type selected');
+        return null;
     }
     
     // Error display functions
@@ -1419,15 +1585,89 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updatePlayerRequirements() {
-        const footballType = getSelectedFootballType();
-        const limits = playerLimits[footballType];
         const requirementsElement = document.getElementById('nombreJoueursRequis');
         
+        if (!playerLimitsLoaded) {
+            if (requirementsElement) {
+                requirementsElement.innerHTML = `
+                    <strong>⚠️ Chargement des données...</strong><br>
+                    Les informations sur les équipes sont en cours de chargement.
+                `;
+            }
+            return;
+        }
+        
+        const footballType = getSelectedFootballType();
+        if (!footballType) {
+            if (requirementsElement) {
+                requirementsElement.innerHTML = `
+                    <strong>⚠️ Sélectionnez un type de football</strong><br>
+                    Veuillez choisir le type d'équipe pour voir les exigences.
+                `;
+            }
+            return;
+        }
+        
+        const limits = playerLimits[footballType];
+        const selectedCategory = getSelectedAgeCategory();
+        
         if (limits && requirementsElement) {
+            let categoryInfo = '';
+            if (selectedCategory && categoriesLoaded) {
+                if (selectedCategory.minDate && selectedCategory.maxDate) {
+                    const startDate = selectedCategory.minDate.toLocaleDateString('fr-FR');
+                    const endDate = selectedCategory.maxDate.toLocaleDateString('fr-FR');
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Années de naissance acceptées: ${startDate} - ${endDate}
+                        </div>
+                    `;
+                } else if (selectedCategory.minBirthYear && selectedCategory.maxBirthYear) {
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Années de naissance acceptées: ${selectedCategory.minBirthYear} - ${selectedCategory.maxBirthYear}
+                        </div>
+                    `;
+                } else if (selectedCategory.minAge !== null && selectedCategory.maxAge !== null) {
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong><br>
+                            Âges acceptés: ${selectedCategory.minAge} - ${selectedCategory.maxAge} ans
+                        </div>
+                    `;
+                } else {
+                    categoryInfo = `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                            <strong>📅 Catégorie sélectionnée: ${selectedCategory.name}</strong>
+                        </div>
+                    `;
+                }
+            } else if (!categoriesLoaded) {
+                categoryInfo = `
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9em;">
+                        ⏳ Chargement des catégories d'âge...
+                    </div>
+                `;
+            } else {
+                categoryInfo = `
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f8d7da; border-radius: 4px; font-size: 0.9em;">
+                        ⚠️ Aucune catégorie d'âge sélectionnée
+                    </div>
+                `;
+            }
+            
             requirementsElement.innerHTML = `
                 <strong>Composition de l'équipe ${footballType}</strong><br>
                 Minimum: ${limits.min} joueurs<br>
                 Maximum: ${limits.max} joueurs
+                ${categoryInfo}
+            `;
+        } else if (requirementsElement) {
+            requirementsElement.innerHTML = `
+                <strong>⚠️ Type non reconnu</strong><br>
+                Le type "${footballType}" n'est pas reconnu. Veuillez rafraîchir la page.
             `;
         }
         
@@ -1468,14 +1708,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                                         age--;
                                     }
-                                    if (category.format === 'database' && category.minDate && category.maxDate) {
-                                    const startDate = category.minDate.toLocaleDateString('fr-FR');
-                                    const endDate = category.maxDate.toLocaleDateString('fr-FR');
-                                    errorMessage = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${new Date(value).toLocaleDateString('fr-FR')})`;
-                                } else if (category.minBirthYear && category.maxBirthYear) {
+                                    if (category.minDate && category.maxDate) {
+                                        const startDate = category.minDate.toLocaleDateString('fr-FR');
+                                        const endDate = category.maxDate.toLocaleDateString('fr-FR');
+                                        errorMessage = `Date de naissance invalide pour ${category.name}. Période acceptée: du ${startDate} au ${endDate} (joueur: ${new Date(value).toLocaleDateString('fr-FR')})`;
+                                    } else if (category.minBirthYear && category.maxBirthYear) {
                                     const birthYear = new Date(value).getFullYear();
                                     errorMessage = `Année de naissance invalide pour ${category.name}: requis ${category.minBirthYear}-${category.maxBirthYear} (joueur: ${birthYear})`;
-                                } else if (category.minAge !== null && category.maxAge !== null) {
+                                } else if (category.minAge !== undefined && category.maxAge !== undefined) {
                                     errorMessage = `Âge invalide pour ${category.name}: requis ${category.minAge}-${category.maxAge} ans (joueur: ${age} ans)`;
                                 } else {
                                     errorMessage = `Catégorie ${category.name}: âge accepté 6-35 ans (joueur: ${age} ans)`;
@@ -1594,6 +1834,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+    
+    // Global error display function
+    function showGlobalError(message) {
+        // Remove any existing global error messages
+        document.querySelectorAll('.global-error').forEach(error => error.remove());
+        
+        // Create error element
+        const errorElement = document.createElement('div');
+        errorElement.className = 'global-error alert alert-danger';
+        errorElement.style.cssText = `
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        errorElement.innerHTML = `
+            <strong>⚠️ Erreur de chargement</strong><br>
+            ${message}
+            <button type="button" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2em; color: #721c24; cursor: pointer;">×</button>
+        `;
+        
+        // Add to page
+        document.body.insertBefore(errorElement, document.body.firstChild);
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            if (errorElement.parentNode) {
+                errorElement.remove();
+            }
+        }, 10000);
+        
+        console.error('Global error shown:', message);
+    }
+    
+    // Function to disable form submission
+    function disableFormSubmission(reason) {
+        const form = document.getElementById('inscriptionForm');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                showGlobalError(reason);
+                return false;
+            });
+        }
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.title = reason;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = true;
+            nextBtn.title = reason;
+            nextBtn.style.opacity = '0.6';
+            nextBtn.style.cursor = 'not-allowed';
+        }
+        
+        console.error('Form submission disabled:', reason);
     }
     
     console.log('Football wizard validation setup complete');

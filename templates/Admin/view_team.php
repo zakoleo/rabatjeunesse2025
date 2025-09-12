@@ -101,6 +101,26 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
                                 <label>Type de football:</label>
                                 <span><?= h($team->type_football) ?></span>
                             </div>
+                        <?php elseif ($sport === 'basketball' && !empty($team->type_basketball)): ?>
+                            <div class="info-item">
+                                <label>Type de basketball:</label>
+                                <span><?= h($team->type_basketball) ?></span>
+                            </div>
+                        <?php elseif ($sport === 'handball' && !empty($team->type_handball)): ?>
+                            <div class="info-item">
+                                <label>Type de handball:</label>
+                                <span><?= h($team->type_handball) ?></span>
+                            </div>
+                        <?php elseif ($sport === 'volleyball' && !empty($team->type_volleyball)): ?>
+                            <div class="info-item">
+                                <label>Type de volleyball:</label>
+                                <span><?= h($team->type_volleyball) ?></span>
+                            </div>
+                        <?php elseif ($sport === 'beachvolley' && !empty($team->type_beachvolley)): ?>
+                            <div class="info-item">
+                                <label>Type de beach volleyball:</label>
+                                <span><?= h($team->type_beachvolley) ?></span>
+                            </div>
                         <?php endif; ?>
                         <?php if (!empty($districtName)): ?>
                             <div class="info-item">

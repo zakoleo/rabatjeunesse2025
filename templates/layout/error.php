@@ -21,7 +21,9 @@
     <title>
         <?= $this->fetch('title') ?>
     </title>
-    <?= $this->Html->meta('icon') ?>
+    <?= $this->Html->meta('icon', $this->Url->image('logo.webp')) ?>
+    <link rel="apple-touch-icon" href="<?= $this->Url->image('logo.webp') ?>">
+    <link rel="icon" type="image/webp" href="<?= $this->Url->image('logo.webp') ?>">
 
     <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
 

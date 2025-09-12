@@ -331,7 +331,14 @@ $this->assign('title', 'Inscription - Équipe de Handball');
 
 <?= $this->Html->css('inscription-form') ?>
 <script>
-    // Pass the base URL to JavaScript
+    // Pass properly generated URLs to JavaScript for handball
+    window.API_URLS = {
+        getHandballCategories: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getHandballCategories'])) ?>,
+        getHandballTypes: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getHandballTypes'])) ?>,
+        getSports: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'getSports'])) ?>,
+        testEndpoint: <?= json_encode($this->Url->build(['controller' => 'Teams', 'action' => 'testEndpoint'])) ?>
+    };
+    // Keep base URL for backward compatibility
     window.APP_BASE_URL = <?= json_encode($this->Url->build('/', ['fullBase' => false])) ?>;
 </script>
 <?= $this->Html->script('handball-wizard-validation') ?>

@@ -14,7 +14,9 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         <?= $cakeDescription ?>:
         <?= $this->fetch('title') ?>
     </title>
-    <?= $this->Html->meta('icon') ?>
+    <?= $this->Html->meta('icon', $this->Url->image('logo.webp')) ?>
+    <link rel="apple-touch-icon" href="<?= $this->Url->image('logo.webp') ?>">
+    <link rel="icon" type="image/webp" href="<?= $this->Url->image('logo.webp') ?>">
     
     <!-- CSRF Token for AJAX requests -->
     <meta name="csrf-token" content="<?= $this->request->getAttribute('csrfToken') ?>">
@@ -48,7 +50,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
 
         /* Sidebar Styles */
         .admin-sidebar {
-            width: 280px;
+            width: 220px;
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             color: white;
             position: fixed;
@@ -59,7 +61,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         }
 
         .sidebar-header {
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             border-bottom: 1px solid #334155;
             text-align: center;
         }
@@ -97,13 +99,48 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             margin-bottom: 2rem;
         }
 
+        .nav-section.primary-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-section.primary-section .nav-section-title {
+            color: #3b82f6 !important;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-header:hover {
+            color: #3b82f6;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(90deg);
+        }
+
         .nav-section-title {
-            padding: 0 1.5rem 0.5rem;
-            font-size: 0.9rem;
+            padding: 0 1rem 0.25rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             font-weight: 600;
             color: #64748b;
             letter-spacing: 0.05em;
+            margin-top: 1rem;
         }
 
         .nav-items {
@@ -117,12 +154,12 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.875rem;
-            padding: 0.875rem 1.5rem;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
             color: #cbd5e1;
             text-decoration: none;
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
             border-left: 3px solid transparent;
         }
@@ -166,7 +203,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         /* Main Content */
         .admin-main {
             flex: 1;
-            margin-left: 280px;
+            margin-left: 220px;
             background: #f8fafc;
         }
 
@@ -275,6 +312,91 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             cursor: pointer;
         }
 
+        /* Sport Configuration Menu Styles */
+        .sport-config-section {
+            margin-bottom: 1rem;
+        }
+
+        .sport-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+
+        .sport-menu-header:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .sport-menu-header .sport-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+
+        .sport-menu-header .sport-name {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .sport-menu-header .toggle-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            color: #64748b;
+        }
+
+        .sport-menu-header.expanded .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .sport-submenu {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .sport-submenu.expanded {
+            max-height: 200px;
+            opacity: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .sport-submenu .nav-link {
+            padding: 0.4rem 1rem 0.4rem 2.5rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            border-left: 3px solid transparent;
+        }
+
+        .sport-submenu .nav-link:hover {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+            border-left-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .sport-submenu .nav-link.active {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+            border-left-color: #3b82f6;
+        }
+
+        .sport-submenu .nav-link i {
+            width: 16px;
+            font-size: 0.9rem;
+        }
+
         /* Utilities */
         .btn {
             display: inline-flex;
@@ -325,10 +447,8 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <i class="fas fa-shield-alt"></i>
-                    <h1>Admin</h1>
+                    <?= $this->Html->image('logo.webp', ['alt' => 'Rabat Jeunesse Logo', 'style' => 'height: 50px; width: auto;']) ?>
                 </div>
-                <div class="sidebar-subtitle">Rabat Jeunesse 2025</div>
             </div>
 
 <?php 
@@ -361,25 +481,21 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             <nav class="sidebar-nav">
                 <!-- Dashboard -->
                 <div class="nav-section">
-                    <div class="nav-section-title">Tableau de bord</div>
                     <ul class="nav-items">
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-home"></i> Vue d\'ensemble', 
+                            <?= $this->Html->link('<i class="fas fa-home"></i> Dashboard', 
                                 ['controller' => 'Admin', 'action' => 'index'], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'index') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                     </ul>
                 </div>
 
-                <!-- Teams Management -->
+                <!-- ÉQUIPES PAR SPORT -->
+                <div class="nav-section-title">🏆 Équipes par Sport</div>
+                
+                <!-- All Sports Teams -->
                 <div class="nav-section">
-                    <div class="nav-section-title">Gestion des équipes</div>
                     <ul class="nav-items">
-                        <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-users"></i> Toutes les équipes', 
-                                ['controller' => 'Admin', 'action' => 'teams'], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'teams') ? ' active' : ''), 'escape' => false]) ?>
-                        </li>
                         <li class="nav-item">
                             <?= $this->Html->link('<i class="fas fa-futbol"></i> Football', 
                                 ['controller' => 'Admin', 'action' => 'teams', '?' => ['sport' => 'football']], 
@@ -391,7 +507,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                                 ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['sport' => 'basketball']) ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-handball"></i> Handball', 
+                            <?= $this->Html->link('<i class="fas fa-hand-paper"></i> Handball', 
                                 ['controller' => 'Admin', 'action' => 'teams', '?' => ['sport' => 'handball']], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['sport' => 'handball']) ? ' active' : ''), 'escape' => false]) ?>
                         </li>
@@ -401,58 +517,175 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                                 ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['sport' => 'volleyball']) ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-umbrella-beach"></i> Beach Volleyball', 
+                            <?= $this->Html->link('<i class="fas fa-umbrella-beach"></i> Beach Volley', 
                                 ['controller' => 'Admin', 'action' => 'teams', '?' => ['sport' => 'beachvolley']], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['sport' => 'beachvolley']) ? ' active' : ''), 'escape' => false]) ?>
                         </li>
-                    </ul>
-                </div>
-
-                <!-- Status Management -->
-                <div class="nav-section">
-                    <div class="nav-section-title">Validation</div>
-                    <ul class="nav-items">
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-clock"></i> En attente <span class="nav-badge warning">3</span>', 
-                                ['controller' => 'Admin', 'action' => 'teams', '?' => ['status' => 'pending']], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['status' => 'pending']) ? ' active' : ''), 'escape' => false]) ?>
-                        </li>
-                        <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-check-circle"></i> Vérifiées', 
-                                ['controller' => 'Admin', 'action' => 'teams', '?' => ['status' => 'verified']], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['status' => 'verified']) ? ' active' : ''), 'escape' => false]) ?>
-                        </li>
-                        <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-times-circle"></i> Rejetées', 
-                                ['controller' => 'Admin', 'action' => 'teams', '?' => ['status' => 'rejected']], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'teams', ['status' => 'rejected']) ? ' active' : ''), 'escape' => false]) ?>
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Toutes équipes', 
+                                ['controller' => 'Admin', 'action' => 'teams'], 
+                                ['class' => 'nav-link' . ($isActive('Admin', 'teams') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                     </ul>
                 </div>
 
-                <!-- User Management -->
+                <!-- SPORTS CONFIGURATION -->
+                <div class="nav-section-title">⚙️ Configuration Sports</div>
+                
+                <!-- Football Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('football')">
+                        <i class="fas fa-futbol sport-icon"></i>
+                        <span class="sport-name">Football</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="football-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="football-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Catégories', 
+                                ['controller' => 'FootballManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('FootballManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-map"></i> Types', 
+                                ['controller' => 'FootballManagement', 'action' => 'types'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('FootballManagement', 'types') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
+                                ['controller' => 'FootballManagement', 'action' => 'relationships'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('FootballManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Basketball Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('basketball')">
+                        <i class="fas fa-basketball-ball sport-icon"></i>
+                        <span class="sport-name">Basketball</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="basketball-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="basketball-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Catégories', 
+                                ['controller' => 'BasketballManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BasketballManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-map"></i> Types', 
+                                ['controller' => 'BasketballManagement', 'action' => 'types'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BasketballManagement', 'types') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
+                                ['controller' => 'BasketballManagement', 'action' => 'relationships'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BasketballManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Handball Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('handball')">
+                        <i class="fas fa-hand-paper sport-icon"></i>
+                        <span class="sport-name">Handball</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="handball-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="handball-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Catégories', 
+                                ['controller' => 'HandballManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('HandballManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-map"></i> Types', 
+                                ['controller' => 'HandballManagement', 'action' => 'types'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('HandballManagement', 'types') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
+                                ['controller' => 'HandballManagement', 'action' => 'relationships'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('HandballManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Volleyball Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('volleyball')">
+                        <i class="fas fa-volleyball-ball sport-icon"></i>
+                        <span class="sport-name">Volleyball</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="volleyball-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="volleyball-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Catégories', 
+                                ['controller' => 'VolleyballManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('VolleyballManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-map"></i> Types', 
+                                ['controller' => 'VolleyballManagement', 'action' => 'types'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('VolleyballManagement', 'types') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
+                                ['controller' => 'VolleyballManagement', 'action' => 'relationships'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('VolleyballManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Beach Volleyball Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('beachvolley')">
+                        <i class="fas fa-umbrella-beach sport-icon"></i>
+                        <span class="sport-name">Beach Volley</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="beachvolley-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="beachvolley-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Catégories', 
+                                ['controller' => 'BeachvolleyManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BeachvolleyManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-map"></i> Types', 
+                                ['controller' => 'BeachvolleyManagement', 'action' => 'types'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BeachvolleyManagement', 'types') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
+                                ['controller' => 'BeachvolleyManagement', 'action' => 'relationships'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('BeachvolleyManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+
+                <!-- UTILISATEURS -->
+                <div class="nav-section-title">👥 Utilisateurs</div>
                 <div class="nav-section">
-                    <div class="nav-section-title">Utilisateurs</div>
                     <ul class="nav-items">
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-user-friends"></i> Tous les utilisateurs', 
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Tous', 
                                 ['controller' => 'Admin', 'action' => 'users'], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'users') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-user-plus"></i> Nouvel utilisateur', 
+                            <?= $this->Html->link('<i class="fas fa-user-plus"></i> Nouveau', 
                                 ['controller' => 'Admin', 'action' => 'addUser'], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'addUser') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                     </ul>
                 </div>
 
-                <!-- Tools -->
+                <!-- OUTILS -->
+                <div class="nav-section-title">🔧 Outils</div>
                 <div class="nav-section">
-                    <div class="nav-section-title">Outils</div>
                     <ul class="nav-items">
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-download"></i> Export données', 
+                            <?= $this->Html->link('<i class="fas fa-download"></i> Export', 
                                 ['controller' => 'Admin', 'action' => 'export'], 
                                 ['class' => 'nav-link' . ($isActive('Admin', 'export') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
@@ -462,7 +695,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                                 ['class' => 'nav-link' . ($isActive('Admin', 'settings') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-sign-out-alt"></i> Retour au site', 
+                            <?= $this->Html->link('<i class="fas fa-sign-out-alt"></i> Retour site', 
                                 ['controller' => 'Sports', 'action' => 'index'], 
                                 ['class' => 'nav-link', 'escape' => false]) ?>
                         </li>
@@ -514,6 +747,53 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             sidebar.classList.toggle('open');
         }
 
+        function toggleSportMenu(sport) {
+            const header = document.querySelector(`div[onclick="toggleSportMenu('${sport}')"]`);
+            const menu = document.getElementById(`${sport}-menu`);
+            const arrow = document.getElementById(`${sport}-arrow`);
+            
+            if (header && menu && arrow) {
+                // Toggle expanded classes
+                header.classList.toggle('expanded');
+                menu.classList.toggle('expanded');
+                
+                // Update arrow rotation (handled by CSS)
+                if (menu.classList.contains('expanded')) {
+                    menu.style.display = 'block';
+                } else {
+                    // Add delay to allow transition before hiding
+                    setTimeout(() => {
+                        if (!menu.classList.contains('expanded')) {
+                            menu.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+        }
+
+        // Initialize sport menus on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial state - only football expanded by default
+            const footballMenu = document.getElementById('football-menu');
+            const footballHeader = document.querySelector('div[onclick="toggleSportMenu(\'football\')"]');
+            
+            if (footballMenu && footballHeader) {
+                footballMenu.style.display = 'block';
+                footballMenu.classList.add('expanded');
+                footballHeader.classList.add('expanded');
+            }
+            
+            // Ensure other menus start collapsed
+            const sports = ['basketball', 'handball', 'volleyball', 'beachvolley'];
+            sports.forEach(sport => {
+                const menu = document.getElementById(`${sport}-menu`);
+                if (menu) {
+                    menu.style.display = 'none';
+                    menu.classList.remove('expanded');
+                }
+            });
+        });
+
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('adminSidebar');
@@ -534,6 +814,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                 sidebar.classList.remove('open');
             }
         });
+
     </script>
 </body>
 </html>

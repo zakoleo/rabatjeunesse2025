@@ -42,17 +42,13 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
                 </div>
                 
                 <div class="form-group">
-                    <?= $this->Form->control('categorie', [
+                    <?= $this->Form->control('basketball_category_id', [
                         'label' => 'Catégorie d\'âge *',
                         'type' => 'select',
                         'class' => 'form-control',
-                        'options' => [
-                            '-15' => 'Moins de 15 ans',
-                            '-17' => 'Moins de 17 ans', 
-                            '-21' => 'Moins de 21 ans',
-                            '+21' => 'Plus de 21 ans'
-                        ],
-                        'empty' => 'Sélectionnez la catégorie'
+                        'options' => $basketballCategories ?? [],
+                        'empty' => 'Sélectionnez la catégorie',
+                        'required' => true
                     ]) ?>
                 </div>
                 
@@ -71,18 +67,24 @@ $this->assign('title', 'Inscription - Équipe de Basketball');
                 </div>
                 
                 <div class="form-group">
-                    <?= $this->Form->control('district', [
+                    <?= $this->Form->control('basketball_district_id', [
                         'label' => 'District *',
+                        'type' => 'select',
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Agdal-Ryad'
+                        'options' => $footballDistricts ?? [],
+                        'empty' => 'Sélectionnez un district',
+                        'required' => true
                     ]) ?>
                 </div>
                 
                 <div class="form-group">
-                    <?= $this->Form->control('organisation', [
+                    <?= $this->Form->control('basketball_organisation_id', [
                         'label' => 'Organisation *',
+                        'type' => 'select',
                         'class' => 'form-control',
-                        'placeholder' => 'Ex: Association sportive'
+                        'options' => $footballOrganisations ?? [],
+                        'empty' => 'Sélectionnez une organisation',
+                        'required' => true
                     ]) ?>
                 </div>
             </div>

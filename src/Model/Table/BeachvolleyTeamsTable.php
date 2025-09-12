@@ -56,17 +56,17 @@ class BeachvolleyTeamsTable extends Table
         ]);
         
         $this->belongsTo('BeachvolleyCategories', [
-            'foreignKey' => 'beachvolley_category_id',
+            'foreignKey' => 'football_category_id',
             'joinType' => 'LEFT',
         ]);
         
         $this->belongsTo('FootballDistricts', [
-            'foreignKey' => 'beachvolley_district_id',
+            'foreignKey' => 'football_district_id',
             'joinType' => 'LEFT',
         ]);
         
         $this->belongsTo('FootballOrganisations', [
-            'foreignKey' => 'beachvolley_organisation_id',
+            'foreignKey' => 'football_organisation_id',
             'joinType' => 'LEFT',
         ]);
         
@@ -105,14 +105,12 @@ class BeachvolleyTeamsTable extends Table
         $validator
             ->scalar('district')
             ->maxLength('district', 50)
-            ->requirePresence('district', 'create')
-            ->notEmptyString('district');
+            ->allowEmptyString('district');
 
         $validator
             ->scalar('organisation')
             ->maxLength('organisation', 20)
-            ->requirePresence('organisation', 'create')
-            ->notEmptyString('organisation');
+            ->allowEmptyString('organisation');
 
         $validator
             ->scalar('adresse')
@@ -123,18 +121,20 @@ class BeachvolleyTeamsTable extends Table
             ->integer('user_id')
             ->notEmptyString('user_id');
 
-        // Validations pour les champs de relation
+        // Validations pour les champs de relation - using actual database column names
         $validator
-            ->allowEmptyString('beachvolley_category_id')
-            ->integer('beachvolley_category_id');
+            ->allowEmptyString('football_category_id')
+            ->integer('football_category_id');
 
         $validator
-            ->allowEmptyString('beachvolley_district_id')
-            ->integer('beachvolley_district_id');
+            ->requirePresence('football_district_id', 'create')
+            ->notEmptyString('football_district_id')
+            ->integer('football_district_id');
 
         $validator
-            ->allowEmptyString('beachvolley_organisation_id')
-            ->integer('beachvolley_organisation_id');
+            ->requirePresence('football_organisation_id', 'create')
+            ->notEmptyString('football_organisation_id')
+            ->integer('football_organisation_id');
 
         $validator
             ->scalar('type_beachvolley')
