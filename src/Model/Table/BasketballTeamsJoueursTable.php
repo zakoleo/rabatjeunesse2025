@@ -83,7 +83,7 @@ class BasketballTeamsJoueursTable extends Table
             ->maxLength('taille_vestimentaire', 10)
             ->requirePresence('taille_vestimentaire', 'create')
             ->notEmptyString('taille_vestimentaire')
-            ->inList('taille_vestimentaire', ['XS', 'S', 'M', 'L', 'XL', 'XXL']);
+            ->inList('taille_vestimentaire', ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']);
 
         $validator
             ->integer('basketball_team_id')

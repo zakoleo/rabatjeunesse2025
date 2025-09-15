@@ -16,7 +16,7 @@ use ArrayObject;
  *
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
  * @property \App\Model\Table\HandballTeamsJoueursTable&\Cake\ORM\Association\HasMany $HandballTeamsJoueurs
- * @property \App\Model\Table\FootballCategoriesTable&\Cake\ORM\Association\BelongsTo $FootballCategories
+ * @property \App\Model\Table\HandballCategoriesTable&\Cake\ORM\Association\BelongsTo $HandballCategories
  * @property \App\Model\Table\FootballDistrictsTable&\Cake\ORM\Association\BelongsTo $FootballDistricts
  * @property \App\Model\Table\FootballOrganisationsTable&\Cake\ORM\Association\BelongsTo $FootballOrganisations
  *
@@ -88,51 +88,51 @@ class HandballTeamsTable extends Table
     {
         $validator
             ->scalar('nom_equipe')
-            ->maxLength('nom_equipe', 255)
-            ->requirePresence('nom_equipe', 'create')
-            ->notEmptyString('nom_equipe');
+            ->maxLength('nom_equipe', 255, 'Le nom de l\'équipe ne peut pas dépasser 255 caractères.')
+            ->requirePresence('nom_equipe', 'create', 'Le nom de l\'équipe est requis.')
+            ->notEmptyString('nom_equipe', 'Le nom de l\'équipe ne peut pas être vide.');
 
         $validator
             ->scalar('categorie')
-            ->maxLength('categorie', 50)
-            ->requirePresence('categorie', 'create')
-            ->notEmptyString('categorie');
+            ->maxLength('categorie', 50, 'La catégorie ne peut pas dépasser 50 caractères.')
+            ->requirePresence('categorie', 'create', 'La catégorie est requise.')
+            ->notEmptyString('categorie', 'La catégorie ne peut pas être vide.');
 
         $validator
             ->scalar('genre')
-            ->maxLength('genre', 10)
-            ->requirePresence('genre', 'create')
-            ->notEmptyString('genre')
-            ->inList('genre', ['Homme', 'Femme']);
+            ->maxLength('genre', 10, 'Le genre ne peut pas dépasser 10 caractères.')
+            ->requirePresence('genre', 'create', 'Le genre est requis.')
+            ->notEmptyString('genre', 'Le genre ne peut pas être vide.')
+            ->inList('genre', ['Homme', 'Femme'], 'Le genre doit être "Homme" ou "Femme".');
 
         $validator
             ->scalar('type_handball')
-            ->maxLength('type_handball', 10)
-            ->requirePresence('type_handball', 'create')
-            ->notEmptyString('type_handball')
-            ->inList('type_handball', ['7x7', '5x5']);
+            ->maxLength('type_handball', 10, 'Le type de handball ne peut pas dépasser 10 caractères.')
+            ->requirePresence('type_handball', 'create', 'Le type de handball est requis.')
+            ->notEmptyString('type_handball', 'Le type de handball ne peut pas être vide.')
+            ->inList('type_handball', ['7x7', '5x5'], 'Le type de handball doit être "7x7" ou "5x5".');
 
         $validator
             ->scalar('district')
-            ->maxLength('district', 100)
-            ->requirePresence('district', 'create')
-            ->notEmptyString('district');
+            ->maxLength('district', 100, 'Le district ne peut pas dépasser 100 caractères.')
+            ->requirePresence('district', 'create', 'Le district est requis.')
+            ->notEmptyString('district', 'Le district ne peut pas être vide.');
 
         $validator
             ->scalar('organisation')
-            ->maxLength('organisation', 100)
-            ->requirePresence('organisation', 'create')
-            ->notEmptyString('organisation');
+            ->maxLength('organisation', 100, 'L\'organisation ne peut pas dépasser 100 caractères.')
+            ->requirePresence('organisation', 'create', 'L\'organisation est requise.')
+            ->notEmptyString('organisation', 'L\'organisation ne peut pas être vide.');
 
         $validator
             ->scalar('adresse')
-            ->requirePresence('adresse', 'create')
-            ->notEmptyString('adresse');
+            ->requirePresence('adresse', 'create', 'L\'adresse est requise.')
+            ->notEmptyString('adresse', 'L\'adresse ne peut pas être vide.');
 
         $validator
             ->integer('user_id')
-            ->requirePresence('user_id', 'create')
-            ->notEmptyString('user_id');
+            ->requirePresence('user_id', 'create', 'L\'utilisateur est requis.')
+            ->notEmptyString('user_id', 'L\'utilisateur est requis.');
 
         $validator
             ->scalar('reference_inscription')
@@ -217,6 +217,9 @@ class HandballTeamsTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
+        $rules->add($rules->existsIn(['handball_category_id'], 'HandballCategories'), ['errorField' => 'handball_category_id']);
+        $rules->add($rules->existsIn(['handball_district_id'], 'FootballDistricts'), ['errorField' => 'handball_district_id']);
+        $rules->add($rules->existsIn(['handball_organisation_id'], 'FootballOrganisations'), ['errorField' => 'handball_organisation_id']);
 
         return $rules;
     }

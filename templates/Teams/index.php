@@ -5,12 +5,13 @@
  * @var iterable<\App\Model\Entity\BasketballTeam> $basketballTeams
  * @var iterable<\App\Model\Entity\HandballTeam> $handballTeams
  * @var iterable<\App\Model\Entity\VolleyballTeam> $volleyballTeams
+ * @var iterable<\App\Model\Entity\BeachvolleyTeam> $beachvolleyTeams
  */
 ?>
 <div class="page-header">
     <div class="container">
         <h1>Mes équipes</h1>
-        <p>Gérez vos équipes inscrites aux tournois de football, basketball, handball et volleyball</p>
+        <p>Gérez vos équipes inscrites aux tournois de football, basketball, handball, volleyball et beach volleyball</p>
     </div>
 </div>
 
@@ -325,8 +326,92 @@
         </div>
         <?php endif; ?>
 
+        <!-- Beach Volleyball Teams Section -->
+        <?php if (count($beachvolleyTeams) > 0): ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Équipes de Beach Volleyball (<?= count($beachvolleyTeams) ?>)</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Nom de l'équipe</th>
+                                <th>Catégorie</th>
+                                <th>Type</th>
+                                <th>District</th>
+                                <th>Joueurs</th>
+                                <th>Date d'inscription</th>
+                                <th class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($beachvolleyTeams as $team): ?>
+                            <tr>
+                                <td>
+                                    <span class="reference-badge beachvolley"><?= h($team->reference_inscription ?? 'BV-TEMP') ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= h($team->nom_equipe) ?></strong>
+                                </td>
+                                <td>
+                                    <?= h($team->categorie) ?>
+                                </td>
+                                <td>
+                                    <span class="badge badge-beachvolley">
+                                        <?= h($team->type_beachvolley ?? 'N/A') ?>
+                                        <?php 
+                                        $type = $team->type_beachvolley ?? '';
+                                        if ($type === '2x2') {
+                                            $min = 2; $max = 4;
+                                        } elseif ($type === '4x4') {
+                                            $min = 4; $max = 8;
+                                        } else {
+                                            $min = $max = null;
+                                        }
+                                        ?>
+                                        <?php if ($min && $max): ?>
+                                        <small class="d-block text-muted">
+                                            (<?= $min ?>-<?= $max ?>)
+                                        </small>
+                                        <?php endif; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?= h($team->district) ?>
+                                </td>
+                                <td>
+                                    <span class="badge badge-light">
+                                        <?= count($team->beachvolley_teams_joueurs ?? []) ?> joueurs
+                                    </span>
+                                </td>
+                                <td>
+                                    <?= h($team->created->format('d/m/Y')) ?>
+                                </td>
+                                <td class="actions">
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'beachvolleyTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBeachvolley', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadBeachvolleyPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
+                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBeachvolley', $team->id], [
+                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                        'class' => 'btn btn-sm btn-danger',
+                                        'escape' => false,
+                                        'title' => 'Supprimer'
+                                    ]) ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Empty State -->
-        <?php if (count($footballTeams) === 0 && count($basketballTeams) === 0 && count($handballTeams) === 0 && count($volleyballTeams) === 0): ?>
+        <?php if (count($footballTeams) === 0 && count($basketballTeams) === 0 && count($handballTeams) === 0 && count($volleyballTeams) === 0 && count($beachvolleyTeams) === 0): ?>
         <div class="card">
             <div class="card-body text-center">
                 <div class="empty-state">
@@ -371,6 +456,16 @@
     
     .badge-handball {
         background-color: #D2691E;
+        color: white;
+    }
+    
+    .badge-volleyball {
+        background-color: #8E44AD;
+        color: white;
+    }
+    
+    .badge-beachvolley {
+        background-color: #F39C12;
         color: white;
     }
     
@@ -477,6 +572,16 @@
     .reference-badge.handball {
         background: #FDF0E8;
         color: #D2691E;
+    }
+    
+    .reference-badge.volleyball {
+        background: #F4ECFC;
+        color: #8E44AD;
+    }
+    
+    .reference-badge.beachvolley {
+        background: #FEF4E2;
+        color: #F39C12;
     }
     
     .player-count {

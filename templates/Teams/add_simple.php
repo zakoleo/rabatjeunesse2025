@@ -60,7 +60,7 @@
             <?= $this->Form->control("joueurs.$i.date_naissance", ['type' => 'date']) ?>
             <?= $this->Form->control("joueurs.$i.identifiant", ['label' => 'CIN/Code Massar']) ?>
             <?= $this->Form->control("joueurs.$i.taille_vestimentaire", [
-                'options' => ['XS' => 'XS', 'S' => 'S', 'M' => 'M', 'L' => 'L', 'XL' => 'XL', 'XXL' => 'XXL']
+                'options' => ['XS' => 'XS', 'S' => 'S', 'M' => 'M', 'L' => 'L', 'XL' => 'XL', 'XXL' => 'XXL', 'XXXL' => 'XXXL']
             ]) ?>
         </div>
         <?php endfor; ?>

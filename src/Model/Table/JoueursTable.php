@@ -63,30 +63,30 @@ class JoueursTable extends Table
     {
         $validator
             ->scalar('nom_complet')
-            ->maxLength('nom_complet', 255)
-            ->requirePresence('nom_complet', 'create')
-            ->notEmptyString('nom_complet');
+            ->maxLength('nom_complet', 255, 'Le nom complet ne peut pas dépasser 255 caractères.')
+            ->requirePresence('nom_complet', 'create', 'Le nom complet est requis.')
+            ->notEmptyString('nom_complet', 'Le nom complet ne peut pas être vide.');
 
         $validator
             ->date('date_naissance')
-            ->requirePresence('date_naissance', 'create')
-            ->notEmptyDate('date_naissance');
+            ->requirePresence('date_naissance', 'create', 'La date de naissance est requise.')
+            ->notEmptyDate('date_naissance', 'La date de naissance ne peut pas être vide.');
 
         $validator
             ->scalar('identifiant')
-            ->maxLength('identifiant', 50)
-            ->requirePresence('identifiant', 'create')
-            ->notEmptyString('identifiant');
+            ->maxLength('identifiant', 50, 'L\'identifiant ne peut pas dépasser 50 caractères.')
+            ->requirePresence('identifiant', 'create', 'L\'identifiant est requis.')
+            ->notEmptyString('identifiant', 'L\'identifiant ne peut pas être vide.');
 
         $validator
             ->scalar('taille_vestimentaire')
-            ->maxLength('taille_vestimentaire', 5)
-            ->requirePresence('taille_vestimentaire', 'create')
-            ->notEmptyString('taille_vestimentaire');
+            ->requirePresence('taille_vestimentaire', 'create', 'La taille vestimentaire est requise.')
+            ->notEmptyString('taille_vestimentaire', 'La taille vestimentaire ne peut pas être vide.')
+            ->inList('taille_vestimentaire', ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'], 'La taille vestimentaire doit être XS, S, M, L, XL, XXL ou XXXL.');
 
         $validator
             ->integer('team_id')
-            ->notEmptyString('team_id');
+            ->notEmptyString('team_id', 'L\'identifiant de l\'équipe est requis.');
 
         return $validator;
     }

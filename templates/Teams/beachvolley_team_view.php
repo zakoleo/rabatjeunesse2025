@@ -136,6 +136,12 @@ $this->assign('title', 'Équipe de Beach Volleyball - ' . h($team->nom_equipe));
         ) ?>
         
         <?= $this->Html->link(
+            '<i class="fas fa-plus"></i> Nouvelle équipe de beach volleyball',
+            ['controller' => 'Teams', 'action' => 'addBeachvolley'],
+            ['class' => 'btn btn-success', 'escape' => false]
+        ) ?>
+        
+        <?= $this->Html->link(
             '<i class="fas fa-edit"></i> Modifier',
             ['controller' => 'Teams', 'action' => 'editBeachvolley', $team->id],
             ['class' => 'btn btn-primary', 'escape' => false]

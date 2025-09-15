@@ -86,21 +86,21 @@ class VolleyballTeamsTable extends Table
     {
         $validator
             ->scalar('nom_equipe')
-            ->maxLength('nom_equipe', 255)
-            ->requirePresence('nom_equipe', 'create')
-            ->notEmptyString('nom_equipe');
+            ->maxLength('nom_equipe', 255, 'Le nom de l\'équipe ne peut pas dépasser 255 caractères.')
+            ->requirePresence('nom_equipe', 'create', 'Le nom de l\'équipe est requis.')
+            ->notEmptyString('nom_equipe', 'Le nom de l\'équipe ne peut pas être vide.');
 
         $validator
             ->scalar('categorie')
-            ->maxLength('categorie', 10)
-            ->requirePresence('categorie', 'create')
-            ->notEmptyString('categorie');
+            ->maxLength('categorie', 10, 'La catégorie ne peut pas dépasser 10 caractères.')
+            ->requirePresence('categorie', 'create', 'La catégorie est requise.')
+            ->notEmptyString('categorie', 'La catégorie ne peut pas être vide.');
 
         $validator
             ->scalar('genre')
-            ->maxLength('genre', 10)
-            ->requirePresence('genre', 'create')
-            ->notEmptyString('genre');
+            ->maxLength('genre', 10, 'Le genre ne peut pas dépasser 10 caractères.')
+            ->requirePresence('genre', 'create', 'Le genre est requis.')
+            ->notEmptyString('genre', 'Le genre ne peut pas être vide.');
 
         $validator
             ->scalar('district')

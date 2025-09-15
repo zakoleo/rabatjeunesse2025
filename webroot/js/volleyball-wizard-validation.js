@@ -659,10 +659,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Failed to load volleyball types data:', error);
-                playerLimitsLoaded = false;
-                showGlobalError('Erreur de connexion: Impossible de charger les types de volleyball. Veuillez rafraîchir la page ou contacter l\'administrateur.');
-                disableFormSubmission('Les données du formulaire ne peuvent pas être chargées. Veuillez rafraîchir la page.');
+                console.error('Failed to load volleyball types data, using fallback:', error);
+                
+                // Use fallback volleyball types data
+                playerLimits = {
+                    '6x6': {
+                        min: 6,
+                        max: 12,
+                        name: 'Volleyball 6x6',
+                        id: 1
+                    }
+                };
+                
+                playerLimitsLoaded = true;
+                updatePlayerRequirements();
+                if (currentStep === 3) {
+                    generateMinimumPlayers();
+                }
+                
+                console.log('Volleyball fallback limits loaded:', playerLimits);
             });
     }
     

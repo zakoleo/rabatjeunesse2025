@@ -56,7 +56,7 @@ class BeachvolleyTeamsTable extends Table
         ]);
         
         $this->belongsTo('BeachvolleyCategories', [
-            'foreignKey' => 'football_category_id',
+            'foreignKey' => 'beachvolley_category_id',
             'joinType' => 'LEFT',
         ]);
         
@@ -86,21 +86,21 @@ class BeachvolleyTeamsTable extends Table
     {
         $validator
             ->scalar('nom_equipe')
-            ->maxLength('nom_equipe', 255)
-            ->requirePresence('nom_equipe', 'create')
-            ->notEmptyString('nom_equipe');
+            ->maxLength('nom_equipe', 255, 'Le nom de l\'équipe ne peut pas dépasser 255 caractères.')
+            ->requirePresence('nom_equipe', 'create', 'Le nom de l\'équipe est requis.')
+            ->notEmptyString('nom_equipe', 'Le nom de l\'équipe ne peut pas être vide.');
 
         $validator
             ->scalar('categorie')
-            ->maxLength('categorie', 10)
-            ->requirePresence('categorie', 'create')
-            ->notEmptyString('categorie');
+            ->maxLength('categorie', 10, 'La catégorie ne peut pas dépasser 10 caractères.')
+            ->requirePresence('categorie', 'create', 'La catégorie est requise.')
+            ->notEmptyString('categorie', 'La catégorie ne peut pas être vide.');
 
         $validator
             ->scalar('genre')
-            ->maxLength('genre', 10)
-            ->requirePresence('genre', 'create')
-            ->notEmptyString('genre');
+            ->maxLength('genre', 10, 'Le genre ne peut pas dépasser 10 caractères.')
+            ->requirePresence('genre', 'create', 'Le genre est requis.')
+            ->notEmptyString('genre', 'Le genre ne peut pas être vide.');
 
         $validator
             ->scalar('district')
@@ -125,6 +125,11 @@ class BeachvolleyTeamsTable extends Table
         $validator
             ->allowEmptyString('football_category_id')
             ->integer('football_category_id');
+
+        $validator
+            ->requirePresence('beachvolley_category_id', 'create')
+            ->notEmptyString('beachvolley_category_id')
+            ->integer('beachvolley_category_id');
 
         $validator
             ->requirePresence('football_district_id', 'create')
@@ -228,6 +233,9 @@ class BeachvolleyTeamsTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn(['user_id'], 'Users'), ['errorField' => 'user_id']);
+        $rules->add($rules->existsIn(['beachvolley_category_id'], 'BeachvolleyCategories'), ['errorField' => 'beachvolley_category_id']);
+        $rules->add($rules->existsIn(['football_district_id'], 'FootballDistricts'), ['errorField' => 'football_district_id']);
+        $rules->add($rules->existsIn(['football_organisation_id'], 'FootballOrganisations'), ['errorField' => 'football_organisation_id']);
 
         return $rules;
     }

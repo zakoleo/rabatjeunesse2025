@@ -329,7 +329,8 @@ $this->assign('title', 'Modifier l\'équipe de Basketball');
                                             'M' => 'M',
                                             'L' => 'L',
                                             'XL' => 'XL',
-                                            'XXL' => 'XXL'
+                                            'XXL' => 'XXL',
+                                            'XXXL' => 'XXXL'
                                         ],
                                         'required' => true,
                                         'empty' => 'Choisir',

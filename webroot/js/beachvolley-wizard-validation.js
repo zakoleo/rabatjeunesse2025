@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to load age categories from server
     function loadAgeCategories() {
-        const categorySelect = document.querySelector('[name="football_category_id"]');
+        const categorySelect = document.querySelector('#beachvolley-category-id') || document.querySelector('[name="beachvolley_category_id"]');
         if (categorySelect) {
             // Load categories directly from database API
             fetchDetailedCategoryData();
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Filter beachvolley types dropdown based on selected category
     function filterBeachVolleyTypesByCategory() {
-        const categorySelect = document.querySelector('[name="football_category_id"]');
+        const categorySelect = document.querySelector('#beachvolley-category-id') || document.querySelector('[name="beachvolley_category_id"]');
         const typeSelect = document.querySelector('[name="type_beachvolley"]');
         
         if (!categorySelect || !typeSelect || !categorySelect.value) {
@@ -266,10 +266,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Get selected age category
     function getSelectedAgeCategory() {
-        const categorySelect = document.querySelector('[name="football_category_id"]');
+        // Try both selectors to debug
+        const categorySelectById = document.querySelector('#beachvolley-category-id');
+        const categorySelectByName = document.querySelector('[name="beachvolley_category_id"]');
         
         console.log('🔍 getSelectedAgeCategory() debugging:');
-        console.log('  categorySelect found:', !!categorySelect);
+        console.log('  categorySelect by ID found:', !!categorySelectById);
+        console.log('  categorySelect by NAME found:', !!categorySelectByName);
+        
+        const categorySelect = categorySelectById || categorySelectByName;
+        console.log('  Final categorySelect found:', !!categorySelect);
         console.log('  categorySelect.value:', categorySelect?.value);
         console.log('  categoriesLoaded:', categoriesLoaded);
         console.log('  beachvolleyCategories keys:', Object.keys(beachvolleyCategories));
@@ -1357,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Re-validate player ages when age category changes
-        const categoryField = document.querySelector('[name="beachvolley_category_id"]');
+        const categoryField = document.querySelector('#beachvolley-category-id') || document.querySelector('[name="beachvolley_category_id"]');
         if (categoryField) {
             categoryField.addEventListener('change', function() {
                 console.log('Age category changed, re-validating all player ages');

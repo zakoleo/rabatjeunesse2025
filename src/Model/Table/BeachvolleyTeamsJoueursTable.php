@@ -82,7 +82,8 @@ class BeachvolleyTeamsJoueursTable extends Table
             ->scalar('taille_vestimentaire')
             ->maxLength('taille_vestimentaire', 10)
             ->requirePresence('taille_vestimentaire', 'create')
-            ->notEmptyString('taille_vestimentaire');
+            ->notEmptyString('taille_vestimentaire')
+            ->inList('taille_vestimentaire', ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']);
 
         $validator
             ->integer('beachvolley_team_id')

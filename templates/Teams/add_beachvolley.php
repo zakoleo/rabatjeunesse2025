@@ -62,7 +62,7 @@ $this->assign('title', 'Inscription - Équipe de Beach Volleyball');
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <?= $this->Form->control('football_category_id', [
+                        <?= $this->Form->control('beachvolley_category_id', [
                             'label' => 'Catégorie d\'âge *',
                             'options' => $beachvolleyCategories,
                             'required' => true,

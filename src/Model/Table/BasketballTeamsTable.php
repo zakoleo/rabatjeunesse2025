@@ -88,50 +88,50 @@ class BasketballTeamsTable extends Table
     {
         $validator
             ->scalar('nom_equipe')
-            ->maxLength('nom_equipe', 255)
-            ->requirePresence('nom_equipe', 'create')
-            ->notEmptyString('nom_equipe');
+            ->maxLength('nom_equipe', 255, 'Le nom de l\'équipe ne peut pas dépasser 255 caractères.')
+            ->requirePresence('nom_equipe', 'create', 'Le nom de l\'équipe est requis.')
+            ->notEmptyString('nom_equipe', 'Le nom de l\'équipe ne peut pas être vide.');
 
         $validator
             ->scalar('categorie')
-            ->maxLength('categorie', 50)
-            ->requirePresence('categorie', 'create')
-            ->notEmptyString('categorie');
+            ->maxLength('categorie', 50, 'La catégorie ne peut pas dépasser 50 caractères.')
+            ->requirePresence('categorie', 'create', 'La catégorie est requise.')
+            ->notEmptyString('categorie', 'La catégorie ne peut pas être vide.');
 
         $validator
             ->scalar('genre')
-            ->maxLength('genre', 10)
-            ->requirePresence('genre', 'create')
-            ->notEmptyString('genre')
-            ->inList('genre', ['Homme', 'Femme']);
+            ->maxLength('genre', 10, 'Le genre ne peut pas dépasser 10 caractères.')
+            ->requirePresence('genre', 'create', 'Le genre est requis.')
+            ->notEmptyString('genre', 'Le genre ne peut pas être vide.')
+            ->inList('genre', ['Homme', 'Femme'], 'Le genre doit être "Homme" ou "Femme".');
 
         $validator
             ->scalar('type_basketball')
-            ->maxLength('type_basketball', 10)
-            ->requirePresence('type_basketball', 'create')
-            ->notEmptyString('type_basketball')
-            ->inList('type_basketball', ['3x3', '5x5']);
+            ->maxLength('type_basketball', 10, 'Le type de basketball ne peut pas dépasser 10 caractères.')
+            ->requirePresence('type_basketball', 'create', 'Le type de basketball est requis.')
+            ->notEmptyString('type_basketball', 'Le type de basketball ne peut pas être vide.')
+            ->inList('type_basketball', ['3x3', '5x5'], 'Le type de basketball doit être "3x3" ou "5x5".');
 
         $validator
             ->scalar('district')
-            ->maxLength('district', 100)
-            ->requirePresence('district', 'create')
-            ->notEmptyString('district');
+            ->maxLength('district', 100, 'Le district ne peut pas dépasser 100 caractères.')
+            ->requirePresence('district', 'create', 'Le district est requis.')
+            ->notEmptyString('district', 'Le district ne peut pas être vide.');
 
         $validator
             ->scalar('organisation')
-            ->maxLength('organisation', 100)
-            ->requirePresence('organisation', 'create')
-            ->notEmptyString('organisation');
+            ->maxLength('organisation', 100, 'L\'organisation ne peut pas dépasser 100 caractères.')
+            ->requirePresence('organisation', 'create', 'L\'organisation est requise.')
+            ->notEmptyString('organisation', 'L\'organisation ne peut pas être vide.');
 
         $validator
             ->scalar('adresse')
-            ->requirePresence('adresse', 'create')
-            ->notEmptyString('adresse');
+            ->requirePresence('adresse', 'create', 'L\'adresse est requise.')
+            ->notEmptyString('adresse', 'L\'adresse ne peut pas être vide.');
 
         $validator
             ->integer('user_id')
-            ->notEmptyString('user_id');
+            ->notEmptyString('user_id', 'L\'utilisateur est requis.');
 
         // Validations pour les champs de relation
         $validator

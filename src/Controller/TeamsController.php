@@ -238,9 +238,7 @@ class TeamsController extends AppController
             $errorMessages = [];
             
             foreach ($errors as $field => $fieldErrors) {
-                foreach ($fieldErrors as $error) {
-                    $errorMessages[] = $field . ': ' . $error;
-                }
+                $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
             }
             
             if (!empty($errorMessages)) {
@@ -582,9 +580,7 @@ class TeamsController extends AppController
             $errorMessages = [];
             
             foreach ($errors as $field => $fieldErrors) {
-                foreach ($fieldErrors as $error) {
-                    $errorMessages[] = $field . ': ' . $error;
-                }
+                $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
             }
             
             if (!empty($errorMessages)) {
@@ -1164,9 +1160,7 @@ class TeamsController extends AppController
             $errorMessages = [];
             
             foreach ($errors as $field => $fieldErrors) {
-                foreach ($fieldErrors as $error) {
-                    $errorMessages[] = $field . ': ' . $error;
-                }
+                $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
             }
             
             if (!empty($errorMessages)) {
@@ -1732,9 +1726,7 @@ class TeamsController extends AppController
             $errorMessages = [];
             
             foreach ($errors as $field => $fieldErrors) {
-                foreach ($fieldErrors as $error) {
-                    $errorMessages[] = $field . ': ' . $error;
-                }
+                $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
             }
             
             if (!empty($errorMessages)) {
@@ -2211,9 +2203,7 @@ class TeamsController extends AppController
             $errorMessages = [];
             
             foreach ($errors as $field => $fieldErrors) {
-                foreach ($fieldErrors as $error) {
-                    $errorMessages[] = $field . ': ' . $error;
-                }
+                $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
             }
             
             if (!empty($errorMessages)) {
@@ -2940,10 +2930,10 @@ class TeamsController extends AppController
             }
             
             // Mapper les champs des relations vers les champs texte attendus
-            if (!empty($data['football_category_id'])) {
+            if (!empty($data['beachvolley_category_id'])) {
                 $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
-                $category = $BeachvolleyCategories->get($data['football_category_id']);
-                $data['categorie'] = $category->age_range;
+                $category = $BeachvolleyCategories->get($data['beachvolley_category_id']);
+                $data['categorie'] = $category->name;
             }
             
             if (!empty($data['football_district_id'])) {
@@ -3009,11 +2999,11 @@ class TeamsController extends AppController
             }
             
             // Fill text fields from foreign keys for display purposes
-            if (!empty($data['football_category_id'])) {
+            if (!empty($data['beachvolley_category_id'])) {
                 $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
-                $category = $BeachvolleyCategories->get($data['football_category_id']);
+                $category = $BeachvolleyCategories->get($data['beachvolley_category_id']);
                 if ($category) {
-                    $data['categorie'] = $category->age_range;
+                    $data['categorie'] = $category->name;
                 }
             }
             
@@ -3759,12 +3749,17 @@ class TeamsController extends AppController
         
         $result = [];
         foreach ($categories as $category) {
+            // Calculate min/max age from birth years
+            $currentYear = date('Y');
+            $minAge = $category->max_birth_year ? $currentYear - $category->max_birth_year : null;
+            $maxAge = $category->min_birth_year ? $currentYear - $category->min_birth_year : null;
+            
             $result[] = [
                 'id' => $category->id,
                 'name' => $category->name,
                 'age_range' => $category->age_range,
-                'min_age' => $category->min_age,
-                'max_age' => $category->max_age,
+                'min_age' => $minAge,
+                'max_age' => $maxAge,
                 'min_birth_year' => $category->min_birth_year,
                 'max_birth_year' => $category->max_birth_year,
                 'min_date' => $category->min_date ? $category->min_date->format('Y-m-d') : null,
@@ -3803,5 +3798,39 @@ class TeamsController extends AppController
         }
         
         return $this->response->withStringBody(json_encode(['beachvolley_types' => $result]));
+    }
+
+    /**
+     * Helper method to extract error messages from nested validation error structures
+     *
+     * @param string $field The field name
+     * @param mixed $fieldErrors The error data (can be nested arrays)
+     * @param array &$errorMessages Reference to the error messages array to populate
+     * @return void
+     */
+    private function _extractErrorMessages($field, $fieldErrors, &$errorMessages)
+    {
+        if (is_array($fieldErrors)) {
+            // Check if this is an associative array with nested validation errors
+            foreach ($fieldErrors as $key => $value) {
+                if (is_numeric($key) && is_array($value)) {
+                    // This is likely indexed validation errors (e.g., basketball_teams_joueurs.0.nom_complet)
+                    foreach ($value as $subField => $subErrors) {
+                        $nestedField = $field . '.' . $key . '.' . $subField;
+                        $this->_extractErrorMessages($nestedField, $subErrors, $errorMessages);
+                    }
+                } elseif (is_array($value)) {
+                    // This is nested field validation errors
+                    $nestedField = $field . '.' . $key;
+                    $this->_extractErrorMessages($nestedField, $value, $errorMessages);
+                } else {
+                    // This is a simple error message
+                    $errorMessages[] = $field . '.' . $key . ': ' . $value;
+                }
+            }
+        } else {
+            // Simple string error
+            $errorMessages[] = $field . ': ' . $fieldErrors;
+        }
     }
 }

@@ -244,7 +244,8 @@
                                                     'M' => 'M',
                                                     'L' => 'L',
                                                     'XL' => 'XL',
-                                                    'XXL' => 'XXL'
+                                                    'XXL' => 'XXL',
+                                                    'XXXL' => 'XXXL'
                                                 ],
                                                 'value' => $joueur->taille_vestimentaire,
                                                 'required' => true,
