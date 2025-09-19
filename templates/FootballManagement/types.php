@@ -17,87 +17,6 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Total Types
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= count($types) ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-futbol fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Types Actifs
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($types, function($type) { return $type->active; })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Assignés
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($types, function($type) { return !empty($type->football_categories); })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-link fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Non Assignés
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($types, function($type) { return empty($type->football_categories); })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Types Table -->
     <div class="card shadow">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -207,32 +126,27 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                <div class="dropdown no-arrow">
-                                    <a class="btn btn-link btn-circle btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
-                                        <?= $this->Html->link(
-                                            '<i class="fas fa-edit"></i> Modifier',
-                                            ['action' => 'editType', $type->id],
-                                            ['class' => 'dropdown-item', 'escape' => false]
-                                        ) ?>
-                                        <?= $this->Html->link(
-                                            '<i class="fas fa-link"></i> Voir Relations',
-                                            ['action' => 'relationships'],
-                                            ['class' => 'dropdown-item', 'escape' => false]
-                                        ) ?>
-                                        <div class="dropdown-divider"></div>
-                                        <?= $this->Form->postLink(
-                                            '<i class="fas fa-trash text-danger"></i> Supprimer',
-                                            ['action' => 'deleteType', $type->id],
-                                            [
-                                                'confirm' => 'Êtes-vous sûr de vouloir supprimer le type "' . $type->name . '"?',
-                                                'class' => 'dropdown-item',
-                                                'escape' => false
-                                            ]
-                                        ) ?>
-                                    </div>
+                                <div class="btn-group" role="group">
+                                    <?= $this->Html->link(
+                                        '<i class="fas fa-edit"></i>',
+                                        ['action' => 'editType', $type->id],
+                                        ['class' => 'btn btn-sm btn-primary', 'escape' => false, 'title' => 'Modifier']
+                                    ) ?>
+                                    <?= $this->Html->link(
+                                        '<i class="fas fa-link"></i>',
+                                        ['action' => 'relationships'],
+                                        ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Voir Relations']
+                                    ) ?>
+                                    <?= $this->Form->postLink(
+                                        '<i class="fas fa-trash"></i>',
+                                        ['action' => 'deleteType', $type->id],
+                                        [
+                                            'confirm' => 'Êtes-vous sûr de vouloir supprimer le type "' . $type->name . '"?',
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]
+                                    ) ?>
                                 </div>
                             </td>
                         </tr>
@@ -258,118 +172,6 @@
         </div>
     </div>
 
-    <!-- Information Cards -->
-    <div class="row mt-4">
-        <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">💡 Guide des Types de Football</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold mb-3">🏟️ Configuration</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Nom:</strong> Nom descriptif du format (ex: Football à 6)
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Code:</strong> Identifiant court (ex: 5x5, 6x6, 11x11)
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Joueurs:</strong> Min/Max par équipe (incluant remplaçants)
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold mb-3">📊 Types Courants</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <span class="badge badge-info mr-2">5x5</span>
-                                    <strong>Futsal:</strong> Terrain couvert (5-10 joueurs)
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge badge-info mr-2">6x6</span>
-                                    <strong>Mini-terrain:</strong> Petit terrain (6-12 joueurs)
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge badge-info mr-2">7x7</span>
-                                    <strong>Terrain moyen:</strong> (7-14 joueurs)
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge badge-info mr-2">11x11</span>
-                                    <strong>Terrain complet:</strong> (11-18 joueurs)
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <strong>Important:</strong> Les plages de joueurs incluent les remplaçants. Ajustez selon les règles de votre tournoi.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions Panel -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">⚡ Actions Rapides</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <?= $this->Html->link(
-                            '<i class="fas fa-plus"></i> Nouveau Type',
-                            ['action' => 'addType'],
-                            ['class' => 'btn btn-info btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-link"></i> Gérer Relations',
-                            ['action' => 'relationships'],
-                            ['class' => 'btn btn-success btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-users"></i> Catégories d\'Âge',
-                            ['action' => 'categories'],
-                            ['class' => 'btn btn-primary btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-tachometer-alt"></i> Retour Dashboard',
-                            ['action' => 'index'],
-                            ['class' => 'btn btn-secondary btn-modern btn-block', 'escape' => false]
-                        ) ?>
-                    </div>
-
-                    <hr>
-                    
-                    <div class="text-center">
-                        <h6 class="font-weight-bold mb-3">📊 Résumé Rapide</h6>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <div class="h4 font-weight-bold text-info"><?= count($types) ?></div>
-                                    <div class="small text-gray-500">Total</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <div class="h4 font-weight-bold text-success">
-                                        <?= count(array_filter($types, function($type) { return $type->active; })) ?>
-                                    </div>
-                                    <div class="small text-gray-500">Actifs</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>
@@ -427,7 +229,6 @@
 }
 
 .card:hover {
-    transform: translateY(-4px);
     box-shadow: var(--shadow-xl);
     border-color: rgba(59, 130, 246, 0.3);
 }
@@ -529,7 +330,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 24px;
     color: white;
     box-shadow: 
         var(--shadow-lg),
@@ -598,11 +399,11 @@
 .text-gray-300 { color: var(--gray-300) !important; }
 
 .text-xs { 
-    font-size: 0.75rem; 
+    font-size: 12px; 
     font-weight: 500;
 }
 .text-sm { 
-    font-size: 0.875rem; 
+    font-size: 14px; 
     font-weight: 500;
 }
 
@@ -610,7 +411,7 @@
 .btn-modern {
     border-radius: 0.75rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 14px;
     padding: 0.75rem 1.5rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-md);
@@ -661,7 +462,7 @@
 
 /* Modern Badges with Gradients */
 .badge {
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 600;
     padding: 0.5rem 1rem;
     border-radius: 0.75rem;
@@ -696,7 +497,7 @@
 }
 
 .badge-lg {
-    font-size: 1rem;
+    font-size: 16px;
     padding: 0.75rem 1.5rem;
     border-radius: 1rem;
 }
@@ -712,7 +513,7 @@
     border-top: none;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 11px;
     color: var(--gray-600);
     background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
     letter-spacing: 0.1em;
@@ -807,12 +608,12 @@
     .icon-circle {
         width: 3rem;
         height: 3rem;
-        font-size: 1rem;
+        font-size: 16px;
     }
     
     .btn-modern {
         padding: 0.5rem 1rem;
-        font-size: 0.8rem;
+        font-size: 13px;
     }
 }
 

@@ -222,6 +222,9 @@ class TeamsController extends AppController
             // S'assurer que le statut est défini
             $data['status'] = $data['status'] ?? 'pending';
             
+            // S'assurer que verification_notes est défini
+            $data['verification_notes'] = $data['verification_notes'] ?? null;
+            
             // Gérer les données associées
             $team = $this->Teams->patchEntity($team, $data, [
                 'associated' => ['Joueurs']
@@ -252,7 +255,7 @@ class TeamsController extends AppController
         $FootballCategories = $this->fetchTable('FootballCategories');
         $footballCategories = $FootballCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $FootballDistricts = $this->fetchTable('FootballDistricts');
@@ -500,6 +503,12 @@ class TeamsController extends AppController
             'contain' => ['Joueurs']
         ]);
         
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut plus être modifiée.'));
+            return $this->redirect(['action' => 'view', $id]);
+        }
+        
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
             
@@ -594,7 +603,7 @@ class TeamsController extends AppController
         $FootballCategories = $this->fetchTable('FootballCategories');
         $footballCategories = $FootballCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $FootballDistricts = $this->fetchTable('FootballDistricts');
@@ -644,6 +653,12 @@ class TeamsController extends AppController
         if ($team->user_id !== $user->id) {
             $this->Flash->error(__('Vous n\'avez pas l\'autorisation de supprimer cette équipe.'));
             return $this->redirect(['action' => 'index']);
+        }
+        
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut pas être supprimée.'));
+            return $this->redirect(['action' => 'view', $id]);
         }
         
         try {
@@ -1176,7 +1191,7 @@ class TeamsController extends AppController
             $BasketballCategoriesTable = $this->fetchTable('BasketballCategories');
             $basketballCategories = $BasketballCategoriesTable->find('list', [
                 'keyField' => 'id',
-                'valueField' => 'age_range'
+                'valueField' => 'name'
             ])->where(['active' => true])->toArray();
         } catch (\Exception $e) {
             // Fallback to unified Categories table if BasketballCategories doesn't exist
@@ -1184,7 +1199,7 @@ class TeamsController extends AppController
                 $CategoriesTable = $this->fetchTable('Categories');
                 $basketballCategories = $CategoriesTable->find('list', [
                     'keyField' => 'id',
-                    'valueField' => 'age_range'
+                    'valueField' => 'name'
                 ])->where(['active' => true, 'sport_id' => 2])->toArray();
             } catch (\Exception $e2) {
                 \Cake\Log\Log::error('Could not load basketball categories: ' . $e2->getMessage());
@@ -1264,6 +1279,12 @@ class TeamsController extends AppController
         if ($team->user_id !== $user->id) {
             $this->Flash->error(__('Vous n\'avez pas l\'autorisation de supprimer cette équipe.'));
             return $this->redirect(['action' => 'index']);
+        }
+        
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut pas être supprimée.'));
+            return $this->redirect(['action' => 'basketballTeamView', $id]);
         }
         
         try {
@@ -1612,6 +1633,12 @@ class TeamsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
         
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut plus être modifiée.'));
+            return $this->redirect(['action' => 'basketballTeamView', $id]);
+        }
+        
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
             
@@ -1740,7 +1767,7 @@ class TeamsController extends AppController
         $CategoriesTable = $this->fetchTable('Categories');
         $basketballCategories = $CategoriesTable->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true, 'sport_id' => 2])->toArray();
         
         $footballDistricts = $basketballTeamsTable->FootballDistricts->find('list', [
@@ -2020,7 +2047,7 @@ class TeamsController extends AppController
         $HandballCategories = $this->fetchTable('HandballCategories');
         $handballCategories = $HandballCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
@@ -2088,6 +2115,12 @@ class TeamsController extends AppController
         if ($team->user_id !== $user->id) {
             $this->Flash->error(__('Vous n\'avez pas l\'autorisation de modifier cette équipe.'));
             return $this->redirect(['action' => 'index']);
+        }
+        
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut plus être modifiée.'));
+            return $this->redirect(['action' => 'handballTeamView', $id]);
         }
         
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -2217,7 +2250,7 @@ class TeamsController extends AppController
         $HandballCategories = $this->fetchTable('HandballCategories');
         $handballCategories = $HandballCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $footballDistricts = $handballTeamsTable->FootballDistricts->find('list', [
@@ -2286,6 +2319,12 @@ class TeamsController extends AppController
         if ($team->user_id !== $user->id) {
             $this->Flash->error(__('Vous n\'avez pas l\'autorisation de supprimer cette équipe.'));
             return $this->redirect(['action' => 'index']);
+        }
+        
+        // Vérifier si l'équipe est vérifiée
+        if ($team->status === 'verified') {
+            $this->Flash->error(__('Cette équipe a été vérifiée et ne peut pas être supprimée.'));
+            return $this->redirect(['action' => 'handballTeamView', $id]);
         }
         
         try {
@@ -2856,7 +2895,7 @@ class TeamsController extends AppController
         $VolleyballCategories = $this->fetchTable('VolleyballCategories');
         $volleyballCategories = $VolleyballCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $footballDistricts = $volleyballTeamsTable->FootballDistricts->find('list', [
@@ -3136,7 +3175,7 @@ class TeamsController extends AppController
         $BeachvolleyCategories = $this->fetchTable('BeachvolleyCategories');
         $beachvolleyCategories = $BeachvolleyCategories->find('list', [
             'keyField' => 'id',
-            'valueField' => 'age_range'
+            'valueField' => 'name'
         ])->where(['active' => true])->toArray();
         
         $footballDistricts = $beachvolleyTeamsTable->FootballDistricts->find('list', [

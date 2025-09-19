@@ -145,7 +145,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
                                 <i class="<?= $sportIcons[$sport] ?>"></i> 
                                 <?= $sportNames[$sport] ?>
                             </h3>
-                            <div class="sport-total" style="color: white; font-size: 2rem; font-weight: bold;">
+                            <div class="sport-total" style="color: white; font-size: 32px; font-weight: bold;">
                                 <?= $stats[$sport]['total'] ?>
                             </div>
                         </div>
@@ -222,12 +222,12 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
                                 <?= $this->Html->link(
                                     '<i class="fas fa-eye"></i> Voir les équipes',
                                     ['action' => 'teams', '?' => ['sport' => $sport]],
-                                    ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false]
+                                    ['class' => 'btn  btn-outline-primary', 'escape' => false]
                                 ) ?>
                                 <?= $this->Html->link(
                                     '<i class="fas fa-download"></i> Exporter',
                                     ['action' => 'exportSport', $sport],
-                                    ['class' => 'btn btn-sm btn-outline-secondary', 'escape' => false]
+                                    ['class' => 'btn  btn-outline-secondary', 'escape' => false]
                                 ) ?>
                             </div>
                         </div>
@@ -308,7 +308,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
                 <div class="widget-header">
                     <h3><i class="fas fa-list"></i> Dernières Inscriptions</h3>
                     <div class="widget-actions">
-                        <?= $this->Html->link('Voir tout <i class="fas fa-arrow-right"></i>', ['action' => 'teams'], ['class' => 'btn btn-sm btn-primary', 'escape' => false]) ?>
+                        <?= $this->Html->link('Voir tout <i class="fas fa-arrow-right"></i>', ['action' => 'teams'], ['class' => 'btn  btn-primary', 'escape' => false]) ?>
                     </div>
                 </div>
                 
@@ -361,7 +361,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
                                         <?= $this->Html->link(
                                             '<i class="fas fa-eye"></i>',
                                             ['action' => 'teamView', $team->sport_type ?? 'football', $team->id ?? 0],
-                                            ['class' => 'btn btn-sm btn-info', 'escape' => false, 'title' => 'Voir détails']
+                                            ['class' => 'btn  btn-info', 'escape' => false, 'title' => 'Voir détails']
                                         ) ?>
                                     </td>
                                 </tr>
@@ -406,13 +406,13 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 1.5rem !important;
+    font-size: 24px !important;
     color: white !important;
     flex-shrink: 0 !important;
 }
 
 .overview-card .stat-info h3 {
-    font-size: 2rem !important;
+    font-size: 32px !important;
     font-weight: 800 !important;
     margin: 0 0 0.25rem 0 !important;
     color: #1f2937 !important;
@@ -420,13 +420,13 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 
 .overview-card .stat-info p {
     color: #6b7280 !important;
-    font-size: 0.9rem !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
     margin: 0 0 0.5rem 0 !important;
 }
 
 .stat-percentage {
-    font-size: 0.85rem !important;
+    font-size: 14px !important;
     color: #374151 !important;
 }
 
@@ -474,7 +474,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
     display: flex !important;
     align-items: center !important;
     gap: 0.5rem !important;
-    font-size: 0.9rem !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
     color: #374151 !important;
 }
@@ -508,7 +508,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
     color: #16a34a !important;
     padding: 0.25rem 0.5rem !important;
     border-radius: 6px !important;
-    font-size: 0.75rem !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
 }
 
@@ -517,7 +517,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
     color: #6b7280 !important;
     padding: 0.25rem 0.5rem !important;
     border-radius: 6px !important;
-    font-size: 0.75rem !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
 }
 
@@ -536,7 +536,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 }
 
 .last-updated {
-    font-size: 0.85rem !important;
+    font-size: 14px !important;
     color: #6b7280 !important;
     font-style: italic !important;
 }
@@ -554,7 +554,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 }
 
 .summary-item h4 {
-    font-size: 1rem !important;
+    font-size: 16px !important;
     font-weight: 600 !important;
     color: #374151 !important;
     margin-bottom: 1rem !important;
@@ -562,14 +562,14 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 
 .summary-percentage,
 .summary-activity {
-    font-size: 2.5rem !important;
+    font-size: 40px !important;
     font-weight: 800 !important;
     color: #059669 !important;
     margin-bottom: 0.5rem !important;
 }
 
 .summary-sport {
-    font-size: 1.2rem !important;
+    font-size: 19px !important;
     font-weight: 600 !important;
     color: #374151 !important;
     margin-bottom: 0.5rem !important;
@@ -580,12 +580,12 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 }
 
 .summary-sport i {
-    font-size: 1.5rem !important;
+    font-size: 24px !important;
 }
 
 .summary-item p {
     color: #6b7280 !important;
-    font-size: 0.9rem !important;
+    font-size: 14px !important;
 }
 
 /* Quick Actions Section */
@@ -596,7 +596,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 }
 
 .quick-actions-section h4 {
-    font-size: 1.1rem !important;
+    font-size: 18px !important;
     font-weight: 600 !important;
     color: #374151 !important;
     margin-bottom: 1rem !important;
@@ -652,11 +652,11 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
 }
 
 .action-btn i {
-    font-size: 1.1rem !important;
+    font-size: 18px !important;
 }
 
 .sport-total {
-    font-size: 1.8rem !important;
+    font-size: 29px !important;
     font-weight: bold !important;
     color: white !important;
 }
@@ -686,7 +686,7 @@ $this->assign('title', 'Dashboard Administrateur - Statistiques Détaillées');
     }
 
     .overview-card .stat-info h3 {
-        font-size: 1.5rem !important;
+        font-size: 24px !important;
     }
 }
 </style>

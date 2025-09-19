@@ -40,8 +40,7 @@
                     <?php if ($user): ?>
                         <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addVolleyball'], ['class' => 'btn btn-primary']) ?>
                     <?php else: ?>
-                        <?= $this->Html->link('S\'inscrire maintenant', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
-                        <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-secondary']) ?>
+                        <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -67,9 +66,9 @@
             </div>
             <div class="register-cta">
                 <?php if ($user): ?>
-                    <?= $this->Html->link('Inscrire mon équipe de volleyball', ['controller' => 'Teams', 'action' => 'addVolleyball'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addVolleyball'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php else: ?>
-                    <?= $this->Html->link('Créer un compte pour s\'inscrire', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php endif; ?>
             </div>
         </div>

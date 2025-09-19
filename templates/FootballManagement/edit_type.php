@@ -13,7 +13,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">🏟️ Football Type Information</h5>
@@ -91,96 +91,6 @@
                     </div>
 
                     <?= $this->Form->end() ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Help Panel -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">📊 Current Information</h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled">
-                        <li><strong>ID:</strong> <?= $type->id ?></li>
-                        <li><strong>Current Name:</strong> <?= h($type->name) ?></li>
-                        <li><strong>Current Code:</strong> <span class="badge badge-info"><?= h($type->code) ?></span></li>
-                        <li><strong>Current Players:</strong> <?= $type->min_players ?>-<?= $type->max_players ?></li>
-                        <li><strong>Status:</strong> 
-                            <?php if ($type->active): ?>
-                                <span class="badge badge-success">Active</span>
-                            <?php else: ?>
-                                <span class="badge badge-secondary">Inactive</span>
-                            <?php endif; ?>
-                        </li>
-                        <li><strong>Created:</strong> <?= $type->created ? (is_string($type->created) ? $type->created : $type->created->format('Y-m-d H:i')) : 'N/A' ?></li>
-                        <li><strong>Modified:</strong> <?= $type->modified ? (is_string($type->modified) ? $type->modified : $type->modified->format('Y-m-d H:i')) : 'N/A' ?></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">🔗 Current Relationships</h6>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($type->football_categories)): ?>
-                        <p><strong>Used by categories:</strong></p>
-                        <ul class="list-unstyled">
-                            <?php foreach ($type->football_categories as $category): ?>
-                                <li>
-                                    <span class="badge badge-success"><?= h($category->name) ?></span>
-                                    <small class="text-muted">(<?= h($category->min_date) ?> - <?= h($category->max_date) ?>)</small>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <div class="alert alert-warning">
-                            <small>
-                                <strong>⚠️ Not assigned to any categories</strong><br>
-                                This type won't appear in registration forms until assigned to categories.
-                            </small>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?= $this->Html->link(
-                        '🔗 Manage Relationships',
-                        ['action' => 'relationships'],
-                        ['class' => 'btn btn-outline-success btn-sm']
-                    ) ?>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">⚠️ Important Notes</h6>
-                </div>
-                <div class="card-body">
-                    <ul class="small list-unstyled">
-                        <li><strong>Code Changes:</strong> Changing the code may affect existing relationships</li>
-                        <li><strong>Player Limits:</strong> Teams using this type must comply with these limits</li>
-                        <li><strong>Deactivating:</strong> Will hide this type from registration forms</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">🗑️ Danger Zone</h6>
-                </div>
-                <div class="card-body">
-                    <?= $this->Form->postLink(
-                        '🗑️ Delete This Type',
-                        ['action' => 'deleteType', $type->id],
-                        [
-                            'confirm' => 'Are you sure you want to delete "' . $type->name . '"? This will remove all relationships and cannot be undone.',
-                            'class' => 'btn btn-danger btn-sm'
-                        ]
-                    ) ?>
-                    <p class="small text-muted mt-2">
-                        This will permanently delete the type and all its relationships with categories.
-                    </p>
                 </div>
             </div>
         </div>

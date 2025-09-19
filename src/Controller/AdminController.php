@@ -256,7 +256,7 @@ class AdminController extends AppController
                 // Get teams from all sports - Football teams are in the main Teams table
                 $footballTeams = $this->fetchTable('Teams')->find()
                     ->contain(['Users'])
-                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username'])
+                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username', 'type_football', 'district', 'categorie', 'reference_inscription'])
                     ->formatResults(function ($results) {
                         return $results->map(function ($row) {
                             $row['sport'] = 'Football';
@@ -266,40 +266,44 @@ class AdminController extends AppController
                 
                 $basketballTeams = $this->fetchTable('BasketballTeams')->find()
                     ->contain(['Users'])
-                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username'])
+                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username', 'type_basketball', 'district', 'categorie', 'reference_inscription'])
                     ->formatResults(function ($results) {
                         return $results->map(function ($row) {
                             $row['sport'] = 'Basketball';
+                            $row['type_football'] = $row['type_basketball'] ?? null; // Map to unified field name
                             return $row;
                         });
                     });
                 
                 $handballTeams = $this->fetchTable('HandballTeams')->find()
                     ->contain(['Users'])
-                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username'])
+                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username', 'type_handball', 'district', 'categorie', 'reference_inscription'])
                     ->formatResults(function ($results) {
                         return $results->map(function ($row) {
                             $row['sport'] = 'Handball';
+                            $row['type_football'] = $row['type_handball'] ?? null; // Map to unified field name
                             return $row;
                         });
                     });
                 
                 $volleyballTeams = $this->fetchTable('VolleyballTeams')->find()
                     ->contain(['Users'])
-                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username'])
+                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username', 'type_volleyball', 'district', 'categorie', 'reference_inscription'])
                     ->formatResults(function ($results) {
                         return $results->map(function ($row) {
                             $row['sport'] = 'Volleyball';
+                            $row['type_football'] = $row['type_volleyball'] ?? null; // Map to unified field name
                             return $row;
                         });
                     });
                 
                 $beachvolleyTeams = $this->fetchTable('BeachvolleyTeams')->find()
                     ->contain(['Users'])
-                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username'])
+                    ->select(['id', 'nom_equipe', 'status', 'created', 'user_id', 'Users.username', 'type_beachvolley', 'district', 'categorie', 'reference_inscription'])
                     ->formatResults(function ($results) {
                         return $results->map(function ($row) {
                             $row['sport'] = 'Beach Volleyball';
+                            $row['type_football'] = $row['type_beachvolley'] ?? null; // Map to unified field name
                             return $row;
                         });
                     });
@@ -454,53 +458,57 @@ class AdminController extends AppController
             }
             
             // Get sport-specific category and district names
-            $categoryName = '';
-            $districtName = '';
-            $organisationName = '';
+            // First, try to use direct values from team object
+            $categoryName = $team->categorie ?? '';
+            $districtName = $team->district ?? '';
+            $organisationName = $team->organisation ?? '';
             
-            try {
-                switch (strtolower($sport)) {
-                    case 'football':
-                        if (!empty($team->football_category_id)) {
-                            $category = $this->fetchTable('FootballCategories')->get($team->football_category_id);
-                            $categoryName = $category->name ?? '';
-                        }
-                        if (!empty($team->football_district_id)) {
-                            $district = $this->fetchTable('FootballDistricts')->get($team->football_district_id);
-                            $districtName = $district->name ?? '';
-                        }
-                        if (!empty($team->football_organisation_id)) {
-                            $organisation = $this->fetchTable('FootballOrganisations')->get($team->football_organisation_id);
-                            $organisationName = $organisation->name ?? '';
-                        }
-                        break;
-                    case 'basketball':
-                        if (!empty($team->basketball_category_id)) {
-                            $category = $this->fetchTable('BasketballCategories')->get($team->basketball_category_id);
-                            $categoryName = $category->name ?? '';
-                        }
-                        break;
-                    case 'handball':
-                        if (!empty($team->handball_category_id)) {
-                            $category = $this->fetchTable('HandballCategories')->get($team->handball_category_id);
-                            $categoryName = $category->name ?? '';
-                        }
-                        break;
-                    case 'volleyball':
-                        if (!empty($team->volleyball_category_id)) {
-                            $category = $this->fetchTable('VolleyballCategories')->get($team->volleyball_category_id);
-                            $categoryName = $category->name ?? '';
-                        }
-                        break;
-                    case 'beachvolley':
-                        if (!empty($team->beachvolley_category_id)) {
-                            $category = $this->fetchTable('BeachvolleyCategories')->get($team->beachvolley_category_id);
-                            $categoryName = $category->name ?? '';
-                        }
-                        break;
+            // If no direct values, try to get from reference tables
+            if (empty($categoryName) || empty($districtName) || empty($organisationName)) {
+                try {
+                    switch (strtolower($sport)) {
+                        case 'football':
+                            if (empty($categoryName) && !empty($team->football_category_id)) {
+                                $category = $this->fetchTable('FootballCategories')->get($team->football_category_id);
+                                $categoryName = $category->name ?? '';
+                            }
+                            if (empty($districtName) && !empty($team->football_district_id)) {
+                                $district = $this->fetchTable('FootballDistricts')->get($team->football_district_id);
+                                $districtName = $district->name ?? '';
+                            }
+                            if (empty($organisationName) && !empty($team->football_organisation_id)) {
+                                $organisation = $this->fetchTable('FootballOrganisations')->get($team->football_organisation_id);
+                                $organisationName = $organisation->name ?? '';
+                            }
+                            break;
+                        case 'basketball':
+                            if (empty($categoryName) && !empty($team->basketball_category_id)) {
+                                $category = $this->fetchTable('BasketballCategories')->get($team->basketball_category_id);
+                                $categoryName = $category->name ?? '';
+                            }
+                            break;
+                        case 'handball':
+                            if (empty($categoryName) && !empty($team->handball_category_id)) {
+                                $category = $this->fetchTable('HandballCategories')->get($team->handball_category_id);
+                                $categoryName = $category->name ?? '';
+                            }
+                            break;
+                        case 'volleyball':
+                            if (empty($categoryName) && !empty($team->volleyball_category_id)) {
+                                $category = $this->fetchTable('VolleyballCategories')->get($team->volleyball_category_id);
+                                $categoryName = $category->name ?? '';
+                            }
+                            break;
+                        case 'beachvolley':
+                            if (empty($categoryName) && !empty($team->beachvolley_category_id)) {
+                                $category = $this->fetchTable('BeachvolleyCategories')->get($team->beachvolley_category_id);
+                                $categoryName = $category->name ?? '';
+                            }
+                            break;
+                    }
+                } catch (\Exception $e) {
+                    // If category/district lookup fails, continue with empty names
                 }
-            } catch (\Exception $e) {
-                // If category/district lookup fails, continue with empty names
             }
             
             $this->set(compact('team', 'sport', 'players', 'categoryName', 'districtName', 'organisationName'));

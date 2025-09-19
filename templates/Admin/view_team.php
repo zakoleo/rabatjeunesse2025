@@ -401,7 +401,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 
 .team-name h1 {
     color: #1e293b;
-    font-size: 2rem;
+    font-size: 32px;
     font-weight: 700;
     margin: 0 0 1rem 0;
 }
@@ -419,7 +419,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    font-size: 0.9rem;
+    font-size: 14px;
     font-weight: 600;
     color: white;
 }
@@ -435,13 +435,13 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     color: #64748b;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
-    font-size: 0.85rem;
+    font-size: 14px;
     font-weight: 500;
 }
 
 .registration-date {
     color: #64748b;
-    font-size: 0.9rem;
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -477,7 +477,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    font-size: 0.875rem;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -510,7 +510,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     padding: 0.5rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
 .detail-grid {
@@ -538,7 +538,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 
 .section-header h2 {
     color: #1e293b;
-    font-size: 1.25rem;
+    font-size: 20px;
     font-weight: 600;
     margin: 0;
     display: flex;
@@ -565,7 +565,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 .info-item label {
     font-weight: 600;
     color: #374151;
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
 .info-item span {
@@ -594,7 +594,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 
 .documents-section h4 {
     color: #374151;
-    font-size: 1.1rem;
+    font-size: 18px;
     font-weight: 600;
     margin: 0 0 1rem 0;
 }
@@ -646,7 +646,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 }
 
 .empty-state i {
-    font-size: 3rem;
+    font-size: 48px;
     color: #d1d5db;
     margin-bottom: 1rem;
 }
@@ -678,7 +678,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
 .btn:disabled {
@@ -706,7 +706,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 
 .btn-sm {
     padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+    font-size: 14px;
 }
 
 .btn-outline {
@@ -735,7 +735,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
 
 .toggle-image {
     padding: 0.25rem 0.5rem !important;
-    font-size: 0.75rem !important;
+    font-size: 12px !important;
     border: 1px solid #d1d5db;
     background: white;
     color: #374151;
@@ -810,7 +810,7 @@ $this->assign('title', 'Détails de l\'équipe - ' . h($team->nom_equipe));
     top: 15px;
     right: 25px;
     color: #fff;
-    font-size: 2rem;
+    font-size: 32px;
     font-weight: bold;
     cursor: pointer;
     z-index: 10001;

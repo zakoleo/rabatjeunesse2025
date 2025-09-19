@@ -31,7 +31,15 @@
       "Read(/mnt/c/xampp/**)",
       "Read(/mnt/c/xampp/**)",
       "Read(//mnt/c/xampp/**)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(chmod:*)",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysql:*)",
+      "Bash(for file in app.css admin.css inscription-form.css team-view-unified.css admin-unified.css form-validation.css cake.css)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(rg:*)",
+      "Bash(sed:*)",
+      "Bash(bin/cake:*)"
     ],
     "deny": []
   }

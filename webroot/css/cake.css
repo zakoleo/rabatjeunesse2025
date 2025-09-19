@@ -121,7 +121,7 @@ th {
     margin: 0 auto;
 }
 .top-nav-title a {
-    font-size: 2.4rem;
+    font-size: 38.4px;
     color: var(--color-cakephp-red);
 }
 .top-nav-title span {
@@ -230,7 +230,7 @@ input[type='color'] {
 .pagination a {
     color: var(--color-cakephp-blue);
     display: inline-block;
-    font-size: 1.25rem;
+    font-size: 20px;
     line-height: 3rem;
     min-width: 3rem;
     padding: 0;

@@ -38,12 +38,10 @@
                 </div>
                 <div class="cta-buttons">
                     <?php if ($user): ?>
-                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary']) ?>
+                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
                     <?php else: ?>
-                        <?= $this->Html->link('S\'inscrire maintenant', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
-                        <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-secondary']) ?>
+                        <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                     <?php endif; ?>
-                    <a href="#competitions" class="btn btn-secondary">En savoir plus</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -137,9 +135,9 @@
             <div class="register-cta">
                 <p class="cta-text">Qui sait ? Peut-être que vous serez l'un des gagnants du tournoi !</p>
                 <?php if ($user): ?>
-                    <?= $this->Html->link('Inscrire mon équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'add'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php else: ?>
-                    <?= $this->Html->link('Commencer l\'inscription', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php endif; ?>
             </div>
         </div>

@@ -64,12 +64,10 @@ $sportConfig = [
                 </div>
                 <div class="cta-buttons">
                     <?php if ($user): ?>
-                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary']) ?>
+                        <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary btn-large']) ?>
                     <?php else: ?>
-                        <?= $this->Html->link('S\'inscrire maintenant', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary']) ?>
-                        <?= $this->Html->link('Se connecter', ['controller' => 'Users', 'action' => 'login'], ['class' => 'btn btn-secondary']) ?>
+                        <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                     <?php endif; ?>
-                    <a href="#competitions" class="btn-secondary">En savoir plus</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -137,9 +135,9 @@ $sportConfig = [
             <div class="register-cta">
                 <p class="cta-text">Prêt à montrer vos talents sur le terrain ?</p>
                 <?php if ($user): ?>
-                    <?= $this->Html->link('Inscrire mon équipe de basketball', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Inscrire une équipe', ['controller' => 'Teams', 'action' => 'addBasketball'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php else: ?>
-                    <?= $this->Html->link('Créer un compte pour s\'inscrire', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
+                    <?= $this->Html->link('Créer un compte pour inscrire une équipe', ['controller' => 'Users', 'action' => 'register'], ['class' => 'btn btn-primary btn-large']) ?>
                 <?php endif; ?>
             </div>
         </div>

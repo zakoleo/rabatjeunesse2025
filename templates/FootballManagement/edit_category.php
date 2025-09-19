@@ -13,7 +13,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">📋 Category Information</h5>
@@ -97,110 +97,6 @@
                     </div>
 
                     <?= $this->Form->end() ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Help Panel -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">📊 Current Information</h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled">
-                        <li><strong>ID:</strong> <?= $category->id ?></li>
-                        <li><strong>Current Name:</strong> <?= h($category->name) ?></li>
-                        <li><strong>Birth Date Range:</strong><br>
-                            <small><?= h($category->min_date) ?> to <?= h($category->max_date) ?></small>
-                        </li>
-                        <li><strong>Birth Years:</strong> <?= $category->min_birth_year ?>-<?= $category->max_birth_year ?></li>
-                        <li><strong>Status:</strong> 
-                            <?php if ($category->active): ?>
-                                <span class="badge badge-success">Active</span>
-                            <?php else: ?>
-                                <span class="badge badge-secondary">Inactive</span>
-                            <?php endif; ?>
-                        </li>
-                        <li><strong>Created:</strong> <?= $category->created ? (is_string($category->created) ? $category->created : $category->created->format('Y-m-d H:i')) : 'N/A' ?></li>
-                        <li><strong>Modified:</strong> <?= $category->modified ? (is_string($category->modified) ? $category->modified : $category->modified->format('Y-m-d H:i')) : 'N/A' ?></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">🔗 Current Football Types</h6>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($category->football_types)): ?>
-                        <p><strong>Allowed football types:</strong></p>
-                        <ul class="list-unstyled">
-                            <?php foreach ($category->football_types as $type): ?>
-                                <li>
-                                    <span class="badge badge-info"><?= h($type->code) ?></span>
-                                    <?= h($type->name) ?>
-                                    <small class="text-muted">(<?= $type->min_players ?>-<?= $type->max_players ?> players)</small>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <div class="alert alert-warning">
-                            <small>
-                                <strong>⚠️ No football types assigned</strong><br>
-                                This category won't appear in registration forms until football types are assigned.
-                            </small>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?= $this->Html->link(
-                        '🔗 Manage Relationships',
-                        ['action' => 'manageRelationships', $category->id],
-                        ['class' => 'btn btn-outline-success btn-sm']
-                    ) ?>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">💡 Quick Help</h6>
-                </div>
-                <div class="card-body">
-                    <h6>📋 Category Examples:</h6>
-                    <ul class="list-unstyled small">
-                        <li><strong>-12:</strong> Under 12 years old</li>
-                        <li><strong>-15:</strong> Under 15 years old</li>
-                        <li><strong>-18:</strong> Under 18 years old</li>
-                        <li><strong>+19:</strong> 19 years and older</li>
-                        <li><strong>Senior:</strong> Senior category</li>
-                    </ul>
-
-                    <h6 class="mt-3">📅 Date Guidelines:</h6>
-                    <ul class="list-unstyled small">
-                        <li>• Use YYYY-MM-DD format</li>
-                        <li>• Min date = earliest eligible birth date</li>
-                        <li>• Max date = latest eligible birth date</li>
-                        <li>• Birth years are calculated automatically</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">🗑️ Danger Zone</h6>
-                </div>
-                <div class="card-body">
-                    <?= $this->Form->postLink(
-                        '🗑️ Delete This Category',
-                        ['action' => 'deleteCategory', $category->id],
-                        [
-                            'confirm' => 'Are you sure you want to delete "' . $category->name . '"? This will remove all relationships and cannot be undone.',
-                            'class' => 'btn btn-danger btn-sm'
-                        ]
-                    ) ?>
-                    <p class="small text-muted mt-2">
-                        This will permanently delete the category and all its relationships with football types.
-                    </p>
                 </div>
             </div>
         </div>

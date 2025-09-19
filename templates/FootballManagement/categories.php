@@ -17,87 +17,6 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Catégories
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= count($categories) ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Catégories Actives
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($categories, function($cat) { return $cat->active; })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Avec Relations
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($categories, function($cat) { return !empty($cat->football_types); })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-link fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                À Configurer
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <?= count(array_filter($categories, function($cat) { return empty($cat->football_types); })) ?>
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Categories Table -->
     <div class="card shadow">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -126,7 +45,6 @@
                             <th>Période de Naissance</th>
                             <th>Types de Football</th>
                             <th>Statut</th>
-                            <th>Créé le</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -202,40 +120,27 @@
                                 <?php endif; ?>
                             </td>
                             <td class="text-center">
-                                <div class="text-xs text-gray-500">
-                                    <?= $category->created ? (is_string($category->created) ? $category->created : $category->created->format('d/m/Y')) : 'N/A' ?>
-                                </div>
-                                <div class="text-xs text-gray-400">
-                                    <?= $category->created ? (is_string($category->created) ? '' : $category->created->format('H:i')) : '' ?>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="dropdown no-arrow">
-                                    <a class="btn btn-link btn-circle btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
-                                        <?= $this->Html->link(
-                                            '<i class="fas fa-edit"></i> Modifier',
-                                            ['action' => 'editCategory', $category->id],
-                                            ['class' => 'dropdown-item', 'escape' => false]
-                                        ) ?>
-                                        <?= $this->Html->link(
-                                            '<i class="fas fa-link"></i> Relations',
-                                            ['action' => 'manageRelationships', $category->id],
-                                            ['class' => 'dropdown-item', 'escape' => false]
-                                        ) ?>
-                                        <div class="dropdown-divider"></div>
-                                        <?= $this->Form->postLink(
-                                            '<i class="fas fa-trash text-danger"></i> Supprimer',
-                                            ['action' => 'deleteCategory', $category->id],
-                                            [
-                                                'confirm' => 'Êtes-vous sûr de vouloir supprimer la catégorie "' . $category->name . '"?',
-                                                'class' => 'dropdown-item',
-                                                'escape' => false
-                                            ]
-                                        ) ?>
-                                    </div>
+                                <div class="btn-group" role="group">
+                                    <?= $this->Html->link(
+                                        '<i class="fas fa-edit"></i>',
+                                        ['action' => 'editCategory', $category->id],
+                                        ['class' => 'btn btn-sm btn-primary', 'escape' => false, 'title' => 'Modifier']
+                                    ) ?>
+                                    <?= $this->Html->link(
+                                        '<i class="fas fa-link"></i>',
+                                        ['action' => 'manageRelationships', $category->id],
+                                        ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Relations']
+                                    ) ?>
+                                    <?= $this->Form->postLink(
+                                        '<i class="fas fa-trash"></i>',
+                                        ['action' => 'deleteCategory', $category->id],
+                                        [
+                                            'confirm' => 'Êtes-vous sûr de vouloir supprimer la catégorie "' . $category->name . '"?',
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]
+                                    ) ?>
                                 </div>
                             </td>
                         </tr>
@@ -257,110 +162,6 @@
                         ) ?>
                     </div>
                 <?php endif; ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- Information Cards -->
-    <div class="row mt-4">
-        <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">💡 Guide des Catégories d'Âge</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold mb-3">📋 Configuration</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Nom:</strong> Identifiant de la catégorie d'âge (ex: -12, -15, +19, Senior)
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Dates:</strong> Plage de dates de naissance éligibles
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-check text-success mr-2"></i>
-                                    <strong>Statut:</strong> Seules les catégories actives apparaissent dans les formulaires
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold mb-3">🔗 Relations</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-link text-info mr-2"></i>
-                                    <strong>Types de Terrain:</strong> Détermine les formats de jeu autorisés
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-exclamation-triangle text-warning mr-2"></i>
-                                    <strong>Important:</strong> Une catégorie sans relation n'apparaît pas
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-cog text-secondary mr-2"></i>
-                                    <strong>Configuration:</strong> Gérez les relations via le bouton "Relations"
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions Panel -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">⚡ Actions Rapides</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <?= $this->Html->link(
-                            '<i class="fas fa-plus"></i> Nouvelle Catégorie',
-                            ['action' => 'addCategory'],
-                            ['class' => 'btn btn-primary btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-link"></i> Gérer Relations',
-                            ['action' => 'relationships'],
-                            ['class' => 'btn btn-success btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-futbol"></i> Types de Terrain',
-                            ['action' => 'types'],
-                            ['class' => 'btn btn-info btn-modern btn-block mb-2', 'escape' => false]
-                        ) ?>
-                        <?= $this->Html->link(
-                            '<i class="fas fa-tachometer-alt"></i> Retour Dashboard',
-                            ['action' => 'index'],
-                            ['class' => 'btn btn-secondary btn-modern btn-block', 'escape' => false]
-                        ) ?>
-                    </div>
-
-                    <hr>
-                    
-                    <div class="text-center">
-                        <h6 class="font-weight-bold mb-3">📊 Résumé Rapide</h6>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <div class="h4 font-weight-bold text-primary"><?= count($categories) ?></div>
-                                    <div class="small text-gray-500">Total</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <div class="h4 font-weight-bold text-success">
-                                        <?= count(array_filter($categories, function($cat) { return $cat->active; })) ?>
-                                    </div>
-                                    <div class="small text-gray-500">Actives</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -419,7 +220,6 @@
 }
 
 .card:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-xl);
 }
 
@@ -459,7 +259,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 20px;
     color: white;
     box-shadow: var(--shadow-md);
     transition: all 0.3s ease;
@@ -498,8 +298,8 @@
 .text-rj-orange { color: var(--rj-orange) !important; }
 .text-rj-purple { color: var(--rj-purple) !important; }
 
-.text-xs { font-size: 0.75rem; }
-.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 12px; }
+.text-sm { font-size: 14px; }
 
 /* Modern Buttons */
 .btn-modern {
@@ -555,7 +355,7 @@
 
 /* Modern Badges */
 .badge {
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 500;
     padding: 0.35rem 0.65rem;
     border-radius: 0.5rem;
@@ -593,7 +393,7 @@
     border-top: none;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 12px;
     color: var(--gray-600);
     background: var(--gray-50);
     letter-spacing: 0.05em;
@@ -677,7 +477,7 @@
     .icon-circle {
         width: 2.5rem;
         height: 2.5rem;
-        font-size: 1rem;
+        font-size: 16px;
     }
     
     .card {

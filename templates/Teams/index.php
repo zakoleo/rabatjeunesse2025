@@ -38,6 +38,7 @@
                                 <th>Type</th>
                                 <th>District</th>
                                 <th>Date d'inscription</th>
+                                <th>Statut</th>
                                 <th class="actions">Actions</th>
                             </tr>
                         </thead>
@@ -62,16 +63,48 @@
                                 <td>
                                     <?= h($team->created->format('d/m/Y')) ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($team->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'view', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'edit', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php if ($team->status !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'edit', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                            </svg> Verrouillé
+                                        </button>
+                                    <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'delete', $team->id], [
-                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
-                                        'class' => 'btn btn-sm btn-danger',
-                                        'escape' => false,
-                                        'title' => 'Supprimer'
-                                    ]) ?>
+                                    <?php if ($team->status !== 'verified'): ?>
+                                        <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'delete', $team->id], [
+                                            'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]) ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -144,14 +177,25 @@
                                 </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'basketballTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBasketball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php if ($team->status !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBasketball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                            </svg> Verrouillé
+                                        </button>
+                                    <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadBasketballPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBasketball', $team->id], [
-                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
-                                        'class' => 'btn btn-sm btn-danger',
-                                        'escape' => false,
-                                        'title' => 'Supprimer'
-                                    ]) ?>
+                                    <?php if ($team->status !== 'verified'): ?>
+                                        <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBasketball', $team->id], [
+                                            'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]) ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -466,6 +510,27 @@
     
     .badge-beachvolley {
         background-color: #F39C12;
+        color: white;
+    }
+    
+    /* Status badges */
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .badge-secondary {
+        background-color: #6c757d;
         color: white;
     }
     

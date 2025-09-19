@@ -135,7 +135,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
 
         .nav-section-title {
             padding: 0 1rem 0.25rem;
-            font-size: 0.75rem;
+            font-size: 13px;
             text-transform: uppercase;
             font-weight: 600;
             color: #64748b;
@@ -159,7 +159,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             color: #cbd5e1;
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 12px;
             transition: all 0.2s ease;
             border-left: 3px solid transparent;
         }
@@ -337,14 +337,14 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
         .sport-menu-header .sport-icon {
             width: 20px;
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 12px;
             margin-right: 0.75rem;
         }
 
         .sport-menu-header .sport-name {
             flex: 1;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 12px;
         }
 
         .sport-menu-header .toggle-arrow {
@@ -375,7 +375,7 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
 
         .sport-submenu .nav-link {
             padding: 0.4rem 1rem 0.4rem 2.5rem;
-            font-size: 0.85rem;
+            font-size: 12px;
             color: #94a3b8;
             border-left: 3px solid transparent;
         }
@@ -685,16 +685,6 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                 <div class="nav-section">
                     <ul class="nav-items">
                         <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-download"></i> Export', 
-                                ['controller' => 'Admin', 'action' => 'export'], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'export') ? ' active' : ''), 'escape' => false]) ?>
-                        </li>
-                        <li class="nav-item">
-                            <?= $this->Html->link('<i class="fas fa-cog"></i> Paramètres', 
-                                ['controller' => 'Admin', 'action' => 'settings'], 
-                                ['class' => 'nav-link' . ($isActive('Admin', 'settings') ? ' active' : ''), 'escape' => false]) ?>
-                        </li>
-                        <li class="nav-item">
                             <?= $this->Html->link('<i class="fas fa-sign-out-alt"></i> Retour site', 
                                 ['controller' => 'Sports', 'action' => 'index'], 
                                 ['class' => 'nav-link', 'escape' => false]) ?>
@@ -815,6 +805,19 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
             }
         });
 
+    </script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize all dropdowns
+        $(document).ready(function() {
+            $('.dropdown-toggle').dropdown();
+        });
     </script>
 </body>
 </html>
