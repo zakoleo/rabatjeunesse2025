@@ -3876,3 +3876,271 @@ class TeamsController extends AppController
             $errorMessages[] = $field . ': ' . $fieldErrors;
         }
     }
+
+    /**
+     * Add Cross Training team method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     */
+    public function addCrosstraining()
+    {
+        $crosstrainingTeamsTable = $this->fetchTable('CrosstrainingTeams');
+        $team = $crosstrainingTeamsTable->newEmptyEntity();
+        
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            
+            // Set cross training-specific defaults
+            $data['user_id'] = $this->Authentication->getIdentity() ? $this->Authentication->getIdentity()->get('id') : null;
+            
+            if (!$data['user_id']) {
+                $this->Flash->error(__('Vous devez être connecté pour inscrire une équipe.'));
+                return $this->redirect(['controller' => 'Sports', 'action' => 'crosstraining']);
+            }
+            
+            // Mapper les champs des relations vers les champs texte attendus
+            if (!empty($data['crosstraining_category_id'])) {
+                $CrosstrainingCategories = $this->fetchTable('CrosstrainingCategories');
+                $category = $CrosstrainingCategories->get($data['crosstraining_category_id']);
+                $data['categorie'] = $category->name;
+                
+                // Extract gender from category name (U18 Homme, U18 Femme, etc.)
+                if (strpos($category->name, 'Homme') !== false) {
+                    $data['genre'] = 'Homme';
+                } elseif (strpos($category->name, 'Femme') !== false) {
+                    $data['genre'] = 'Femme';
+                }
+            }
+            
+            if (!empty($data['football_district_id'])) {
+                $FootballDistricts = $this->fetchTable('FootballDistricts');
+                $district = $FootballDistricts->get($data['football_district_id']);
+                $data['district'] = $district->name;
+            }
+            
+            if (!empty($data['football_organisation_id'])) {
+                $FootballOrganisations = $this->fetchTable('FootballOrganisations');
+                $organisation = $FootballOrganisations->get($data['football_organisation_id']);
+                $data['organisation'] = $organisation->name;
+            }
+            
+            // Gérer les uploads de fichiers
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'teams' . DS;
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            // Upload des fichiers CIN du responsable
+            if (!empty($data['responsable_cin_recto']) && $data['responsable_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_recto_' . $data['responsable_cin_recto']->getClientFilename();
+                $data['responsable_cin_recto']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_recto'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_recto']);
+            }
+            
+            if (!empty($data['responsable_cin_verso']) && $data['responsable_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                $fileName = time() . '_responsable_verso_' . $data['responsable_cin_verso']->getClientFilename();
+                $data['responsable_cin_verso']->moveTo($uploadPath . $fileName);
+                $data['responsable_cin_verso'] = 'uploads/teams/' . $fileName;
+            } else {
+                unset($data['responsable_cin_verso']);
+            }
+            
+            // Gérer le cas où l'entraîneur est le même que le responsable
+            if (!empty($data['entraineur_same_as_responsable']) && $data['entraineur_same_as_responsable']) {
+                $data['entraineur_nom_complet'] = $data['responsable_nom_complet'] ?? '';
+                $data['entraineur_date_naissance'] = $data['responsable_date_naissance'] ?? '';
+                $data['entraineur_tel'] = $data['responsable_tel'] ?? '';
+                $data['entraineur_whatsapp'] = $data['responsable_whatsapp'] ?? '';
+                $data['entraineur_cin_recto'] = $data['responsable_cin_recto'] ?? '';
+                $data['entraineur_cin_verso'] = $data['responsable_cin_verso'] ?? '';
+            } else {
+                // Handle entraineur file uploads
+                if (!empty($data['entraineur_cin_recto']) && $data['entraineur_cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_recto_' . $data['entraineur_cin_recto']->getClientFilename();
+                    $data['entraineur_cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_recto'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_recto']);
+                }
+                
+                if (!empty($data['entraineur_cin_verso']) && $data['entraineur_cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_entraineur_verso_' . $data['entraineur_cin_verso']->getClientFilename();
+                    $data['entraineur_cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['entraineur_cin_verso'] = 'uploads/teams/' . $fileName;
+                } else {
+                    unset($data['entraineur_cin_verso']);
+                }
+            }
+            
+            // Gérer le participant (Cross Training est un sport individuel)
+            if (!empty($data['joueur'])) {
+                $data['crosstraining_teams_joueurs'] = [$data['joueur']];
+                unset($data['joueur']);
+                
+                // Handle participant's CIN uploads
+                if (!empty($data['crosstraining_teams_joueurs'][0]['cin_recto']) && 
+                    $data['crosstraining_teams_joueurs'][0]['cin_recto']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_participant_recto_' . $data['crosstraining_teams_joueurs'][0]['cin_recto']->getClientFilename();
+                    $data['crosstraining_teams_joueurs'][0]['cin_recto']->moveTo($uploadPath . $fileName);
+                    $data['crosstraining_teams_joueurs'][0]['cin_recto'] = 'uploads/teams/' . $fileName;
+                }
+                
+                if (!empty($data['crosstraining_teams_joueurs'][0]['cin_verso']) && 
+                    $data['crosstraining_teams_joueurs'][0]['cin_verso']->getError() === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_participant_verso_' . $data['crosstraining_teams_joueurs'][0]['cin_verso']->getClientFilename();
+                    $data['crosstraining_teams_joueurs'][0]['cin_verso']->moveTo($uploadPath . $fileName);
+                    $data['crosstraining_teams_joueurs'][0]['cin_verso'] = 'uploads/teams/' . $fileName;
+                }
+            }
+            
+            $team = $crosstrainingTeamsTable->patchEntity($team, $data, [
+                'associated' => ['CrosstrainingTeamsJoueurs']
+            ]);
+            
+            if ($crosstrainingTeamsTable->save($team, ['associated' => ['CrosstrainingTeamsJoueurs']])) {
+                $this->Flash->success(__('Votre équipe de cross training a été inscrite avec succès.'));
+                return $this->redirect(['action' => 'crosstrainingTeamView', $team->id]);
+            } else {
+                // Collect and display validation errors
+                $errors = $team->getErrors();
+                $errorMessages = [];
+                
+                foreach ($errors as $field => $fieldErrors) {
+                    $this->_extractErrorMessages($field, $fieldErrors, $errorMessages);
+                }
+                
+                if (!empty($errorMessages)) {
+                    $fullErrorMessage = "Erreurs de validation :\n" . implode("\n", $errorMessages);
+                    $this->Flash->error(__($fullErrorMessage));
+                } else {
+                    $this->Flash->error(__('L\'inscription n\'a pas pu être enregistrée. Veuillez vérifier que tous les champs requis sont remplis.'));
+                }
+            }
+        }
+        
+        // Load dropdown options
+        $CrosstrainingCategories = $this->fetchTable('CrosstrainingCategories');
+        $crosstrainingCategories = $CrosstrainingCategories->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true])->toArray();
+        
+        $footballDistricts = $crosstrainingTeamsTable->FootballDistricts->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $footballOrganisations = $crosstrainingTeamsTable->FootballOrganisations->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name'
+        ])->where(['active' => true]);
+        
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('team', 'crosstrainingCategories', 'footballDistricts', 'footballOrganisations', 'user'));
+        $this->set('sport', 'crosstraining');
+        $this->render('add_crosstraining');
+    }
+
+    /**
+     * View Cross Training team method
+     *
+     * @param string|null $id Cross Training team id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function crosstrainingTeamView($id = null)
+    {
+        $crosstrainingTeamsTable = $this->fetchTable('CrosstrainingTeams');
+        $team = $crosstrainingTeamsTable->get($id, [
+            'contain' => ['Users', 'CrosstrainingTeamsJoueurs', 'CrosstrainingCategories', 'FootballDistricts', 'FootballOrganisations']
+        ]);
+        
+        // Check if user has permission to view this team
+        $user = $this->Authentication->getIdentity();
+        if ($team->user_id !== $user->id) {
+            $this->Flash->error(__('Vous n\'avez pas l\'autorisation de voir cette équipe.'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        // Map cross training players to joueurs for view compatibility
+        if (!empty($team->crosstraining_teams_joueurs)) {
+            $team->joueurs = $team->crosstraining_teams_joueurs;
+        }
+
+        $this->set(compact('team'));
+        $this->render('view');
+    }
+
+    /**
+     * Get Cross Training categories
+     * 
+     * @return \Cake\Http\Response|null
+     */
+    public function getCrosstrainingCategories()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+        
+        $crosstrainingCategoriesTable = $this->fetchTable('CrosstrainingCategories');
+        $categories = $crosstrainingCategoriesTable->find()
+            ->where(['active' => true])
+            ->all();
+        
+        $result = [];
+        foreach ($categories as $category) {
+            // Calculate min/max age from birth years
+            $currentYear = date('Y');
+            $minAge = $category->max_birth_year ? $currentYear - $category->max_birth_year : null;
+            $maxAge = $category->min_birth_year ? $currentYear - $category->min_birth_year : null;
+            
+            $result[] = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'age_range' => $category->age_range,
+                'min_age' => $minAge,
+                'max_age' => $maxAge,
+                'min_birth_year' => $category->min_birth_year,
+                'max_birth_year' => $category->max_birth_year,
+                'min_birth_date' => $category->min_birth_date ? $category->min_birth_date->format('Y-m-d') : null,
+                'max_birth_date' => $category->max_birth_date ? $category->max_birth_date->format('Y-m-d') : null
+            ];
+        }
+        
+        return $this->response->withStringBody(json_encode(['categories' => $result]));
+    }
+
+    /**
+     * Get Cross Training date ranges
+     * 
+     * @return \Cake\Http\Response|null
+     */
+    public function getCrosstrainingDateRanges()
+    {
+        $this->request->allowMethod(['get']);
+        $this->response = $this->response->withType('application/json');
+        
+        $categoryId = $this->request->getQuery('category_id');
+        
+        if (!$categoryId) {
+            return $this->response->withStringBody(json_encode(['error' => 'Category ID required']));
+        }
+        
+        $crosstrainingCategoriesTable = $this->fetchTable('CrosstrainingCategories');
+        $category = $crosstrainingCategoriesTable->find()
+            ->where(['id' => $categoryId, 'active' => true])
+            ->first();
+        
+        if (!$category) {
+            return $this->response->withStringBody(json_encode(['error' => 'Category not found']));
+        }
+        
+        $result = [
+            'min_date' => $category->min_birth_date ? $category->min_birth_date->format('Y-m-d') : null,
+            'max_date' => $category->max_birth_date ? $category->max_birth_date->format('Y-m-d') : null,
+        ];
+        
+        return $this->response->withStringBody(json_encode($result));
+    }
+}

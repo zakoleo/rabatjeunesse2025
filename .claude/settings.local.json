@@ -39,7 +39,11 @@
       "Bash(done)",
       "Bash(rg:*)",
       "Bash(sed:*)",
-      "Bash(bin/cake:*)"
+      "Bash(bin/cake:*)",
+      "Bash(mkdir:*)",
+      "Bash(/tmp/remove_crosstraining.sh:*)",
+      "Bash(python3:*)",
+      "Bash(awk:*)"
     ],
     "deny": []
   }

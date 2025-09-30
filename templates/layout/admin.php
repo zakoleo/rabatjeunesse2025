@@ -23,6 +23,9 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
 
     <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'app', 'admin-dashboard', 'admin-unified']) ?>
     
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -658,6 +661,32 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                             <?= $this->Html->link('<i class="fas fa-link"></i> Relations', 
                                 ['controller' => 'BeachvolleyManagement', 'action' => 'relationships'], 
                                 ['class' => 'nav-link submenu-link' . ($isActive('BeachvolleyManagement', 'relationships') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Cross Training Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('crosstraining')">
+                        <i class="fas fa-dumbbell sport-icon"></i>
+                        <span class="sport-name">Cross Training</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="crosstraining-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="crosstraining-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-tachometer-alt"></i> Tableau de bord', 
+                                ['controller' => 'CrosstrainingManagement', 'action' => 'index'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('CrosstrainingManagement', 'index') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-users"></i> Participants', 
+                                ['controller' => 'CrosstrainingManagement', 'action' => 'participants'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('CrosstrainingManagement', 'participants') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-list"></i> Catégories', 
+                                ['controller' => 'CrosstrainingManagement', 'action' => 'categories'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('CrosstrainingManagement', 'categories') ? ' active' : ''), 'escape' => false]) ?>
                         </li>
                     </ul>
                 </div>

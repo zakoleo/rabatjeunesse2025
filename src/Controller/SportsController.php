@@ -29,7 +29,7 @@ class SportsController extends AppController
     {
         parent::beforeFilter($event);
         // Allow non-authenticated users to access sports list and landing pages
-        $this->Authentication->addUnauthenticatedActions(['index', 'football', 'basketball', 'handball', 'volleyball', 'beachvolley']);
+        $this->Authentication->addUnauthenticatedActions(['index', 'football', 'basketball', 'handball', 'volleyball', 'beachvolley', 'crosstraining']);
     }
     
     /**
@@ -74,6 +74,13 @@ class SportsController extends AppController
                 'image' => 'img_sport_volleyball-768x461.png',
                 'description' => 'Tournois de beach-volley en duo',
                 'categories' => ['2 joueurs']
+            ],
+            [
+                'id' => 'crosstraining',
+                'name' => 'Cross Training',
+                'image' => 'img_sport_cross-768x461.png',
+                'description' => 'Compétition individuelle de Cross Training',
+                'categories' => ['Individuel']
             ]
         ];
         
@@ -130,6 +137,17 @@ class SportsController extends AppController
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function beachvolley()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+    }
+    
+    /**
+     * Cross Training landing page
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function crosstraining()
     {
         $user = $this->Authentication->getIdentity();
         $this->set(compact('user'));
