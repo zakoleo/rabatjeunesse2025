@@ -691,6 +691,38 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                     </ul>
                 </div>
 
+                <!-- Sports Urbains Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('sportsurbains')">
+                        <i class="fas fa-city sport-icon"></i>
+                        <span class="sport-name">Sports Urbains</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="sportsurbains-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="sportsurbains-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-tachometer-alt"></i> Tableau de bord', 
+                                ['controller' => 'Admin', 'action' => 'sportsurbains'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('Admin', 'sportsurbains') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Concours Configuration -->
+                <div class="nav-section sport-config-section">
+                    <div class="sport-menu-header" onclick="toggleSportMenu('concours')">
+                        <i class="fas fa-trophy sport-icon"></i>
+                        <span class="sport-name">Concours</span>
+                        <i class="fas fa-chevron-down toggle-arrow" id="concours-arrow"></i>
+                    </div>
+                    <ul class="sport-submenu" id="concours-menu">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-tachometer-alt"></i> Tableau de bord', 
+                                ['controller' => 'Admin', 'action' => 'concours'], 
+                                ['class' => 'nav-link submenu-link' . ($isActive('Admin', 'concours') ? ' active' : ''), 'escape' => false]) ?>
+                        </li>
+                    </ul>
+                </div>
+
 
                 <!-- UTILISATEURS -->
                 <div class="nav-section-title">👥 Utilisateurs</div>
@@ -713,6 +745,11 @@ $cakeDescription = 'Administration - Rabat Jeunesse';
                 <div class="nav-section-title">🔧 Outils</div>
                 <div class="nav-section">
                     <ul class="nav-items">
+                        <li class="nav-item">
+                            <?= $this->Html->link('<i class="fas fa-file-export"></i> Exportation', 
+                                ['controller' => 'Admin', 'action' => 'export'], 
+                                ['class' => 'nav-link', 'escape' => false]) ?>
+                        </li>
                         <li class="nav-item">
                             <?= $this->Html->link('<i class="fas fa-sign-out-alt"></i> Retour site', 
                                 ['controller' => 'Sports', 'action' => 'index'], 

@@ -6,12 +6,15 @@
  * @var iterable<\App\Model\Entity\HandballTeam> $handballTeams
  * @var iterable<\App\Model\Entity\VolleyballTeam> $volleyballTeams
  * @var iterable<\App\Model\Entity\BeachvolleyTeam> $beachvolleyTeams
+ * @var iterable<\App\Model\Entity\CrosstrainingParticipant> $crosstrainingParticipants
+ * @var iterable<\App\Model\Entity\SportsurbainsParticipant> $sportsurbainsParticipants
+ * @var iterable<\App\Model\Entity\ConcoursParticipant> $concoursParticipants
  */
 ?>
 <div class="page-header">
     <div class="container">
-        <h1>Mes équipes</h1>
-        <p>Gérez vos équipes inscrites aux tournois de football, basketball, handball, volleyball et beach volleyball</p>
+        <h1>Mes équipes et inscriptions</h1>
+        <p>Gérez vos équipes inscrites aux sports collectifs et vos participations individuelles</p>
     </div>
 </div>
 
@@ -133,6 +136,7 @@
                                 <th>District</th>
                                 <th>Joueurs</th>
                                 <th>Date d'inscription</th>
+                                <th>Statut</th>
                                 <th class="actions">Actions</th>
                             </tr>
                         </thead>
@@ -175,9 +179,30 @@
                                 <td>
                                     <?= h($team->created->format('d/m/Y')) ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($team->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'basketballTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?php if ($team->status !== 'verified'): ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
                                         <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBasketball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
@@ -188,7 +213,7 @@
                                         </button>
                                     <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadBasketballPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?php if ($team->status !== 'verified'): ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
                                         <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBasketball', $team->id], [
                                             'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
                                             'class' => 'btn btn-sm btn-danger',
@@ -266,16 +291,48 @@
                                 <td>
                                     <?= h($team->created->format('d/m/Y')) ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($team->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'handballTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editHandball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editHandball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                            </svg> Verrouillé
+                                        </button>
+                                    <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadHandballPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteHandball', $team->id], [
-                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
-                                        'class' => 'btn btn-sm btn-danger',
-                                        'escape' => false,
-                                        'title' => 'Supprimer'
-                                    ]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                        <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteHandball', $team->id], [
+                                            'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]) ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -304,6 +361,7 @@
                                 <th>District</th>
                                 <th>Joueurs</th>
                                 <th>Date d'inscription</th>
+                                <th>Statut</th>
                                 <th class="actions">Actions</th>
                             </tr>
                         </thead>
@@ -350,16 +408,48 @@
                                 <td>
                                     <?= h($team->created->format('d/m/Y')) ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($team->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'volleyballTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editVolleyball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editVolleyball', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                            </svg> Verrouillé
+                                        </button>
+                                    <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadVolleyballPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteVolleyball', $team->id], [
-                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
-                                        'class' => 'btn btn-sm btn-danger',
-                                        'escape' => false,
-                                        'title' => 'Supprimer'
-                                    ]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                            <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteVolleyball', $team->id], [
+                                            'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]) ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -388,6 +478,7 @@
                                 <th>District</th>
                                 <th>Joueurs</th>
                                 <th>Date d'inscription</th>
+                                <th>Statut</th>
                                 <th class="actions">Actions</th>
                             </tr>
                         </thead>
@@ -434,16 +525,308 @@
                                 <td>
                                     <?= h($team->created->format('d/m/Y')) ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($team->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
                                 <td class="actions">
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', ['action' => 'beachvolleyTeamView', $team->id], ['class' => 'btn btn-sm btn-info', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBeachvolley', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', ['action' => 'editBeachvolley', $team->id], ['class' => 'btn btn-sm btn-warning', 'escape' => false]) ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" disabled title="L'équipe vérifiée ne peut pas être modifiée">
+                                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                            </svg> Verrouillé
+                                        </button>
+                                    <?php endif; ?>
                                     <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', ['action' => 'downloadBeachvolleyPdf', $team->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']) ?>
-                                    <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBeachvolley', $team->id], [
-                                        'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
-                                        'class' => 'btn btn-sm btn-danger',
-                                        'escape' => false,
-                                        'title' => 'Supprimer'
-                                    ]) ?>
+                                    <?php if (($team->status ?? 'pending') !== 'verified'): ?>
+                                            <?= $this->Form->postLink('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', ['action' => 'deleteBeachvolley', $team->id], [
+                                            'confirm' => __('Êtes-vous sûr de vouloir supprimer l\'équipe {0}?', $team->nom_equipe),
+                                            'class' => 'btn btn-sm btn-danger',
+                                            'escape' => false,
+                                            'title' => 'Supprimer'
+                                        ]) ?>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Cross Training Section -->
+        <?php if (count($crosstrainingParticipants) > 0): ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Cross Training (<?= count($crosstrainingParticipants) ?>)</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Nom complet</th>
+                                <th>Catégorie</th>
+                                <th>Genre</th>
+                                <th>Date d'inscription</th>
+                                <th>Statut</th>
+                                <th class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($crosstrainingParticipants as $participant): ?>
+                            <tr>
+                                <td>
+                                    <span class="reference-badge crosstraining"><?= h($participant->reference_inscription) ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= h($participant->nom_complet) ?></strong>
+                                </td>
+                                <td>
+                                    <?= $participant->has('crosstraining_category') ? h($participant->crosstraining_category->gender . ' - ' . $participant->crosstraining_category->age_category) : '' ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->gender) ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->created->format('d/m/Y')) ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($participant->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
+                                <td class="actions">
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', 
+                                        ['controller' => 'Crosstraining', 'action' => 'view', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-info', 'escape' => false]
+                                    ) ?>
+                                    <?php if ($participant->status !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', 
+                                            ['controller' => 'Crosstraining', 'action' => 'edit', $participant->id], 
+                                            ['class' => 'btn btn-sm btn-warning', 'escape' => false]
+                                        ) ?>
+                                    <?php endif; ?>
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', 
+                                        ['controller' => 'Crosstraining', 'action' => 'downloadPdf', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']
+                                    ) ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Sports Urbains Section -->
+        <?php if (count($sportsurbainsParticipants) > 0): ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Sports Urbains (<?= count($sportsurbainsParticipants) ?>)</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Nom complet</th>
+                                <th>Type Sport</th>
+                                <th>Catégorie</th>
+                                <th>Genre</th>
+                                <th>Date d'inscription</th>
+                                <th>Statut</th>
+                                <th class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($sportsurbainsParticipants as $participant): ?>
+                            <tr>
+                                <td>
+                                    <span class="reference-badge sportsurbains"><?= h($participant->reference_inscription) ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= h($participant->nom_complet) ?></strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary"><?= h($participant->type_sport) ?></span>
+                                </td>
+                                <td>
+                                    <?= $participant->has('sportsurbains_category') ? h($participant->sportsurbains_category->gender . ' - ' . $participant->sportsurbains_category->age_category) : '' ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->gender) ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->created->format('d/m/Y')) ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($participant->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
+                                <td class="actions">
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', 
+                                        ['controller' => 'Sportsurbains', 'action' => 'view', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-info', 'escape' => false]
+                                    ) ?>
+                                    <?php if ($participant->status !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', 
+                                            ['controller' => 'Sportsurbains', 'action' => 'edit', $participant->id], 
+                                            ['class' => 'btn btn-sm btn-warning', 'escape' => false]
+                                        ) ?>
+                                    <?php endif; ?>
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', 
+                                        ['controller' => 'Sportsurbains', 'action' => 'downloadPdf', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']
+                                    ) ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Concours Section -->
+        <?php if (count($concoursParticipants) > 0): ?>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Concours (<?= count($concoursParticipants) ?>)</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Nom complet</th>
+                                <th>Type Concours</th>
+                                <th>Catégorie</th>
+                                <th>Genre</th>
+                                <th>Date d'inscription</th>
+                                <th>Statut</th>
+                                <th class="actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($concoursParticipants as $participant): ?>
+                            <tr>
+                                <td>
+                                    <span class="reference-badge concours"><?= h($participant->reference_inscription) ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= h($participant->nom_complet) ?></strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info"><?= h($participant->type_concours) ?></span>
+                                </td>
+                                <td>
+                                    <?= $participant->has('concours_category') ? h($participant->concours_category->gender . ' - ' . $participant->concours_category->age_category) : '' ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->gender) ?>
+                                </td>
+                                <td>
+                                    <?= h($participant->created->format('d/m/Y')) ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $statusClass = 'secondary';
+                                    $statusText = 'En attente';
+                                    switch($participant->status ?? 'pending') {
+                                        case 'verified':
+                                            $statusClass = 'success';
+                                            $statusText = 'Vérifiée';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'danger';
+                                            $statusText = 'Rejetée';
+                                            break;
+                                        case 'pending':
+                                            $statusClass = 'warning';
+                                            $statusText = 'En attente';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge badge-<?= $statusClass ?>"><?= $statusText ?></span>
+                                </td>
+                                <td class="actions">
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Voir', 
+                                        ['controller' => 'Concours', 'action' => 'view', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-info', 'escape' => false]
+                                    ) ?>
+                                    <?php if ($participant->status !== 'verified'): ?>
+                                        <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier', 
+                                            ['controller' => 'Concours', 'action' => 'edit', $participant->id], 
+                                            ['class' => 'btn btn-sm btn-warning', 'escape' => false]
+                                        ) ?>
+                                    <?php endif; ?>
+                                    <?= $this->Html->link('<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF', 
+                                        ['controller' => 'Concours', 'action' => 'downloadPdf', $participant->id], 
+                                        ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Télécharger le PDF']
+                                    ) ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -455,7 +838,7 @@
         <?php endif; ?>
 
         <!-- Empty State -->
-        <?php if (count($footballTeams) === 0 && count($basketballTeams) === 0 && count($handballTeams) === 0 && count($volleyballTeams) === 0 && count($beachvolleyTeams) === 0): ?>
+        <?php if (count($footballTeams) === 0 && count($basketballTeams) === 0 && count($handballTeams) === 0 && count($volleyballTeams) === 0 && count($beachvolleyTeams) === 0 && count($crosstrainingParticipants) === 0 && count($sportsurbainsParticipants) === 0 && count($concoursParticipants) === 0): ?>
         <div class="card">
             <div class="card-body text-center">
                 <div class="empty-state">
@@ -486,6 +869,7 @@
         font-size: 0.875rem;
         font-weight: 500;
         border-radius: 20px;
+        text-align:center;
     }
     
     .badge-football {
@@ -647,6 +1031,21 @@
     .reference-badge.beachvolley {
         background: #FEF4E2;
         color: #F39C12;
+    }
+    
+    .reference-badge.crosstraining {
+        background: #FFE5E5;
+        color: #E74C3C;
+    }
+    
+    .reference-badge.sportsurbains {
+        background: #F4ECFC;
+        color: #8854D0;
+    }
+    
+    .reference-badge.concours {
+        background: #F5E6FF;
+        color: #9B59B6;
     }
     
     .player-count {

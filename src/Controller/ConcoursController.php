@@ -5,24 +5,31 @@ namespace App\Controller;
 
 use Cake\Http\Exception\NotFoundException;
 
-class CrosstrainingController extends AppController
+class ConcoursController extends AppController
 {
     public function initialize(): void
     {
         parent::initialize();
         
-        $this->CrosstrainingParticipants = $this->fetchTable('CrosstrainingParticipants');
-        $this->CrosstrainingCategories = $this->fetchTable('CrosstrainingCategories');
+        $this->ConcoursParticipants = $this->fetchTable('ConcoursParticipants');
+        $this->ConcoursCategories = $this->fetchTable('ConcoursCategories');
+    }
+    
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        // Allow non-authenticated users to access contest landing pages
+        $this->Authentication->addUnauthenticatedActions(['dessin', 'chanson', 'commentateur', 'film']);
     }
 
     public function index()
     {
         $user = $this->Authentication->getIdentity();
         
-        $participants = $this->CrosstrainingParticipants->find()
-            ->where(['CrosstrainingParticipants.user_id' => $user->id])
-            ->contain(['CrosstrainingCategories'])
-            ->order(['CrosstrainingParticipants.created' => 'DESC'])
+        $participants = $this->ConcoursParticipants->find()
+            ->where(['ConcoursParticipants.user_id' => $user->id])
+            ->contain(['ConcoursCategories'])
+            ->order(['ConcoursParticipants.created' => 'DESC'])
             ->all();
 
         $this->set(compact('participants'));
@@ -32,7 +39,21 @@ class CrosstrainingController extends AppController
     {
         $user = $this->Authentication->getIdentity();
         
-        $participant = $this->CrosstrainingParticipants->newEmptyEntity();
+        // Check if a contest type was passed via URL parameter
+        $selectedType = $this->request->getQuery('cat');
+        
+        // If no type is selected, show the visual selector
+        if (!$selectedType && !$this->request->is('post')) {
+            $this->render('select_type');
+            return;
+        }
+        
+        $participant = $this->ConcoursParticipants->newEmptyEntity();
+        
+        // Pre-fill the contest type if passed via URL
+        if ($selectedType) {
+            $participant->type_concours = $selectedType;
+        }
         
         if ($this->request->is('post')) {
             $data = $this->request->getData();
@@ -40,7 +61,7 @@ class CrosstrainingController extends AppController
             $data['status'] = 'pending';
             
             // Handle file uploads
-            $uploadPath = WWW_ROOT . 'uploads' . DS . 'crosstraining' . DS;
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'concours' . DS;
             if (!file_exists($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
@@ -65,16 +86,16 @@ class CrosstrainingController extends AppController
                 unset($data['cin_verso']);
             }
             
-            $participant = $this->CrosstrainingParticipants->patchEntity($participant, $data);
+            $participant = $this->ConcoursParticipants->patchEntity($participant, $data);
             
-            if ($this->CrosstrainingParticipants->save($participant)) {
-                $this->Flash->success(__('Votre inscription au Cross Training a été enregistrée avec succès.'));
+            if ($this->ConcoursParticipants->save($participant)) {
+                $this->Flash->success(__('Votre inscription au concours a été enregistrée avec succès.'));
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('Impossible d\'enregistrer votre inscription. Veuillez réessayer.'));
         }
         
-        $categories = $this->CrosstrainingCategories->find('list', [
+        $categories = $this->ConcoursCategories->find('list', [
             'keyField' => 'id',
             'valueField' => function ($category) {
                 return $category->gender . ' - ' . $category->age_category;
@@ -82,19 +103,22 @@ class CrosstrainingController extends AppController
         ])->where(['active' => true])->toArray();
         
         // Get categories with date ranges for validation
-        $categoriesData = $this->CrosstrainingCategories->find()
+        $categoriesData = $this->ConcoursCategories->find()
             ->where(['active' => true])
             ->toArray();
 
-        $this->set(compact('participant', 'categories', 'categoriesData'));
+        // Get concours types from the model
+        $concoursTypes = \App\Model\Table\ConcoursParticipantsTable::getConcoursTypes();
+
+        $this->set(compact('participant', 'categories', 'categoriesData', 'concoursTypes'));
     }
 
     public function view($id = null)
     {
         $user = $this->Authentication->getIdentity();
         
-        $participant = $this->CrosstrainingParticipants->get($id, [
-            'contain' => ['CrosstrainingCategories', 'Users']
+        $participant = $this->ConcoursParticipants->get($id, [
+            'contain' => ['ConcoursCategories', 'Users']
         ]);
 
         if ($participant->user_id !== $user->id && !$user->is_admin) {
@@ -108,7 +132,7 @@ class CrosstrainingController extends AppController
     {
         $user = $this->Authentication->getIdentity();
         
-        $participant = $this->CrosstrainingParticipants->get($id, [
+        $participant = $this->ConcoursParticipants->get($id, [
             'contain' => []
         ]);
         
@@ -125,7 +149,7 @@ class CrosstrainingController extends AppController
             $data = $this->request->getData();
             
             // Handle file uploads
-            $uploadPath = WWW_ROOT . 'uploads' . DS . 'crosstraining' . DS;
+            $uploadPath = WWW_ROOT . 'uploads' . DS . 'concours' . DS;
             if (!file_exists($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
@@ -150,15 +174,15 @@ class CrosstrainingController extends AppController
                 unset($data['cin_verso']);
             }
             
-            $participant = $this->CrosstrainingParticipants->patchEntity($participant, $data);
-            if ($this->CrosstrainingParticipants->save($participant)) {
+            $participant = $this->ConcoursParticipants->patchEntity($participant, $data);
+            if ($this->ConcoursParticipants->save($participant)) {
                 $this->Flash->success(__('Les informations ont été mises à jour.'));
                 return $this->redirect(['action' => 'view', $id]);
             }
             $this->Flash->error(__('Impossible de mettre à jour les informations.'));
         }
         
-        $categories = $this->CrosstrainingCategories->find('list', [
+        $categories = $this->ConcoursCategories->find('list', [
             'keyField' => 'id',
             'valueField' => function ($category) {
                 return $category->gender . ' - ' . $category->age_category;
@@ -166,11 +190,14 @@ class CrosstrainingController extends AppController
         ])->where(['active' => true])->toArray();
         
         // Get categories with date ranges for validation
-        $categoriesData = $this->CrosstrainingCategories->find()
+        $categoriesData = $this->ConcoursCategories->find()
             ->where(['active' => true])
             ->toArray();
 
-        $this->set(compact('participant', 'categories', 'categoriesData'));
+        // Get concours types from the model
+        $concoursTypes = \App\Model\Table\ConcoursParticipantsTable::getConcoursTypes();
+
+        $this->set(compact('participant', 'categories', 'categoriesData', 'concoursTypes'));
     }
 
     public function delete($id = null)
@@ -178,7 +205,7 @@ class CrosstrainingController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         
         $user = $this->Authentication->getIdentity();
-        $participant = $this->CrosstrainingParticipants->get($id);
+        $participant = $this->ConcoursParticipants->get($id);
         
         if ($participant->user_id !== $user->id) {
             throw new NotFoundException(__('Participant non trouvé.'));
@@ -189,7 +216,7 @@ class CrosstrainingController extends AppController
             return $this->redirect(['action' => 'index']);
         }
         
-        if ($this->CrosstrainingParticipants->delete($participant)) {
+        if ($this->ConcoursParticipants->delete($participant)) {
             $this->Flash->success(__('L\'inscription a été supprimée.'));
         } else {
             $this->Flash->error(__('Impossible de supprimer l\'inscription.'));
@@ -199,16 +226,56 @@ class CrosstrainingController extends AppController
     }
 
     /**
-     * Download Cross Training PDF method
+     * Dessin contest landing page
+     */
+    public function dessin()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+        $this->render('contest_landing');
+    }
+
+    /**
+     * Chanson contest landing page
+     */
+    public function chanson()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+        $this->render('contest_landing');
+    }
+
+    /**
+     * Commentateur contest landing page
+     */
+    public function commentateur()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+        $this->render('contest_landing');
+    }
+
+    /**
+     * Film contest landing page
+     */
+    public function film()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+        $this->render('contest_landing');
+    }
+
+    /**
+     * Download Concours PDF method
      *
-     * @param string|null $id Cross Training Participant id.
+     * @param string|null $id Concours Participant id.
      * @return \Cake\Http\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function downloadPdf($id = null)
     {
-        $participant = $this->CrosstrainingParticipants->get($id, [
-            'contain' => ['CrosstrainingCategories', 'Users']
+        $participant = $this->ConcoursParticipants->get($id, [
+            'contain' => ['ConcoursCategories', 'Users']
         ]);
         
         // Check if user has permission to download this PDF
@@ -226,15 +293,15 @@ class CrosstrainingController extends AppController
         $dompdf = new \Dompdf\Dompdf($options);
         
         // Create HTML for PDF
-        $html = $this->generateCrosstrainingPdfHtml($participant);
+        $html = $this->generateConcoursPdfHtml($participant);
         
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
         // Filename
-        $filename = sprintf('inscription_crosstraining_%s.pdf', 
-            $participant->reference_inscription ?? 'CT' . $participant->id
+        $filename = sprintf('inscription_concours_%s.pdf', 
+            $participant->reference_inscription ?? 'CO' . $participant->id
         );
         
         // Send PDF to browser
@@ -246,15 +313,15 @@ class CrosstrainingController extends AppController
     }
 
     /**
-     * Generate HTML for Cross Training participant PDF
+     * Generate HTML for Concours participant PDF
      */
-    private function generateCrosstrainingPdfHtml($participant)
+    private function generateConcoursPdfHtml($participant)
     {
         $html = '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Fiche d\'inscription - Cross Training</title>
+    <title>Fiche d\'inscription - Concours</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -265,14 +332,14 @@ class CrosstrainingController extends AppController
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #E74C3C;
+            border-bottom: 2px solid #9B59B6;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
         .logo {
             font-size: 18pt;
             font-weight: bold;
-            color: #E74C3C;
+            color: #9B59B6;
             margin-bottom: 10px;
         }
         .subtitle {
@@ -281,8 +348,8 @@ class CrosstrainingController extends AppController
             margin-bottom: 5px;
         }
         .reference {
-            background-color: #FFE5E5;
-            color: #E74C3C;
+            background-color: #F5E6FF;
+            color: #9B59B6;
             padding: 10px;
             border-radius: 5px;
             font-weight: bold;
@@ -293,7 +360,7 @@ class CrosstrainingController extends AppController
             margin-bottom: 25px;
         }
         .section-title {
-            background-color: #E74C3C;
+            background-color: #9B59B6;
             color: white;
             padding: 8px 15px;
             font-weight: bold;
@@ -327,7 +394,7 @@ class CrosstrainingController extends AppController
 <body>
     <div class="header">
         <div class="logo">RABAT JEUNESSE 2025</div>
-        <div class="subtitle">Fiche d\'inscription - Cross Training</div>
+        <div class="subtitle">Fiche d\'inscription - Concours</div>
     </div>
 
     <div class="reference">
@@ -367,10 +434,14 @@ class CrosstrainingController extends AppController
     </div>
 
     <div class="section">
-        <div class="section-title">Informations compétition</div>
+        <div class="section-title">Informations concours</div>
+        <div class="info-row">
+            <span class="label">Type de concours:</span>
+            <span class="value">' . h($participant->type_concours) . '</span>
+        </div>
         <div class="info-row">
             <span class="label">Catégorie:</span>
-            <span class="value">' . h($participant->crosstraining_category ? $participant->crosstraining_category->gender . ' - ' . $participant->crosstraining_category->age_category : '') . '</span>
+            <span class="value">' . h($participant->concours_category ? $participant->concours_category->gender . ' - ' . $participant->concours_category->age_category : '') . '</span>
         </div>
         <div class="info-row">
             <span class="label">Taille T-shirt:</span>
@@ -388,7 +459,7 @@ class CrosstrainingController extends AppController
 
     <div class="footer">
         Document généré le ' . date('d/m/Y à H:i') . '<br>
-        Rabat Jeunesse 2025 - Cross Training
+        Rabat Jeunesse 2025 - Concours
     </div>
 </body>
 </html>';

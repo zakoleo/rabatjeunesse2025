@@ -1303,5 +1303,788 @@ class AdminController extends AppController
         return $this->redirect(['action' => 'users']);
     }
     
+    /**
+     * Sports Urbains management
+     */
+    public function sportsurbains()
+    {
+        try {
+            $sportsurbainsTable = $this->fetchTable('SportsurbainsParticipants');
+            
+            // Get filter parameters
+            $search = $this->request->getQuery('search');
+            $statusFilter = $this->request->getQuery('status');
+            $typeFilter = $this->request->getQuery('type');
+            $categoryFilter = $this->request->getQuery('category');
+            
+            // Build query
+            $query = $sportsurbainsTable->find()
+                ->contain(['Users', 'SportsurbainsCategories'])
+                ->order(['SportsurbainsParticipants.created' => 'DESC']);
+            
+            // Apply filters
+            if ($search) {
+                $query->where([
+                    'OR' => [
+                        'SportsurbainsParticipants.nom_complet LIKE' => '%' . $search . '%',
+                        'SportsurbainsParticipants.cin LIKE' => '%' . $search . '%',
+                        'SportsurbainsParticipants.reference_inscription LIKE' => '%' . $search . '%',
+                        'Users.email LIKE' => '%' . $search . '%'
+                    ]
+                ]);
+            }
+            
+            if ($statusFilter) {
+                $query->where(['SportsurbainsParticipants.status' => $statusFilter]);
+            }
+            
+            if ($typeFilter) {
+                $query->where(['SportsurbainsParticipants.type_sport' => $typeFilter]);
+            }
+            
+            if ($categoryFilter) {
+                $query->where(['SportsurbainsParticipants.category_id' => $categoryFilter]);
+            }
+            
+            $participants = $this->paginate($query, ['limit' => 20]);
+            
+            // Get stats
+            $stats = [
+                'total' => $sportsurbainsTable->find()->count(),
+                'pending' => $sportsurbainsTable->find()->where(['status' => 'pending'])->count(),
+                'verified' => $sportsurbainsTable->find()->where(['status' => 'verified'])->count(),
+                'rejected' => $sportsurbainsTable->find()->where(['status' => 'rejected'])->count()
+            ];
+            
+            // Get categories for filter
+            $categoriesTable = $this->fetchTable('SportsurbainsCategories');
+            $categories = $categoriesTable->find('list', [
+                'keyField' => 'id',
+                'valueField' => function ($category) {
+                    return $category->gender . ' - ' . $category->age_category;
+                }
+            ])->where(['active' => true])->toArray();
+            
+            // Get sport types from model
+            $sportTypes = \App\Model\Table\SportsurbainsParticipantsTable::getSportTypes();
+            
+            $this->set(compact('participants', 'stats', 'categories', 'sportTypes'));
+        } catch (\Exception $e) {
+            $this->Flash->error('Erreur lors du chargement des participants Sports Urbains');
+            $this->set('participants', []);
+            $this->set('stats', ['total' => 0, 'pending' => 0, 'verified' => 0, 'rejected' => 0]);
+            $this->set('categories', []);
+            $this->set('sportTypes', []);
+        }
+    }
+    
+    /**
+     * Concours management
+     */
+    public function concours()
+    {
+        try {
+            $concoursTable = $this->fetchTable('ConcoursParticipants');
+            
+            // Get filter parameters
+            $search = $this->request->getQuery('search');
+            $statusFilter = $this->request->getQuery('status');
+            $typeFilter = $this->request->getQuery('type');
+            $categoryFilter = $this->request->getQuery('category');
+            
+            // Build query
+            $query = $concoursTable->find()
+                ->contain(['Users', 'ConcoursCategories'])
+                ->order(['ConcoursParticipants.created' => 'DESC']);
+            
+            // Apply filters
+            if ($search) {
+                $query->where([
+                    'OR' => [
+                        'ConcoursParticipants.nom_complet LIKE' => '%' . $search . '%',
+                        'ConcoursParticipants.cin LIKE' => '%' . $search . '%',
+                        'ConcoursParticipants.reference_inscription LIKE' => '%' . $search . '%',
+                        'Users.email LIKE' => '%' . $search . '%'
+                    ]
+                ]);
+            }
+            
+            if ($statusFilter) {
+                $query->where(['ConcoursParticipants.status' => $statusFilter]);
+            }
+            
+            if ($typeFilter) {
+                $query->where(['ConcoursParticipants.type_concours' => $typeFilter]);
+            }
+            
+            if ($categoryFilter) {
+                $query->where(['ConcoursParticipants.category_id' => $categoryFilter]);
+            }
+            
+            $participants = $this->paginate($query, ['limit' => 20]);
+            
+            // Get stats
+            $stats = [
+                'total' => $concoursTable->find()->count(),
+                'pending' => $concoursTable->find()->where(['status' => 'pending'])->count(),
+                'verified' => $concoursTable->find()->where(['status' => 'verified'])->count(),
+                'rejected' => $concoursTable->find()->where(['status' => 'rejected'])->count(),
+                'types' => [
+                    'Dessin' => $concoursTable->find()->where(['type_concours' => 'Dessin'])->count(),
+                    'Chanson' => $concoursTable->find()->where(['type_concours' => 'Chanson'])->count(),
+                    'Commentateur sportif' => $concoursTable->find()->where(['type_concours' => 'Commentateur sportif'])->count(),
+                    'Film documentaire' => $concoursTable->find()->where(['type_concours' => 'Film documentaire'])->count()
+                ]
+            ];
+            
+            // Get categories for filter
+            $categoriesTable = $this->fetchTable('ConcoursCategories');
+            $categories = $categoriesTable->find('list', [
+                'keyField' => 'id',
+                'valueField' => function ($category) {
+                    return $category->gender . ' - ' . $category->age_category;
+                }
+            ])->where(['active' => true])->toArray();
+            
+            // Get contest types from model
+            $concoursTypes = \App\Model\Table\ConcoursParticipantsTable::getConcoursTypes();
+            
+            $this->set(compact('participants', 'stats', 'categories', 'concoursTypes'));
+        } catch (\Exception $e) {
+            $this->Flash->error('Erreur lors du chargement des participants Concours');
+            $this->set('participants', []);
+            $this->set('stats', ['total' => 0, 'pending' => 0, 'verified' => 0, 'rejected' => 0, 'types' => []]);
+            $this->set('categories', []);
+            $this->set('concoursTypes', []);
+        }
+    }
+    
+    /**
+     * Update Sports Urbains participant status
+     */
+    public function updateSportsurbainsStatus()
+    {
+        $this->request->allowMethod(['post', 'ajax']);
+        
+        $id = $this->request->getData('id');
+        $status = $this->request->getData('status');
+        
+        try {
+            $participantsTable = $this->fetchTable('SportsurbainsParticipants');
+            $participant = $participantsTable->get($id);
+            
+            $participant->status = $status;
+            if ($status === 'verified') {
+                $participant->verified_at = new \DateTime();
+            }
+            
+            if ($participantsTable->save($participant)) {
+                $this->set(['success' => true, 'message' => 'Statut mis à jour']);
+            } else {
+                $this->set(['success' => false, 'message' => 'Erreur lors de la mise à jour']);
+            }
+        } catch (\Exception $e) {
+            $this->set(['success' => false, 'message' => $e->getMessage()]);
+        }
+        
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+    }
+    
+    /**
+     * View Sports Urbains participant details
+     */
+    public function viewSportsurbainsParticipant($id = null)
+    {
+        try {
+            $participantsTable = $this->fetchTable('SportsurbainsParticipants');
+            $participant = $participantsTable->get($id, [
+                'contain' => ['Users', 'SportsurbainsCategories']
+            ]);
+            
+            $this->set(compact('participant'));
+            $this->viewBuilder()->setLayout('ajax');
+        } catch (\Exception $e) {
+            $this->Flash->error('Participant introuvable');
+            return $this->redirect(['action' => 'sportsurbains']);
+        }
+    }
+    
+    /**
+     * Update Concours participant status
+     */
+    public function updateConcoursStatus()
+    {
+        $this->request->allowMethod(['post', 'ajax']);
+        
+        $id = $this->request->getData('id');
+        $status = $this->request->getData('status');
+        
+        try {
+            $participantsTable = $this->fetchTable('ConcoursParticipants');
+            $participant = $participantsTable->get($id);
+            
+            $participant->status = $status;
+            if ($status === 'verified') {
+                $participant->verified_at = new \DateTime();
+            }
+            
+            if ($participantsTable->save($participant)) {
+                $this->set(['success' => true, 'message' => 'Statut mis à jour']);
+            } else {
+                $this->set(['success' => false, 'message' => 'Erreur lors de la mise à jour']);
+            }
+        } catch (\Exception $e) {
+            $this->set(['success' => false, 'message' => $e->getMessage()]);
+        }
+        
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+    }
+    
+    /**
+     * View Concours participant details
+     */
+    public function viewConcoursParticipant($id = null)
+    {
+        try {
+            $participantsTable = $this->fetchTable('ConcoursParticipants');
+            $participant = $participantsTable->get($id, [
+                'contain' => ['Users', 'ConcoursCategories']
+            ]);
+            
+            $this->set(compact('participant'));
+            $this->viewBuilder()->setLayout('ajax');
+        } catch (\Exception $e) {
+            $this->Flash->error('Participant introuvable');
+            return $this->redirect(['action' => 'concours']);
+        }
+    }
+    
+    /**
+     * View Sports Urbains participant full details
+     */
+    public function viewSportsurbainsFullParticipant($id = null)
+    {
+        try {
+            $participantsTable = $this->fetchTable('SportsurbainsParticipants');
+            $participant = $participantsTable->get($id, [
+                'contain' => ['Users', 'SportsurbainsCategories']
+            ]);
+            
+            $this->set(compact('participant'));
+            $this->render('view_sportsurbains_full');
+        } catch (\Exception $e) {
+            $this->Flash->error('Participant introuvable');
+            return $this->redirect(['action' => 'sportsurbains']);
+        }
+    }
+    
+    /**
+     * View Concours participant full details
+     */
+    public function viewConcoursFullParticipant($id = null)
+    {
+        try {
+            $participantsTable = $this->fetchTable('ConcoursParticipants');
+            $participant = $participantsTable->get($id, [
+                'contain' => ['Users', 'ConcoursCategories']
+            ]);
+            
+            $this->set(compact('participant'));
+            $this->render('view_concours_full');
+        } catch (\Exception $e) {
+            $this->Flash->error('Participant introuvable');
+            return $this->redirect(['action' => 'concours']);
+        }
+    }
+    
+    /**
+     * Verify Sports Urbains participant
+     */
+    public function verifySportsurbains($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+        
+        $participant = $this->fetchTable('SportsurbainsParticipants')->get($id);
+        
+        $data = [
+            'status' => 'verified',
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => $this->Authentication->getIdentity()->id,
+            'verification_notes' => $this->request->getData('verification_notes')
+        ];
+        
+        $participant = $this->fetchTable('SportsurbainsParticipants')->patchEntity($participant, $data);
+        
+        if ($this->fetchTable('SportsurbainsParticipants')->save($participant)) {
+            $this->Flash->success(__('Le participant a été vérifié avec succès.'));
+        } else {
+            $this->Flash->error(__('Impossible de vérifier le participant.'));
+        }
+        
+        return $this->redirect(['action' => 'viewSportsurbainsFullParticipant', $id]);
+    }
+    
+    /**
+     * Reject Sports Urbains participant
+     */
+    public function rejectSportsurbains($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+        
+        $participant = $this->fetchTable('SportsurbainsParticipants')->get($id);
+        
+        $data = [
+            'status' => 'rejected',
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => $this->Authentication->getIdentity()->id,
+            'verification_notes' => $this->request->getData('verification_notes')
+        ];
+        
+        $participant = $this->fetchTable('SportsurbainsParticipants')->patchEntity($participant, $data);
+        
+        if ($this->fetchTable('SportsurbainsParticipants')->save($participant)) {
+            $this->Flash->error(__('Le participant a été rejeté.'));
+        } else {
+            $this->Flash->error(__('Impossible de rejeter le participant.'));
+        }
+        
+        return $this->redirect(['action' => 'viewSportsurbainsFullParticipant', $id]);
+    }
+    
+    /**
+     * Verify Concours participant
+     */
+    public function verifyConcours($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+        
+        $participant = $this->fetchTable('ConcoursParticipants')->get($id);
+        
+        $data = [
+            'status' => 'verified',
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => $this->Authentication->getIdentity()->id,
+            'verification_notes' => $this->request->getData('verification_notes')
+        ];
+        
+        $participant = $this->fetchTable('ConcoursParticipants')->patchEntity($participant, $data);
+        
+        if ($this->fetchTable('ConcoursParticipants')->save($participant)) {
+            $this->Flash->success(__('Le participant a été vérifié avec succès.'));
+        } else {
+            $this->Flash->error(__('Impossible de vérifier le participant.'));
+        }
+        
+        return $this->redirect(['action' => 'viewConcoursFullParticipant', $id]);
+    }
+    
+    /**
+     * Reject Concours participant
+     */
+    public function rejectConcours($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+        
+        $participant = $this->fetchTable('ConcoursParticipants')->get($id);
+        
+        $data = [
+            'status' => 'rejected',
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => $this->Authentication->getIdentity()->id,
+            'verification_notes' => $this->request->getData('verification_notes')
+        ];
+        
+        $participant = $this->fetchTable('ConcoursParticipants')->patchEntity($participant, $data);
+        
+        if ($this->fetchTable('ConcoursParticipants')->save($participant)) {
+            $this->Flash->error(__('Le participant a été rejeté.'));
+        } else {
+            $this->Flash->error(__('Impossible de rejeter le participant.'));
+        }
+        
+        return $this->redirect(['action' => 'viewConcoursFullParticipant', $id]);
+    }
+    
+    /**
+     * Export section - Display export options
+     */
+    public function export()
+    {
+        // Get counts for each sport/discipline
+        $counts = [
+            'football' => $this->fetchTable('Teams')->find()->count(),
+            'basketball' => $this->fetchTable('BasketballTeams')->find()->count(),
+            'handball' => $this->fetchTable('HandballTeams')->find()->count(),
+            'volleyball' => $this->fetchTable('VolleyballTeams')->find()->count(),
+            'beachvolley' => $this->fetchTable('BeachvolleyTeams')->find()->count(),
+            'crosstraining' => $this->fetchTable('CrosstrainingParticipants')->find()->count(),
+            'sportsurbains' => $this->fetchTable('SportsurbainsParticipants')->find()->count(),
+            'concours' => $this->fetchTable('ConcoursParticipants')->find()->count()
+        ];
+        
+        $this->set(compact('counts'));
+    }
+    
+    /**
+     * Export Football teams to Excel
+     */
+    public function exportFootball()
+    {
+        $teams = $this->fetchTable('Teams')->find()
+            ->contain(['Users', 'Joueurs'])
+            ->all();
+        
+        // Enhanced export with team and player details
+        return $this->exportTeamsWithPlayersToExcel($teams, 'football', 'football_teams_detailed');
+    }
+    
+    /**
+     * Export Basketball teams to Excel
+     */
+    public function exportBasketball()
+    {
+        $teams = $this->fetchTable('BasketballTeams')->find()
+            ->contain(['Users', 'BasketballTeamsJoueurs'])
+            ->all();
+        
+        return $this->exportTeamsWithPlayersToExcel($teams, 'basketball', 'basketball_teams_detailed');
+    }
+    
+    /**
+     * Export Handball teams to Excel
+     */
+    public function exportHandball()
+    {
+        $teams = $this->fetchTable('HandballTeams')->find()
+            ->contain(['Users', 'HandballTeamsJoueurs'])
+            ->all();
+        
+        return $this->exportTeamsWithPlayersToExcel($teams, 'handball', 'handball_teams_detailed');
+    }
+    
+    /**
+     * Export Volleyball teams to Excel
+     */
+    public function exportVolleyball()
+    {
+        $teams = $this->fetchTable('VolleyballTeams')->find()
+            ->contain(['Users', 'VolleyballTeamsJoueurs'])
+            ->all();
+        
+        return $this->exportTeamsWithPlayersToExcel($teams, 'volleyball', 'volleyball_teams_detailed');
+    }
+    
+    /**
+     * Export Beachvolley teams to Excel
+     */
+    public function exportBeachvolley()
+    {
+        $teams = $this->fetchTable('BeachvolleyTeams')->find()
+            ->contain(['Users', 'BeachvolleyTeamsJoueurs'])
+            ->all();
+        
+        return $this->exportTeamsWithPlayersToExcel($teams, 'beachvolley', 'beachvolley_teams_detailed');
+    }
+    
+    /**
+     * Export CrossTraining participants to Excel
+     */
+    public function exportCrosstraining()
+    {
+        $participants = $this->fetchTable('CrosstrainingParticipants')->find()
+            ->contain(['Users', 'CrosstrainingCategories'])
+            ->all();
+        
+        return $this->exportToExcel($participants, 'crosstraining_participants', [
+            'reference_inscription' => 'Référence',
+            'nom_complet' => 'Nom complet',
+            'date_naissance' => 'Date de naissance',
+            'gender' => 'Genre',
+            'cin' => 'CIN',
+            'telephone' => 'Téléphone',
+            'whatsapp' => 'WhatsApp',
+            'email' => 'Email',
+            'category_name' => 'Catégorie',
+            'taille_tshirt' => 'Taille T-shirt',
+            'status' => 'Statut',
+            'created' => 'Date d\'inscription'
+        ]);
+    }
+    
+    /**
+     * Export Sports Urbains participants to Excel
+     */
+    public function exportSportsurbains()
+    {
+        $participants = $this->fetchTable('SportsurbainsParticipants')->find()
+            ->contain(['Users', 'SportsurbainsCategories'])
+            ->all();
+        
+        return $this->exportToExcel($participants, 'sportsurbains_participants', [
+            'reference_inscription' => 'Référence',
+            'nom_complet' => 'Nom complet',
+            'type_sport' => 'Type de sport',
+            'date_naissance' => 'Date de naissance',
+            'gender' => 'Genre',
+            'cin' => 'CIN',
+            'telephone' => 'Téléphone',
+            'whatsapp' => 'WhatsApp',
+            'email' => 'Email',
+            'category_name' => 'Catégorie',
+            'taille_tshirt' => 'Taille T-shirt',
+            'status' => 'Statut',
+            'created' => 'Date d\'inscription'
+        ]);
+    }
+    
+    /**
+     * Export Concours participants to Excel
+     */
+    public function exportConcours()
+    {
+        $participants = $this->fetchTable('ConcoursParticipants')->find()
+            ->contain(['Users', 'ConcoursCategories'])
+            ->all();
+        
+        return $this->exportToExcel($participants, 'concours_participants', [
+            'reference_inscription' => 'Référence',
+            'nom_complet' => 'Nom complet',
+            'type_concours' => 'Type de concours',
+            'date_naissance' => 'Date de naissance',
+            'gender' => 'Genre',
+            'cin' => 'CIN',
+            'telephone' => 'Téléphone',
+            'whatsapp' => 'WhatsApp',
+            'email' => 'Email',
+            'category_name' => 'Catégorie',
+            'taille_tshirt' => 'Taille T-shirt',
+            'status' => 'Statut',
+            'created' => 'Date d\'inscription',
+            'description_projet' => 'Description du projet'
+        ]);
+    }
+    
+    /**
+     * Helper method to export data to Excel
+     */
+    private function exportToExcel($data, $filename, $columns)
+    {
+        // Disable view rendering
+        $this->autoRender = false;
+        
+        // Set headers for Excel download
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="' . $filename . '_' . date('Y-m-d') . '.xls"');
+        header('Cache-Control: max-age=0');
+        
+        // Start output
+        echo '<html>';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body>';
+        echo '<table border="1">';
+        
+        // Header row
+        echo '<tr>';
+        foreach ($columns as $header) {
+            echo '<th>' . h($header) . '</th>';
+        }
+        echo '</tr>';
+        
+        // Data rows
+        foreach ($data as $row) {
+            echo '<tr>';
+            foreach (array_keys($columns) as $field) {
+                $value = '';
+                
+                // Special handling for different fields
+                switch ($field) {
+                    case 'created':
+                    case 'date_naissance':
+                        if (isset($row->$field)) {
+                            $value = $row->$field->format('d/m/Y');
+                        }
+                        break;
+                    case 'joueurs_count':
+                        if (isset($row->joueurs)) {
+                            $value = count($row->joueurs);
+                        } elseif (isset($row->basketball_teams_joueurs)) {
+                            $value = count($row->basketball_teams_joueurs);
+                        } elseif (isset($row->handball_teams_joueurs)) {
+                            $value = count($row->handball_teams_joueurs);
+                        } elseif (isset($row->volleyball_teams_joueurs)) {
+                            $value = count($row->volleyball_teams_joueurs);
+                        } elseif (isset($row->beachvolley_teams_joueurs)) {
+                            $value = count($row->beachvolley_teams_joueurs);
+                        }
+                        break;
+                    case 'category_name':
+                        if (isset($row->crosstraining_category)) {
+                            $value = $row->crosstraining_category->gender . ' - ' . $row->crosstraining_category->age_category;
+                        } elseif (isset($row->sportsurbains_category)) {
+                            $value = $row->sportsurbains_category->gender . ' - ' . $row->sportsurbains_category->age_category;
+                        } elseif (isset($row->concours_category)) {
+                            $value = $row->concours_category->gender . ' - ' . $row->concours_category->age_category;
+                        }
+                        break;
+                    case 'status':
+                        $value = $row->$field ?? 'pending';
+                        switch ($value) {
+                            case 'verified':
+                                $value = 'Vérifié';
+                                break;
+                            case 'rejected':
+                                $value = 'Rejeté';
+                                break;
+                            case 'pending':
+                                $value = 'En attente';
+                                break;
+                        }
+                        break;
+                    default:
+                        if (isset($row->$field)) {
+                            $value = $row->$field;
+                        }
+                }
+                
+                echo '<td>' . h($value) . '</td>';
+            }
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        echo '</body>';
+        echo '</html>';
+        
+        exit;
+    }
+    
+    /**
+     * Helper method to export teams with players details to Excel
+     */
+    private function exportTeamsWithPlayersToExcel($teams, $sport, $filename)
+    {
+        // Disable view rendering
+        $this->autoRender = false;
+        
+        // Set headers for Excel download
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="' . $filename . '_' . date('Y-m-d') . '.xls"');
+        header('Cache-Control: max-age=0');
+        
+        // Start output
+        echo '<html>';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body>';
+        
+        // Teams summary
+        echo '<h2>Résumé des équipes ' . ucfirst($sport) . '</h2>';
+        echo '<table border="1">';
+        echo '<tr>';
+        echo '<th>Référence</th>';
+        echo '<th>Nom de l\'équipe</th>';
+        echo '<th>Type</th>';
+        echo '<th>Catégorie</th>';
+        echo '<th>District</th>';
+        echo '<th>Organisation</th>';
+        echo '<th>Responsable</th>';
+        echo '<th>Téléphone</th>';
+        echo '<th>Email</th>';
+        echo '<th>Statut</th>';
+        echo '<th>Date d\'inscription</th>';
+        echo '<th>Nombre de joueurs</th>';
+        echo '</tr>';
+        
+        foreach ($teams as $team) {
+            echo '<tr>';
+            echo '<td>' . h($team->reference_inscription) . '</td>';
+            echo '<td>' . h($team->nom_equipe) . '</td>';
+            echo '<td>' . h($team->{'type_' . $sport} ?? '') . '</td>';
+            echo '<td>' . h($team->categorie) . '</td>';
+            echo '<td>' . h($team->district) . '</td>';
+            echo '<td>' . h($team->organisation) . '</td>';
+            echo '<td>' . h($team->nom_responsable) . '</td>';
+            echo '<td>' . h($team->telephone) . '</td>';
+            echo '<td>' . h($team->email) . '</td>';
+            
+            $status = $team->status ?? 'pending';
+            switch ($status) {
+                case 'verified':
+                    $statusText = 'Vérifié';
+                    break;
+                case 'rejected':
+                    $statusText = 'Rejeté';
+                    break;
+                default:
+                    $statusText = 'En attente';
+            }
+            echo '<td>' . $statusText . '</td>';
+            echo '<td>' . $team->created->format('d/m/Y') . '</td>';
+            
+            // Count players
+            $playersCount = 0;
+            if ($sport === 'football' && isset($team->joueurs)) {
+                $playersCount = count($team->joueurs);
+            } else {
+                $playersField = $sport . '_teams_joueurs';
+                if (isset($team->$playersField)) {
+                    $playersCount = count($team->$playersField);
+                }
+            }
+            echo '<td>' . $playersCount . '</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+        
+        // Players details for each team
+        echo '<br><br>';
+        echo '<h2>Détails des joueurs par équipe</h2>';
+        
+        foreach ($teams as $team) {
+            echo '<br>';
+            echo '<h3>Équipe : ' . h($team->nom_equipe) . ' (Ref: ' . h($team->reference_inscription) . ')</h3>';
+            echo '<table border="1">';
+            echo '<tr>';
+            echo '<th>N°</th>';
+            echo '<th>Nom complet</th>';
+            echo '<th>Date de naissance</th>';
+            echo '<th>CIN</th>';
+            echo '<th>Taille maillot</th>';
+            echo '</tr>';
+            
+            // Get players based on sport
+            $players = [];
+            if ($sport === 'football' && isset($team->joueurs)) {
+                $players = $team->joueurs;
+            } else {
+                $playersField = $sport . '_teams_joueurs';
+                if (isset($team->$playersField)) {
+                    $players = $team->$playersField;
+                }
+            }
+            
+            $num = 1;
+            foreach ($players as $player) {
+                echo '<tr>';
+                echo '<td>' . $num++ . '</td>';
+                echo '<td>' . h($player->nom_complet) . '</td>';
+                echo '<td>' . ($player->date_naissance ? $player->date_naissance->format('d/m/Y') : '') . '</td>';
+                echo '<td>' . h($player->cin) . '</td>';
+                echo '<td>' . h($player->taille_maillot) . '</td>';
+                echo '</tr>';
+            }
+            
+            if (empty($players)) {
+                echo '<tr><td colspan="5">Aucun joueur enregistré</td></tr>';
+            }
+            
+            echo '</table>';
+        }
+        
+        echo '</body>';
+        echo '</html>';
+        
+        exit;
+    }
+    
 }
 ?>

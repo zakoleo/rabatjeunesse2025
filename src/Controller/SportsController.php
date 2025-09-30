@@ -29,7 +29,7 @@ class SportsController extends AppController
     {
         parent::beforeFilter($event);
         // Allow non-authenticated users to access sports list and landing pages
-        $this->Authentication->addUnauthenticatedActions(['index', 'football', 'basketball', 'handball', 'volleyball', 'beachvolley', 'crosstraining']);
+        $this->Authentication->addUnauthenticatedActions(['index', 'football', 'basketball', 'handball', 'volleyball', 'beachvolley', 'crosstraining', 'sportsurbains', 'concours']);
     }
     
     /**
@@ -81,10 +81,49 @@ class SportsController extends AppController
                 'image' => 'img_sport_cross-768x461.png',
                 'description' => 'Compétition individuelle de Cross Training',
                 'categories' => ['Individuel']
+            ],
+            [
+                'id' => 'sportsurbains',
+                'name' => 'Sports Urbains',
+                'image' => 'img_sport_urbains-768x461.png',
+                'description' => 'Compétition individuelle de Sports Urbains',
+                'categories' => ['Individuel']
             ]
         ];
         
-        $this->set(compact('sports'));
+        // Contest types data
+        $concours = [
+            [
+                'id' => 'dessin',
+                'name' => 'Dessin',
+                'image' => 'img_dessin-768x461.png',
+                'description' => 'Exprimez votre créativité artistique à travers le dessin',
+                'url' => ['controller' => 'Concours', 'action' => 'dessin']
+            ],
+            [
+                'id' => 'chanson',
+                'name' => 'Chanson',
+                'image' => 'chansson-768x461.png',
+                'description' => 'Partagez votre talent musical et vocal',
+                'url' => ['controller' => 'Concours', 'action' => 'chanson']
+            ],
+            [
+                'id' => 'commentateur',
+                'name' => 'Commentateur sportif',
+                'image' => 'entreneur-768x461.png',
+                'description' => 'Montrez vos compétences en commentaire sportif',
+                'url' => ['controller' => 'Concours', 'action' => 'commentateur']
+            ],
+            [
+                'id' => 'film',
+                'name' => 'Film documentaire',
+                'image' => 'film-768x461.png',
+                'description' => 'Créez un film documentaire captivant',
+                'url' => ['controller' => 'Concours', 'action' => 'film']
+            ]
+        ];
+        
+        $this->set(compact('sports', 'concours'));
     }
     
     /**
@@ -148,6 +187,28 @@ class SportsController extends AppController
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function crosstraining()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+    }
+    
+    /**
+     * Sports Urbains landing page
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function sportsurbains()
+    {
+        $user = $this->Authentication->getIdentity();
+        $this->set(compact('user'));
+    }
+    
+    /**
+     * Concours landing page
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function concours()
     {
         $user = $this->Authentication->getIdentity();
         $this->set(compact('user'));

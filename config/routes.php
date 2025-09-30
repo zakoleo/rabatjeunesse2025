@@ -72,13 +72,23 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/sports/volleyball', ['controller' => 'Sports', 'action' => 'volleyball']);
         $builder->connect('/sports/beachvolley', ['controller' => 'Sports', 'action' => 'beachvolley']);
         $builder->connect('/sports/crosstraining', ['controller' => 'Sports', 'action' => 'crosstraining']);
+        $builder->connect('/sports/sportsurbains', ['controller' => 'Sports', 'action' => 'sportsurbains']);
+        $builder->connect('/sports/concours', ['controller' => 'Sports', 'action' => 'concours']);
+        
+        /*
+         * Contest landing pages
+         */
+        $builder->connect('/concours/dessin', ['controller' => 'Concours', 'action' => 'dessin']);
+        $builder->connect('/concours/chanson', ['controller' => 'Concours', 'action' => 'chanson']);
+        $builder->connect('/concours/commentateur', ['controller' => 'Concours', 'action' => 'commentateur']);
+        $builder->connect('/concours/film', ['controller' => 'Concours', 'action' => 'film']);
 
         /*
          * Admin routes - Must be defined before fallbacks
          */
         $builder->connect('/admin/team-details/*', ['controller' => 'Admin', 'action' => 'teamDetails']);
         $builder->connect('/admin/view-team/{sport}/{id}', ['controller' => 'Admin', 'action' => 'viewTeam'])
-            ->setPatterns(['id' => '\d+', 'sport' => 'football|basketball|handball|volleyball|beachvolley|crosstraining'])
+            ->setPatterns(['id' => '\d+', 'sport' => 'football|basketball|handball|volleyball|beachvolley|crosstraining|sportsurbains|concours'])
             ->setPass(['sport', 'id']);
         
         // Generic team status update (existing)
@@ -91,6 +101,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/admin/update-volleyball-team-status', ['controller' => 'Admin', 'action' => 'updateVolleyballTeamStatus']);
         $builder->connect('/admin/update-beachvolley-team-status', ['controller' => 'Admin', 'action' => 'updateBeachvolleyTeamStatus']);
         $builder->connect('/admin/update-crosstraining-team-status', ['controller' => 'Admin', 'action' => 'updateCrosstrainingTeamStatus']);
+        $builder->connect('/admin/update-sportsurbains-team-status', ['controller' => 'Admin', 'action' => 'updateSportsurbainsTeamStatus']);
+        $builder->connect('/admin/update-concours-team-status', ['controller' => 'Admin', 'action' => 'updateConcoursTeamStatus']);
         
         // Sport-specific verification notes
         $builder->connect('/admin/save-football-verification-notes', ['controller' => 'Admin', 'action' => 'saveFootballVerificationNotes']);
@@ -99,6 +111,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/admin/save-volleyball-verification-notes', ['controller' => 'Admin', 'action' => 'saveVolleyballVerificationNotes']);
         $builder->connect('/admin/save-beachvolley-verification-notes', ['controller' => 'Admin', 'action' => 'saveBeachvolleyVerificationNotes']);
         $builder->connect('/admin/save-crosstraining-verification-notes', ['controller' => 'Admin', 'action' => 'saveCrosstrainingVerificationNotes']);
+        $builder->connect('/admin/save-sportsurbains-verification-notes', ['controller' => 'Admin', 'action' => 'saveSportsurbainsVerificationNotes']);
+        $builder->connect('/admin/save-concours-verification-notes', ['controller' => 'Admin', 'action' => 'saveConcoursVerificationNotes']);
 
         /*
          * Football Management Admin Routes
@@ -141,6 +155,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/api/volleyball-date-ranges', ['controller' => 'Teams', 'action' => 'getVolleyballDateRanges']);
         $builder->connect('/api/beachvolley-date-ranges', ['controller' => 'Teams', 'action' => 'getBeachvolleyDateRanges']);
         $builder->connect('/api/crosstraining-date-ranges', ['controller' => 'Teams', 'action' => 'getCrosstrainingDateRanges']);
+        $builder->connect('/api/sportsurbains-date-ranges', ['controller' => 'Teams', 'action' => 'getSportsurbainsDateRanges']);
+        $builder->connect('/api/concours-date-ranges', ['controller' => 'Teams', 'action' => 'getConcoursDateRanges']);
         $builder->connect('/api/categories', ['controller' => 'Teams', 'action' => 'getCategories']);
         $builder->connect('/teams/get-categories', ['controller' => 'Teams', 'action' => 'getCategories']);
         $builder->connect('/teams/getCategories', ['controller' => 'Teams', 'action' => 'getCategories']);
@@ -155,6 +171,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/teams/getBeachvolleyTypes', ['controller' => 'Teams', 'action' => 'getBeachvolleyTypes']);
         $builder->connect('/teams/getBeachvolleyCategories', ['controller' => 'Teams', 'action' => 'getBeachvolleyCategories']);
         $builder->connect('/teams/getCrosstrainingCategories', ['controller' => 'Teams', 'action' => 'getCrosstrainingCategories']);
+        $builder->connect('/teams/getSportsurbainsCategories', ['controller' => 'Teams', 'action' => 'getSportsurbainsCategories']);
+        $builder->connect('/teams/getConcoursCategories', ['controller' => 'Teams', 'action' => 'getConcoursCategories']);
         $builder->connect('/api/basketball-types', ['controller' => 'Teams', 'action' => 'getBasketballTypes']);
         $builder->connect('/api/basketball-categories', ['controller' => 'Teams', 'action' => 'getBasketballCategories']);
         $builder->connect('/api/handball-types', ['controller' => 'Teams', 'action' => 'getHandballTypes']);
@@ -164,6 +182,8 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/api/beachvolley-types', ['controller' => 'Teams', 'action' => 'getBeachvolleyTypes']);
         $builder->connect('/api/beachvolley-categories', ['controller' => 'Teams', 'action' => 'getBeachvolleyCategories']);
         $builder->connect('/api/crosstraining-categories', ['controller' => 'Teams', 'action' => 'getCrosstrainingCategories']);
+        $builder->connect('/api/sportsurbains-categories', ['controller' => 'Teams', 'action' => 'getSportsurbainsCategories']);
+        $builder->connect('/api/concours-categories', ['controller' => 'Teams', 'action' => 'getConcoursCategories']);
         $builder->connect('/teams/test', ['controller' => 'Teams', 'action' => 'testEndpoint']);
         $builder->connect('/api/test', ['controller' => 'Teams', 'action' => 'testEndpoint']);
 

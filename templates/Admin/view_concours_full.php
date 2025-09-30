@@ -1,15 +1,15 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var \App\Model\Entity\CrosstrainingParticipant $participant
+ * @var \App\Model\Entity\ConcoursParticipant $participant
  */
 ?>
-<div class="crosstraining-management view-participant">
+<div class="concours-management view-participant">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Détails du participant Cross Training</h2>
+            <h2>Détails du participant Concours</h2>
             <?= $this->Html->link('<i class="fas fa-arrow-left"></i> Retour aux participants', 
-                ['action' => 'participants'], 
+                ['action' => 'concours'], 
                 ['class' => 'btn btn-secondary', 'escape' => false]
             ) ?>
         </div>
@@ -29,6 +29,10 @@
                                         <td><?= h($participant->reference_inscription) ?></td>
                                     </tr>
                                     <tr>
+                                        <th>Type de concours</th>
+                                        <td><span class="badge badge-info"><?= h($participant->type_concours) ?></span></td>
+                                    </tr>
+                                    <tr>
                                         <th>Nom complet</th>
                                         <td><?= h($participant->nom_complet) ?></td>
                                     </tr>
@@ -45,10 +49,6 @@
                                             echo $age . ' ans';
                                             ?>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Lieu de naissance</th>
-                                        <td><?= h($participant->lieu_naissance) ?></td>
                                     </tr>
                                     <tr>
                                         <th>Genre</th>
@@ -81,13 +81,22 @@
                                     <tr>
                                         <th>Catégorie</th>
                                         <td>
-                                            <?= $participant->has('crosstraining_category') ? 
-                                                h($participant->crosstraining_category->name) : '-' ?>
+                                            <?= $participant->has('concours_category') ? 
+                                                h($participant->concours_category->gender . ' - ' . $participant->concours_category->age_category) : '-' ?>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
                         </div>
+                        
+                        <?php if ($participant->description_projet): ?>
+                        <div class="mt-3">
+                            <h5>Description du projet</h5>
+                            <div class="alert alert-light">
+                                <?= nl2br(h($participant->description_projet)) ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -113,8 +122,8 @@
                                             // Le chemin commence déjà par /
                                             $webPath = $cinRectoPath;
                                         } else {
-                                            // Le chemin ne contient que le nom du fichier, ajouter le dossier uploads/crosstraining/
-                                            $webPath = '/uploads/crosstraining/' . $cinRectoPath;
+                                            // Le chemin ne contient que le nom du fichier, ajouter le dossier uploads/concours/
+                                            $webPath = '/uploads/concours/' . $cinRectoPath;
                                         }
                                         ?>
                                         - <?= $this->Html->link('Voir', $webPath, ['target' => '_blank', 'class' => 'btn btn-sm btn-outline-primary']) ?>
@@ -140,8 +149,8 @@
                                             // Le chemin commence déjà par /
                                             $webPath = $cinVersoPath;
                                         } else {
-                                            // Le chemin ne contient que le nom du fichier, ajouter le dossier uploads/crosstraining/
-                                            $webPath = '/uploads/crosstraining/' . $cinVersoPath;
+                                            // Le chemin ne contient que le nom du fichier, ajouter le dossier uploads/concours/
+                                            $webPath = '/uploads/concours/' . $cinVersoPath;
                                         }
                                         ?>
                                         - <?= $this->Html->link('Voir', $webPath, ['target' => '_blank', 'class' => 'btn btn-sm btn-outline-primary']) ?>
@@ -256,7 +265,7 @@
 <div class="modal fade" id="verifyModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <?= $this->Form->create(null, ['url' => ['action' => 'verify', $participant->id]]) ?>
+            <?= $this->Form->create(null, ['url' => ['action' => 'verifyConcours', $participant->id]]) ?>
             <div class="modal-header">
                 <h5 class="modal-title">Vérifier l'inscription</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -264,7 +273,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>Confirmer la vérification de l'inscription de <strong><?= h($participant->nom_complet) ?></strong>?</p>
+                <p>Confirmer la vérification de l'inscription de <strong><?= h($participant->nom_complet) ?></strong> pour le concours de <strong><?= h($participant->type_concours) ?></strong>?</p>
                 <?= $this->Form->control('verification_notes', [
                     'label' => 'Notes (optionnel)',
                     'type' => 'textarea',
@@ -285,7 +294,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <?= $this->Form->create(null, ['url' => ['action' => 'reject', $participant->id]]) ?>
+            <?= $this->Form->create(null, ['url' => ['action' => 'rejectConcours', $participant->id]]) ?>
             <div class="modal-header">
                 <h5 class="modal-title">Rejeter l'inscription</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">

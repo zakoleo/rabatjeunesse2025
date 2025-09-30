@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var array $sports
+ * @var array $concours
  */
 ?>
 <div class="sports-list">
@@ -35,6 +36,36 @@
                 </a>
             </div>
         <?php endforeach; ?>
+    </div>
+    
+    <!-- Contest Section -->
+    <div class="concours-section" id="concours">
+        <div class="header-section">
+            <h2>Choisissez votre type de concours</h2>
+            <p class="subtitle">Participez à nos concours créatifs et montrez vos talents</p>
+        </div>
+        
+        <div class="concours-grid">
+            <?php foreach ($concours as $contest): ?>
+                <div class="concours-card">
+                    <a href="<?= $this->Url->build($contest['url']) ?>" class="concours-link">
+                        <div class="concours-image">
+                            <?= $this->Html->image('disciplines/' . $contest['image'], [
+                                'alt' => $contest['name'],
+                                'class' => 'img-fluid'
+                            ]) ?>
+                            <div class="concours-overlay">
+                                <span class="view-more">Participer →</span>
+                            </div>
+                        </div>
+                        <div class="concours-info">
+                            <h3><?= h($contest['name']) ?></h3>
+                            <p><?= h($contest['description']) ?></p>
+                        </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
 
@@ -159,14 +190,108 @@
         font-weight: 500;
     }
 
+    /* Contest Section Styles */
+    .concours-section {
+        background-color: #f4ecf7;
+        padding: 3rem 0;
+        margin-top: 3rem;
+    }
+    
+    .concours-section .header-section h2 {
+        font-size: 2.5rem;
+        color: #9B59B6;
+        margin-bottom: 1rem;
+    }
+    
+    .concours-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+    
+    .concours-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(155, 89, 182, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .concours-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(155, 89, 182, 0.2);
+    }
+    
+    .concours-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    .concours-image {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+        background-color: #f0f0f0;
+    }
+    
+    .concours-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .concours-card:hover .concours-image img {
+        transform: scale(1.05);
+    }
+    
+    .concours-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(155, 89, 182, 0.8), transparent);
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .concours-card:hover .concours-overlay {
+        opacity: 1;
+    }
+    
+    .concours-info {
+        padding: 1.5rem;
+    }
+    
+    .concours-info h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        color: #9B59B6;
+    }
+    
+    .concours-info p {
+        color: #666;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
     @media (max-width: 768px) {
-        .header-section h1 {
+        .header-section h1, .header-section h2 {
             font-size: 2rem;
         }
 
-        .sports-grid {
+        .sports-grid, .concours-grid {
             grid-template-columns: 1fr;
             padding: 0 1rem;
+        }
+        
+        .concours-section {
+            margin-top: 2rem;
         }
     }
 </style>

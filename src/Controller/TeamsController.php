@@ -74,8 +74,32 @@ class TeamsController extends AppController
             ->where(['BeachvolleyTeams.user_id' => $user->id])
             ->contain(['Users', 'BeachvolleyTeamsJoueurs'])
             ->all();
+        
+        // Get cross training participants
+        $crosstrainingTable = $this->fetchTable('CrosstrainingParticipants');
+        $crosstrainingParticipants = $crosstrainingTable->find()
+            ->where(['CrosstrainingParticipants.user_id' => $user->id])
+            ->contain(['Users', 'CrosstrainingCategories'])
+            ->all();
+        
+        // Get sports urbains participants
+        $sportsurbainsTable = $this->fetchTable('SportsurbainsParticipants');
+        $sportsurbainsParticipants = $sportsurbainsTable->find()
+            ->where(['SportsurbainsParticipants.user_id' => $user->id])
+            ->contain(['Users', 'SportsurbainsCategories'])
+            ->all();
+        
+        // Get concours participants
+        $concoursTable = $this->fetchTable('ConcoursParticipants');
+        $concoursParticipants = $concoursTable->find()
+            ->where(['ConcoursParticipants.user_id' => $user->id])
+            ->contain(['Users', 'ConcoursCategories'])
+            ->all();
 
-        $this->set(compact('footballTeams', 'basketballTeams', 'handballTeams', 'volleyballTeams', 'beachvolleyTeams'));
+        $this->set(compact(
+            'footballTeams', 'basketballTeams', 'handballTeams', 'volleyballTeams', 'beachvolleyTeams',
+            'crosstrainingParticipants', 'sportsurbainsParticipants', 'concoursParticipants'
+        ));
     }
 
     /**
@@ -3876,3 +3900,572 @@ class TeamsController extends AppController
             $errorMessages[] = $field . ': ' . $fieldErrors;
         }
     }
+    
+    /**
+     * Download Volleyball team PDF
+     */
+    public function downloadVolleyballPdf($id = null)
+    {
+        $volleyballTeamsTable = $this->fetchTable('VolleyballTeams');
+        $team = $volleyballTeamsTable->get($id, [
+            'contain' => ['VolleyballTeamsJoueurs']
+        ]);
+        
+        // Generate PDF with DomPDF
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        // Create HTML for PDF
+        $html = $this->generateVolleyballPdfHtml($team);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Filename
+        $filename = sprintf('inscription_volleyball_%s_%s.pdf', 
+            $team->reference_inscription ?? 'VOTEMP',
+            \Cake\Utility\Text::slug($team->nom_equipe)
+        );
+        
+        // Send PDF to browser
+        $this->response = $this->response->withType('pdf');
+        $this->response = $this->response->withDownload($filename);
+        $this->response = $this->response->withStringBody($dompdf->output());
+        
+        return $this->response;
+    }
+    
+    /**
+     * Generate HTML for Volleyball team PDF
+     */
+    private function generateVolleyballPdfHtml($team)
+    {
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche d\'inscription - Volleyball</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #8E44AD;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #8E44AD;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 12pt;
+            color: #777;
+        }
+        h2 {
+            color: #8E44AD;
+            font-size: 14pt;
+            border-bottom: 1px solid #8E44AD;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            font-weight: bold;
+            color: #555;
+            vertical-align: top;
+        }
+        .info-value {
+            display: table-cell;
+            width: 65%;
+            color: #333;
+        }
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .players-table th {
+            background: #8E44AD;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 9pt;
+        }
+        .players-table td {
+            border-bottom: 1px solid #E0E0E0;
+            padding: 8px;
+            font-size: 9pt;
+        }
+        .players-table tr:nth-child(even) {
+            background: #F8F9FA;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        .badge-volleyball {
+            background: #8E44AD;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">RABAT JEUNESSE 2025</div>
+        <div class="title">FICHE D\'INSCRIPTION VOLLEYBALL</div>
+        <div class="subtitle">Équipe : ' . h($team->nom_equipe) . '</div>
+    </div>
+    
+    <h2>Informations de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Référence :</div>
+            <div class="info-value">' . h($team->reference_inscription) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Nom de l\'équipe :</div>
+            <div class="info-value">' . h($team->nom_equipe) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Type :</div>
+            <div class="info-value"><span class="badge badge-volleyball">' . h($team->type_volleyball) . '</span></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Catégorie :</div>
+            <div class="info-value">' . h($team->categorie) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">District :</div>
+            <div class="info-value">' . h($team->district) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Organisation :</div>
+            <div class="info-value">' . h($team->organisation) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date d\'inscription :</div>
+            <div class="info-value">' . h($team->created->format('d/m/Y H:i')) . '</div>
+        </div>
+    </div>
+    
+    <h2>Responsable de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->responsable_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->responsable_date_naissance ? h($team->responsable_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->responsable_tel) . '</div>
+        </div>';
+        
+        if (!empty($team->responsable_whatsapp)) {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->responsable_whatsapp) . '</div>
+        </div>';
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Entraîneur</h2>
+    <div class="info-section">';
+        
+        if ($team->entraineur_same_as_responsable) {
+            $html .= '<p><em>L\'entraîneur est le même que le responsable</em></p>';
+        } else {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->entraineur_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->entraineur_date_naissance ? h($team->entraineur_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->entraineur_tel) . '</div>
+        </div>';
+            
+            if (!empty($team->entraineur_whatsapp)) {
+                $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->entraineur_whatsapp) . '</div>
+        </div>';
+            }
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Liste des joueurs (' . count($team->volleyball_teams_joueurs) . ')</h2>
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Nom complet</th>
+                <th>Date de naissance</th>
+                <th>CIN</th>
+                <th>Taille maillot</th>
+            </tr>
+        </thead>
+        <tbody>';
+        
+        $num = 1;
+        foreach ($team->volleyball_teams_joueurs as $joueur) {
+            $html .= '
+            <tr>
+                <td>' . $num++ . '</td>
+                <td>' . h($joueur->nom_complet) . '</td>
+                <td>' . ($joueur->date_naissance ? h($joueur->date_naissance->format('d/m/Y')) : '') . '</td>
+                <td>' . h($joueur->cin) . '</td>
+                <td>' . h($joueur->taille_maillot) . '</td>
+            </tr>';
+        }
+        
+        $html .= '
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Document généré le ' . date('d/m/Y à H:i') . '</p>
+        <p>Rabat Jeunesse 2025 - Système d\'inscription en ligne</p>
+    </div>
+</body>
+</html>';
+        
+        return $html;
+    }
+    
+    /**
+     * Download Beach Volleyball team PDF
+     */
+    public function downloadBeachvolleyPdf($id = null)
+    {
+        $beachvolleyTeamsTable = $this->fetchTable('BeachvolleyTeams');
+        $team = $beachvolleyTeamsTable->get($id, [
+            'contain' => ['BeachvolleyTeamsJoueurs']
+        ]);
+        
+        // Generate PDF with DomPDF
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        // Create HTML for PDF
+        $html = $this->generateBeachvolleyPdfHtml($team);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Filename
+        $filename = sprintf('inscription_beachvolley_%s_%s.pdf', 
+            $team->reference_inscription ?? 'BVTEMP',
+            \Cake\Utility\Text::slug($team->nom_equipe)
+        );
+        
+        // Send PDF to browser
+        $this->response = $this->response->withType('pdf');
+        $this->response = $this->response->withDownload($filename);
+        $this->response = $this->response->withStringBody($dompdf->output());
+        
+        return $this->response;
+    }
+    
+    /**
+     * Generate HTML for Beach Volleyball team PDF
+     */
+    private function generateBeachvolleyPdfHtml($team)
+    {
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche d\'inscription - Beach Volleyball</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #F39C12;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #F39C12;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 12pt;
+            color: #777;
+        }
+        h2 {
+            color: #F39C12;
+            font-size: 14pt;
+            border-bottom: 1px solid #F39C12;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            font-weight: bold;
+            color: #555;
+            vertical-align: top;
+        }
+        .info-value {
+            display: table-cell;
+            width: 65%;
+            color: #333;
+        }
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .players-table th {
+            background: #F39C12;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 9pt;
+        }
+        .players-table td {
+            border-bottom: 1px solid #E0E0E0;
+            padding: 8px;
+            font-size: 9pt;
+        }
+        .players-table tr:nth-child(even) {
+            background: #F8F9FA;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            text-align: center;
+            font-size: 8pt;
+            color: #777;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        .badge-beachvolley {
+            background: #F39C12;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">RABAT JEUNESSE 2025</div>
+        <div class="title">FICHE D\'INSCRIPTION BEACH VOLLEYBALL</div>
+        <div class="subtitle">Équipe : ' . h($team->nom_equipe) . '</div>
+    </div>
+    
+    <h2>Informations de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Référence :</div>
+            <div class="info-value">' . h($team->reference_inscription) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Nom de l\'équipe :</div>
+            <div class="info-value">' . h($team->nom_equipe) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Type :</div>
+            <div class="info-value"><span class="badge badge-beachvolley">' . h($team->type_beachvolley) . '</span></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Catégorie :</div>
+            <div class="info-value">' . h($team->categorie) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">District :</div>
+            <div class="info-value">' . h($team->district) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Organisation :</div>
+            <div class="info-value">' . h($team->organisation) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date d\'inscription :</div>
+            <div class="info-value">' . h($team->created->format('d/m/Y H:i')) . '</div>
+        </div>
+    </div>
+    
+    <h2>Responsable de l\'équipe</h2>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->responsable_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->responsable_date_naissance ? h($team->responsable_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->responsable_tel) . '</div>
+        </div>';
+        
+        if (!empty($team->responsable_whatsapp)) {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->responsable_whatsapp) . '</div>
+        </div>';
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Entraîneur</h2>
+    <div class="info-section">';
+        
+        if ($team->entraineur_same_as_responsable) {
+            $html .= '<p><em>L\'entraîneur est le même que le responsable</em></p>';
+        } else {
+            $html .= '
+        <div class="info-row">
+            <div class="info-label">Nom complet :</div>
+            <div class="info-value">' . h($team->entraineur_nom_complet) . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Date de naissance :</div>
+            <div class="info-value">' . ($team->entraineur_date_naissance ? h($team->entraineur_date_naissance->format('d/m/Y')) : '') . '</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Téléphone :</div>
+            <div class="info-value">' . h($team->entraineur_tel) . '</div>
+        </div>';
+            
+            if (!empty($team->entraineur_whatsapp)) {
+                $html .= '
+        <div class="info-row">
+            <div class="info-label">WhatsApp :</div>
+            <div class="info-value">' . h($team->entraineur_whatsapp) . '</div>
+        </div>';
+            }
+        }
+        
+        $html .= '
+    </div>
+    
+    <h2>Liste des joueurs (' . count($team->beachvolley_teams_joueurs) . ')</h2>
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Nom complet</th>
+                <th>Date de naissance</th>
+                <th>CIN</th>
+                <th>Taille maillot</th>
+            </tr>
+        </thead>
+        <tbody>';
+        
+        $num = 1;
+        foreach ($team->beachvolley_teams_joueurs as $joueur) {
+            $html .= '
+            <tr>
+                <td>' . $num++ . '</td>
+                <td>' . h($joueur->nom_complet) . '</td>
+                <td>' . ($joueur->date_naissance ? h($joueur->date_naissance->format('d/m/Y')) : '') . '</td>
+                <td>' . h($joueur->cin) . '</td>
+                <td>' . h($joueur->taille_maillot) . '</td>
+            </tr>';
+        }
+        
+        $html .= '
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Document généré le ' . date('d/m/Y à H:i') . '</p>
+        <p>Rabat Jeunesse 2025 - Système d\'inscription en ligne</p>
+    </div>
+</body>
+</html>';
+        
+        return $html;
+    }
+}
